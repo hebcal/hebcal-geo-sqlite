@@ -1,0 +1,68 @@
+{
+  "name": "@hebcal/geo-sqlite",
+  "version": "1.0.0",
+  "author": "Michael J. Radwin (https://github.com/mjradwin)",
+  "keywords": [
+    "hebcal"
+  ],
+  "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hebcal/hebcal-geo-sqlite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hebcal/hebcal-geo-sqlite/issues"
+  },
+  "typings": "geo-sqlite.d.ts",
+  "files": [
+    "dist",
+    "geo-sqlite.d.ts"
+  ],
+  "dependencies": {
+    "@hebcal/core": "^1.2.3"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "prepublish": "npm run build",
+    "readme": "npx jsdoc2md dist/index.js",
+    "pretest": "npm run build",
+    "test": "ava"
+  },
+  "license": "BSD-2-Clause",
+  "ava": {
+    "files": [
+      "src/**/*.spec.js"
+    ],
+    "require": [
+      "@babel/register"
+    ],
+    "babel": {
+      "testOptions": {
+        "presets": [
+          "@babel/env"
+        ]
+      }
+    },
+    "inherit": true,
+    "verbose": true
+  },
+  "devDependencies": {
+    "@ava/babel": "^1.0.1",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/register": "^7.10.1",
+    "@rollup/plugin-babel": "^5.0.3",
+    "@rollup/plugin-commonjs": "^12.0.0",
+    "@rollup/plugin-node-resolve": "^8.0.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "ava": "^3.9.0",
+    "better-sqlite3": "^7.1.0",
+    "core-js": "^3.6.5",
+    "eslint": "^7.2.0",
+    "eslint-config-google": "^0.14.0",
+    "jsdoc": "^3.6.4",
+    "jsdoc-to-markdown": "^5.0.3",
+    "rollup": "^1.29.0"
+  }
+}
