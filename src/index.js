@@ -29,9 +29,9 @@ export class GeoDb {
    */
   constructor(logger, zipsFilename, geonamesFilename) {
     this.logger = logger;
-    logger.info(`Opening ${zipsFilename}...`);
+    if (this.logger) logger.info(`Opening ${zipsFilename}...`);
     this.zipsDb = new Database(zipsFilename, {fileMustExist: true});
-    logger.info(`Opening ${geonamesFilename}...`);
+    if (this.logger) logger.info(`Opening ${geonamesFilename}...`);
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
@@ -50,10 +50,10 @@ export class GeoDb {
   lookupZip(zip) {
     const result = this.zipStmt.get(zip);
     if (!result) {
-      this.logger.warn(`unknown zipcode=${zip}`);
+      if (this.logger) this.logger.warn(`unknown zipcode=${zip}`);
       return null;
     } else if (!result.Latitude && !result.Longitude) {
-      this.logger.warn(`zero lat/long zipcode=${zip}`);
+      if (this.logger) this.logger.warn(`zero lat/long zipcode=${zip}`);
       return null;
     }
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
@@ -68,7 +68,7 @@ export class GeoDb {
   lookupGeoname(geonameid) {
     const result = this.geonamesStmt.get(geonameid);
     if (!result) {
-      this.logger.warn(`unknown geonameid=${geonameid}`);
+      if (this.logger) this.logger.warn(`unknown geonameid=${geonameid}`);
       return null;
     }
     const country = result.country || '';
@@ -99,7 +99,7 @@ export class GeoDb {
     if (geonameid) {
       return this.lookupGeoname(geonameid);
     } else {
-      this.logger.warn(`unknown city=${cityName}`);
+      if (this.logger) this.logger.warn(`unknown city=${cityName}`);
       return null;
     }
   }
