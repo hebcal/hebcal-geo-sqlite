@@ -1,12 +1,15 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
   ],
   "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
   "main": "./dist/index.js",
+  "bin": {
+    "build-geonames-sqlite": "bin/build-geonames-sqlite"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/hebcal/hebcal-geo-sqlite.git"
@@ -28,7 +31,8 @@
   "scripts": {
     "build": "rollup -c",
     "prepublish": "npm run build",
-    "readme": "npx jsdoc2md dist/index.js"
+    "readme": "npx jsdoc2md dist/index.js",
+    "test": "echo 'No tests' && exit 0"
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
