@@ -21,7 +21,9 @@
   ],
   "dependencies": {
     "@hebcal/core": "^2.0.0",
-    "better-sqlite3": "^7.1.0"
+    "better-sqlite3": "^7.1.0",
+    "pino": "^6.3.2",
+    "pino-pretty": "^4.0.0"
   },
   "scripts": {
     "build": "rollup -c",
