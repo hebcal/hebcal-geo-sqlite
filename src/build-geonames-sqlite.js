@@ -100,6 +100,11 @@ export async function buildGeonamesSqlite(
   await doFile(db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
 
   doSql(db,
+      `INSERT INTO geoname SELECT 6693679, "Modi'in", "Modi'in", '',
+      latitude, longitude, fclass, fcode, country, cc2,
+      admin1, '', admin3, admin4, population, elevation, gtopo30, timezone,
+      '1993-01-01'`,
+
       `update admin1 set name='',asciiname='' where key like 'PS.%';`,
       `update country set country = '' where iso = 'PS';`,
       `delete from geoname where geonameid = 7303419;`,
