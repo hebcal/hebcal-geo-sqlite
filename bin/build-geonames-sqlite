@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+const {buildGeonamesSqlite} = require('@hebcal/geo-sqlite');
+
+const [dbFilename, countryInfo, cities, admin1CodesASCII, il] = process.argv.slice(2);
+
+buildGeonamesSqlite(dbFilename, countryInfo, cities, admin1CodesASCII, il).then(() => {
+  console.log('Done!');
+});

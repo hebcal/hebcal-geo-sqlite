@@ -28,30 +28,10 @@
   "scripts": {
     "build": "rollup -c",
     "prepublish": "npm run build",
-    "readme": "npx jsdoc2md dist/index.js",
-    "pretest": "npm run build",
-    "test": "ava"
+    "readme": "npx jsdoc2md dist/index.js"
   },
   "license": "BSD-2-Clause",
-  "ava": {
-    "files": [
-      "src/**/*.spec.js"
-    ],
-    "require": [
-      "@babel/register"
-    ],
-    "babel": {
-      "testOptions": {
-        "presets": [
-          "@babel/env"
-        ]
-      }
-    },
-    "inherit": true,
-    "verbose": true
-  },
   "devDependencies": {
-    "@ava/babel": "^1.0.1",
     "@babel/core": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
     "@babel/register": "^7.10.4",
@@ -59,8 +39,6 @@
     "@rollup/plugin-commonjs": "^12.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.0.1",
-    "ava": "^3.9.0",
-    "core-js": "^3.6.5",
     "eslint": "^7.2.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^3.6.4",

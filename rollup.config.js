@@ -19,6 +19,6 @@ export default [
       resolve(),
       commonjs(),
     ],
-    external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline'],
+    external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline', 'events'],
   },
 ];
