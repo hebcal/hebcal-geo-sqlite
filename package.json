@@ -20,6 +20,7 @@
   "typings": "geo-sqlite.d.ts",
   "files": [
     "dist",
+    "bin",
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
