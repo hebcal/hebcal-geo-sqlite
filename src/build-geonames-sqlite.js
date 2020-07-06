@@ -28,38 +28,6 @@ export async function buildGeonamesSqlite(
   db.pragma('journal_mode = MEMORY');
 
   doSql(db,
-      `DROP TABLE IF EXISTS geoname`,
-
-      `CREATE TABLE geoname (
-      geonameid int PRIMARY KEY,
-      name nvarchar(200),
-      asciiname nvarchar(200),
-      alternatenames nvarchar(4000),
-      latitude decimal(18,15),
-      longitude decimal(18,15),
-      fclass nchar(1),
-      fcode nvarchar(10),
-      country nvarchar(2),
-      cc2 nvarchar(60),
-      admin1 nvarchar(20),
-      admin2 nvarchar(80),
-      admin3 nvarchar(20),
-      admin4 nvarchar(20),
-      population int,
-      elevation int,
-      gtopo30 int,
-      timezone nvarchar(40),
-      moddate date);`,
-
-      `DROP TABLE IF EXISTS admin1`,
-
-      `CREATE TABLE admin1 (
-      key TEXT PRIMARY KEY,
-      name nvarchar(200) NOT NULL,
-      asciiname nvarchar(200) NOT NULL,
-      geonameid int NOT NULL
-      );`,
-
       `DROP TABLE IF EXISTS country`,
 
       `CREATE TABLE country (
@@ -84,25 +52,31 @@ export async function buildGeonamesSqlite(
       EquivalentFipsCode TEXT NOT NULL
     );`,
   );
-
   await doFile(db, countryInfotxt, 'country', 19);
-  await doFile(db, cities5000txt, 'geoname', 19);
-  await doFile(db, admin1CodesASCIItxt, 'admin1', 4);
-  await doFile(db, ILtxt, 'geoname', 19, (a) => {
-    return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
-  });
 
   doSql(db,
-      `DROP TABLE IF EXISTS geoname_he`,
-      `CREATE TABLE geoname_he AS SELECT * FROM geoname LIMIT 0`,
-  );
+      `DROP TABLE IF EXISTS geoname`,
 
-  await doFile(db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
-
-  doSql(db,
-      `update admin1 set name='',asciiname='' where key like 'PS.%';`,
-      `update country set country = '' where iso = 'PS';`,
-      `delete from geoname where geonameid = 7303419;`,
+      `CREATE TABLE geoname (
+      geonameid int PRIMARY KEY,
+      name nvarchar(200),
+      asciiname nvarchar(200),
+      alternatenames nvarchar(4000),
+      latitude decimal(18,15),
+      longitude decimal(18,15),
+      fclass nchar(1),
+      fcode nvarchar(10),
+      country nvarchar(2),
+      cc2 nvarchar(60),
+      admin1 nvarchar(20),
+      admin2 nvarchar(80),
+      admin3 nvarchar(20),
+      admin4 nvarchar(20),
+      population int,
+      elevation int,
+      gtopo30 int,
+      timezone nvarchar(40),
+      moddate date);`,
   );
 
   const stmt = db.prepare('INSERT INTO geoname VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
@@ -126,6 +100,37 @@ export async function buildGeonamesSqlite(
       276,
       'Asia/Jerusalem',
       '1993-01-01',
+  );
+
+  await doFile(db, cities5000txt, 'geoname', 19);
+  await doFile(db, ILtxt, 'geoname', 19, (a) => {
+    return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
+  });
+
+  doSql(db,
+      `DROP TABLE IF EXISTS admin1`,
+
+      `CREATE TABLE admin1 (
+      key TEXT PRIMARY KEY,
+      name nvarchar(200) NOT NULL,
+      asciiname nvarchar(200) NOT NULL,
+      geonameid int NOT NULL
+      );`,
+  );
+
+  await doFile(db, admin1CodesASCIItxt, 'admin1', 4);
+
+  doSql(db,
+      `DROP TABLE IF EXISTS geoname_he`,
+      `CREATE TABLE geoname_he AS SELECT * FROM geoname LIMIT 0`,
+  );
+
+  await doFile(db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
+
+  doSql(db,
+      `update admin1 set name='',asciiname='' where key like 'PS.%';`,
+      `update country set country = '' where iso = 'PS';`,
+      `delete from geoname where geonameid = 7303419;`,
   );
 
   doSql(db,
