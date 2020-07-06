@@ -103,7 +103,7 @@ export async function buildGeonamesSqlite(
       `INSERT INTO geoname SELECT 6693679, "Modi'in", "Modi'in", '',
       latitude, longitude, fclass, fcode, country, cc2,
       admin1, '', admin3, admin4, population, elevation, gtopo30, timezone,
-      '1993-01-01'`,
+      '1993-01-01' FROM geoname WHERE geonameid = 282926;`,
 
       `update admin1 set name='',asciiname='' where key like 'PS.%';`,
       `update country set country = '' where iso = 'PS';`,
