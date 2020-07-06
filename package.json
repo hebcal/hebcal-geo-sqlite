@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -21,6 +21,7 @@
   "files": [
     "dist",
     "bin",
+    "cities-patch.txt",
     "geo-sqlite.d.ts"
   ],
   "dependencies": {

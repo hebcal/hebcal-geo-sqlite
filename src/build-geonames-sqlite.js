@@ -14,6 +14,7 @@ const logger = pino({
  * @param {string} dbFilename
  * @param {string} countryInfotxt
  * @param {string} cities5000txt
+ * @param {string} citiesPatch
  * @param {string} admin1CodesASCIItxt
  * @param {string} ILtxt
  */
@@ -21,6 +22,7 @@ export async function buildGeonamesSqlite(
     dbFilename,
     countryInfotxt,
     cities5000txt,
+    citiesPatch,
     admin1CodesASCIItxt,
     ILtxt,
 ) {
@@ -79,30 +81,8 @@ export async function buildGeonamesSqlite(
       moddate date);`,
   );
 
-  const stmt = db.prepare('INSERT INTO geoname VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-  stmt.run(
-      6693679,
-      'Modi\'in',
-      'Modi\'in',
-      '',
-      31.89385,
-      35.01504,
-      'P',
-      'PPL',
-      'IL',
-      '',
-      '02',
-      '',
-      '',
-      '',
-      88749,
-      0,
-      276,
-      'Asia/Jerusalem',
-      '1993-01-01',
-  );
-
   await doFile(db, cities5000txt, 'geoname', 19);
+  await doFile(db, citiesPatch, 'geoname', 19);
   await doFile(db, ILtxt, 'geoname', 19, (a) => {
     return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
   });
