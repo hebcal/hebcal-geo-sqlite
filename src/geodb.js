@@ -36,6 +36,10 @@ export class GeoDb {
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
     this.cache = new Map();
+    this.legacyCities = new Map();
+    for (const [name, id] of Object.entries(city2geonameid)) {
+      this.legacyCities.set(name.toLowerCase(), id);
+    }
   }
 
   /** Closes database handles */
@@ -99,8 +103,8 @@ export class GeoDb {
    * @return {Location}
    */
   lookupLegacyCity(cityName) {
-    cityName = cityName.replace(/\+/g, ' ');
-    const geonameid = city2geonameid[cityName];
+    const name = cityName.replace(/\+/g, ' ').toLowerCase();
+    const geonameid = this.legacyCities.get(name);
     if (geonameid) {
       return this.lookupGeoname(geonameid);
     } else {
