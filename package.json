@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -25,10 +25,10 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/core": "^2.0.0",
+    "@hebcal/core": "^2.1.4",
     "better-sqlite3": "^7.1.0",
-    "pino": "^6.3.2",
-    "pino-pretty": "^4.0.0"
+    "pino": "^6.4.0",
+    "pino-pretty": "^4.0.3"
   },
   "scripts": {
     "build": "rollup -c",
@@ -38,14 +38,14 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@babel/core": "^7.10.4",
+    "@babel/core": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
-    "@babel/register": "^7.10.4",
-    "@rollup/plugin-babel": "^5.0.3",
+    "@babel/register": "^7.10.5",
+    "@rollup/plugin-babel": "^5.1.0",
     "@rollup/plugin-commonjs": "^12.0.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^8.0.1",
-    "eslint": "^7.2.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "eslint": "^7.4.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^3.6.4",
     "jsdoc-to-markdown": "^5.0.3",

@@ -100,6 +100,17 @@ export async function buildGeonamesSqlite(
 
   await doFile(db, admin1CodesASCIItxt, 'admin1', 4);
 
+  // fix inconsistencies with the USA capitol
+  doSql(db,
+      `UPDATE geoname
+      SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
+      WHERE geonameid = 4140963;`,
+
+      `UPDATE admin1
+      SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
+      WHERE key = 'US.DC';`,
+  );
+
   doSql(db,
       `DROP TABLE IF EXISTS geoname_he`,
       `CREATE TABLE geoname_he AS SELECT * FROM geoname LIMIT 0`,
