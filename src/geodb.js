@@ -106,7 +106,7 @@ export class GeoDb {
         geonameid,
     );
     location.asciiname = result.asciiname;
-    if (location.admin1) {
+    if (admin1) {
       location.admin1 = admin1;
     }
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
