@@ -33,18 +33,6 @@ GROUP BY geonameid
 ORDER BY population DESC
 LIMIT 10`;
 
-// eslint-disable-next-line require-jsdoc
-export async function geoAutoComplete(ctx) {
-  if (ctx.request.header['if-modified-since']) {
-    ctx.status = 304;
-    ctx.body = {status: 'Not Modified'};
-    return;
-  }
-  const q = ctx.request.query;
-  const qraw = typeof q.q === 'string' ? q.q.trim() : '';
-}
-
-
 /** Wrapper around sqlite databases */
 export class GeoDb {
   /**
@@ -88,6 +76,7 @@ export class GeoDb {
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr, 'US', zip);
+    location.admin1 = result.State;
     this.cache.set(zip, location);
     return location;
   }
@@ -117,6 +106,9 @@ export class GeoDb {
         geonameid,
     );
     location.asciiname = result.asciiname;
+    if (location.admin1) {
+      location.admin1 = admin1;
+    }
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
     }
