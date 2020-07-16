@@ -9,5 +9,6 @@ declare module '@hebcal/geo-sqlite' {
         lookupZip(zip: string): Location;
         lookupGeoname(geonameid: number): Location;
         lookupLegacyCity(cityName: string): Location;
+        autoComplete(qraw: string): Object[];
     }
 }

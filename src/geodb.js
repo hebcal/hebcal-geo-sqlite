@@ -20,6 +20,31 @@ WHERE g.geonameid = ?
 const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
+const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+FROM ZIPCodes_Primary
+WHERE ZipCode LIKE ?
+LIMIT 10`;
+
+const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
+population, latitude, longitude, timezone
+FROM geoname_fulltext
+WHERE longname MATCH ?
+GROUP BY geonameid
+ORDER BY population DESC
+LIMIT 10`;
+
+// eslint-disable-next-line require-jsdoc
+export async function geoAutoComplete(ctx) {
+  if (ctx.request.header['if-modified-since']) {
+    ctx.status = 304;
+    ctx.body = {status: 'Not Modified'};
+    return;
+  }
+  const q = ctx.request.query;
+  const qraw = typeof q.q === 'string' ? q.q.trim() : '';
+}
+
+
 /** Wrapper around sqlite databases */
 export class GeoDb {
   /**
@@ -81,7 +106,7 @@ export class GeoDb {
     }
     const country = result.country || '';
     const admin1 = result.admin1 || '';
-    const cityDescr = Location.geonameCityDescr(result.asciiname, admin1, country);
+    const cityDescr = Location.geonameCityDescr(result.name, admin1, country);
     const location = new Location(
         result.latitude,
         result.longitude,
@@ -91,6 +116,7 @@ export class GeoDb {
         result.cc,
         geonameid,
     );
+    location.asciiname = result.asciiname;
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
     }
@@ -110,6 +136,61 @@ export class GeoDb {
     } else {
       if (this.logger) this.logger.warn(`GeoDb: unknown city=${cityName}`);
       return null;
+    }
+  }
+
+  /**
+   * Generates autocomplete results based on a query string
+   * @param {string} qraw
+   * @return {Object[]}
+   */
+  autoComplete(qraw) {
+    if (qraw.length === 0) {
+      return [];
+    }
+    if (qraw.charCodeAt(0) >= 48 && qraw.charCodeAt(0) <= 57) {
+      if (!this.zipCompStmt) {
+        this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
+      }
+      return this.zipCompStmt.all(qraw + '%').map((res) => {
+        return {
+          id: String(res.ZipCode),
+          value: `${res.CityMixedCase}, ${res.State} ${res.ZipCode}`,
+          admin1: res.State,
+          asciiname: res.CityMixedCase,
+          country: 'United States',
+          latitude: res.Latitude,
+          longitude: res.Longitude,
+          timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
+          geo: 'zip',
+        };
+      });
+    } else {
+      if (!this.geonamesCompStmt) {
+        this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
+      }
+      return this.geonamesCompStmt.all(`"${qraw}*"`).map((res) => {
+        const country = res.country || '';
+        const admin1 = res.admin1 || '';
+        const obj = {
+          id: res.geonameid,
+          value: Location.geonameCityDescr(res.asciiname, admin1, country),
+          asciiname: res.asciiname,
+          latitude: res.latitude,
+          longitude: res.longitude,
+          timezone: res.timezone,
+          population: res.population,
+          geo: 'geoname',
+        };
+        if (country) {
+          obj.country = country;
+        }
+        if (admin1) {
+          obj.admin1 = admin1;
+        }
+        obj.tokens = Array.from(new Set(res.asciiname.split(' ').concat(admin1.split(' '), country.split(' '))));
+        return obj;
+      });
     }
   }
 }
