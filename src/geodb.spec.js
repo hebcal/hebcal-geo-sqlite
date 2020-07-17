@@ -4,16 +4,14 @@ import {Location} from '@hebcal/core';
 import {GeoDb} from './geodb';
 import {buildGeonamesSqlite} from './build-geonames-sqlite';
 import Database from 'better-sqlite3';
+import os from 'os';
 import fs from 'fs';
+import path from 'path';
 import pino from 'pino';
 
-let db;
-let logger;
-
 test.before(async (t) => {
-  logger = pino();
-  const testZipsPath = '/tmp/test-zips.sqlite3';
-  fs.unlinkSync(testZipsPath);
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
+  const testZipsPath = path.join(tmpDir, 'zips.sqlite3');
   const zipsDb = new Database(testZipsPath);
   const sql = `CREATE TABLE ZIPCodes_Primary (
     ZipCode char(5) NOT NULL PRIMARY KEY,
@@ -30,15 +28,14 @@ test.before(async (t) => {
   zipsDb.exec(sql);
   zipsDb.close();
 
-  console.log('Building test files');
-  const ciPath = '/tmp/test-countryInfo.txt';
+  const ciPath = path.join(tmpDir, 'test-countryInfo.txt');
   const ciStr =
 `IL\tISR\t376\tIS\tIsrael\tJerusalem\t20770\t8883800\tAS\t.il\tILS\tShekel\t972\t#######\t^(\d{7}|\d{5})$\the,ar-IL,en-IL,\t294640\tSY,JO,LB,EG,PS\t
 US\tUSA\t840\tUS\tUnited States\tWashington\t9629091\t327167434\tNA\t.us\tUSD\tDollar\t1\t#####-####\t^\d{5}(-\d{4})?$\ten-US,es-US,haw,fr\t6252001\tCA,MX,CU\t
 AX\tALA\t248\t\tAland Islands\tMariehamn\t1580\t26711\tEU\t.ax\tEUR\tEuro\t+358-18\t#####\t^(?:FI)*(\d{5})$\tsv-AX\t661882\t\tFI
 `;
   fs.writeFileSync(ciPath, ciStr);
-  const a1path = '/tmp/test-admin1CodesASCII.txt';
+  const a1path = path.join(tmpDir, 'test-admin1CodesASCII.txt');
   const a1str = `US.AR\tArkansas\tArkansas\t4099753\nUS.DC\tWashington, D.C.\tWashington, D.C.\t4138106\nUS.DE\tDelaware\tDelaware\t4142224\nUS.FL\tFlorida\tFlorida\t4155751
 IL.06\tJerusalem\tJerusalem\t293198
 IL.05\tTel Aviv\tTel Aviv\t293396
@@ -47,7 +44,7 @@ IL.03\tNorthern District\tNorthern District\t294824
 IL.02\tCentral District\tCentral District\t294904
 IL.01\tSouthern District\tSouthern District\t294952`;
   fs.writeFileSync(a1path, a1str);
-  const c5path = '/tmp/test-cities5000.txt';
+  const c5path = path.join(tmpDir, 'test-cities5000.txt');
   const c5str =
 `293397\tTel Aviv\tTel Aviv\tLungsod ng Tel Aviv-Yafo,TLV,Tehl'-Aviu,Tel Avevs,Tel Aviv,Tel Aviv Yaffo,Tel Aviv Yafo,Tel Aviv-Jaffa,Tel Aviv-Jafo,Tel Aviv-Yafo,Tel Avivas,Tel Avív,Tel Avėvs,Tel Awiw,Tel Eviv,Tel'-Aviv,Tel-Aviv,Tel-Avivo,Tel-aviv,Tel-Əviv,Telaviva,Telavivum,Tell Abib,Tell Abīb,Tell Afif,te la wei fu,tel aviv,tel-abibeu,tel-avivi,tela abhibha,tela abhiva,tela aviva,tela'abiba,tel־ʼabiyb-yapwo,teruabibu,thel xa wif,tl abyb,tl abyb yafa,tl alrbyʿ,tl avyv,tl awyw,tl awyw yafw,tl ʼbyb,tlawyw,tl‌awyw,tl‌awyw yafw,tێl yەvyv,Τελ Αβίβ,Тел Авив,Тел-Авив,Тель-Авив,Тель-Авів,Тэль-Авіў,Թել Ավիվ,תֵּל־אָבִיב–יָפוֹ,תל אביב,תל אביב-יפו,تل آویو,تل آویو یافو,تل آڤیڤ,تل أبيب,تل أبيب يافا,تل ابيب,تل ابیب,تل الربيع,تل اویو,تل اویو یافو,تلاویو,تل‌آویو,تل‌آویو یافو,تل‌اویو,تل‌اویو یافو,تێل ئەڤیڤ,تېلاۋىف,ܬܠ ܐܒܝܒ,तेल अभिव,तेल अविव,तेल अवीव,তেল আভিভ,তেলআবিব,டெல் அவீவ்,ടെൽ അവീവ്,เทลอาวีฟ,თელ-ავივი,ቴል አቪቭ,テルアビブ,特拉維夫,特拉维夫,텔아비브\t32.08088\t34.78057\tP\tPPLA\tIL\t\t05\t\t\t\t432892\t\t15\tAsia/Jerusalem\t2020-05-28
 4140963\tWashington\tWashington\tDistrict of Columbia,Federal Capital,Federal City,Federal Town,Nations Capital,Ouasinkton,Ranatakariahshne,Ranatakariáhshne,Rome,Territory of Columbia,Vashington,Vasingtonas,Vasingtonia,Vašingtonas,WAS,Washington,Washington City,Washington D. C.,Washington D.C.,Washington DC,Waszyngton,hua sheng dun te qu,wosingteon D.C.,wosingteon DC,Ουάσιγκτον,Вашингтон,华盛顿特区,워싱턴 D.C.,워싱턴 DC\t38.89511\t-77.03637\tP\tPPLC\tUS\t\tDC\t001\t\t\t601723\t7\t6\tAmerica/New_York\t2020-04-30
@@ -58,11 +55,16 @@ IL.01\tSouthern District\tSouthern District\t294952`;
 1790630\tXi’an\tXi'an\tCh'ang-an,Ch'ang-an-hsien,Ch’ang-an,Ch’ang-an-hsien,Hsi Gnan Fu,Hsi-an,Hsi-an-shih,Hsi-ching,Hsi-ching-shih,Hsingan,SIA,Si-Gan-Fu,Sian,Sian',Siana,Sianas,Sianfu,Siano,Siaņa,Siking,Singan,Tay An,Tây An,Xi'an,Xi'an - xi an,Xi'an - 西安,Xi'an Shi,Xian,Xi’an,Xi’an Shi,Xī'ān,si xan,sian si,xi an,xi an shi,Ŝiano,Сиань,شىئەن شەھىرى,ซีอาน,西安,西安市,시안 시\t34.25833\t108.92861\tP\tPPLA\tCN\t\t26\t\t\t\t6501190\t\t416\tAsia/Shanghai\t2020-06-10
 `;
   fs.writeFileSync(c5path, c5str);
-  console.log('Building test db');
-  const testDbPath = '/tmp/test-geonames.sqlite3';
-  fs.unlinkSync(testDbPath);
+  const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
   await buildGeonamesSqlite(testDbPath, ciPath, c5path, 'cities-patch.txt', a1path, '/dev/null');
-  db = new GeoDb(logger, testZipsPath, testDbPath);
+  const logger = pino({
+    prettyPrint: {translateTime: true, ignore: 'pid,hostname'},
+  });
+  t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
+});
+
+test.after((t) => {
+  t.context.db.close();
 });
 
 test('legacy', (t) => {
@@ -74,18 +76,18 @@ test('legacy', (t) => {
     'CN-Xian': 1790630,
   };
   for (const [key, val] of Object.entries(expected)) {
-    const loc = db.lookupLegacyCity(key);
+    const loc = t.context.db.lookupLegacyCity(key);
     t.is(loc == null, false);
     t.is(typeof loc, 'object');
     t.is(loc instanceof Location, true);
     t.is(loc.getGeoId(), val);
   }
-  t.is(db.lookupLegacyCity('*nonexistent*'), null);
+  t.is(t.context.db.lookupLegacyCity('*nonexistent*'), null);
 });
 
 test('geoname', (t) => {
-  t.is(db.lookupGeoname(0), null);
-  const loc = db.lookupGeoname(4119403);
+  t.is(t.context.db.lookupGeoname(0), null);
+  const loc = t.context.db.lookupGeoname(4119403);
   t.is(loc == null, false);
   t.is(typeof loc, 'object');
   t.is(loc instanceof Location, true);
@@ -95,8 +97,8 @@ test('geoname', (t) => {
 });
 
 test('zip', (t) => {
-  t.is(db.lookupZip('00000'), null);
-  const loc = db.lookupZip('02912');
+  t.is(t.context.db.lookupZip('00000'), null);
+  const loc = t.context.db.lookupZip('02912');
   t.is(loc == null, false);
   t.is(typeof loc, 'object');
   t.is(loc instanceof Location, true);
