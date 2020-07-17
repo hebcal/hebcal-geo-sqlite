@@ -51,7 +51,7 @@ export class GeoDb {
     this.cache = new Map();
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
-      this.legacyCities.set(name.toLowerCase(), id);
+      this.legacyCities.set(name.replace(/'/g, '').toLowerCase(), id);
     }
   }
 
@@ -121,7 +121,7 @@ export class GeoDb {
    * @return {Location}
    */
   lookupLegacyCity(cityName) {
-    const name = cityName.replace(/\+/g, ' ').toLowerCase();
+    const name = cityName.replace(/\+/g, ' ').replace(/'/g, '').toLowerCase();
     const geonameid = this.legacyCities.get(name);
     if (geonameid) {
       return this.lookupGeoname(geonameid);
