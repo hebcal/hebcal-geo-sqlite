@@ -94,6 +94,19 @@ test('geoname', (t) => {
   t.is(loc.getGeoId(), 4119403);
   t.is(loc.getShortName(), 'Little Rock');
   t.is(loc.getName(), 'Little Rock, Arkansas, USA');
+  const expected = {
+    latitude: 34.74648,
+    longitude: -92.28959,
+    il: false,
+    tzid: 'America/Chicago',
+    name: 'Little Rock, Arkansas, USA',
+    cc: 'US',
+    geoid: 4119403,
+    geo: 'geoname',
+    geonameid: 4119403,
+    admin1: 'Arkansas',
+  };
+  t.deepEqual(Object.assign({}, loc), expected);
 });
 
 test('zip', (t) => {
@@ -105,4 +118,18 @@ test('zip', (t) => {
   t.is(loc.getGeoId(), '02912');
   t.is(loc.getShortName(), 'Providence');
   t.is(loc.getName(), 'Providence, RI 02912');
+  const expected = {
+    latitude: 41.826254,
+    longitude: -71.402502,
+    il: false,
+    tzid: 'America/New_York',
+    name: 'Providence, RI 02912',
+    cc: 'US',
+    geoid: '02912',
+    state: 'RI',
+    admin1: 'RI',
+    geo: 'zip',
+    zip: '02912',
+  };
+  t.deepEqual(Object.assign({}, loc), expected);
 });

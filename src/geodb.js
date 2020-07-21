@@ -76,7 +76,9 @@ export class GeoDb {
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr, 'US', zip);
-    location.admin1 = result.State;
+    location.admin1 = location.state = result.State;
+    location.geo = 'zip';
+    location.zip = zip;
     this.cache.set(zip, location);
     return location;
   }
@@ -105,7 +107,11 @@ export class GeoDb {
         result.cc,
         geonameid,
     );
-    location.asciiname = result.asciiname;
+    if (result.asciiname !== result.name) {
+      location.asciiname = result.asciiname;
+    }
+    location.geo = 'geoname';
+    location.geonameid = geonameid;
     if (admin1) {
       location.admin1 = admin1;
     }
