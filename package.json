@@ -25,9 +25,9 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/core": "^2.2.3",
+    "@hebcal/core": "^2.2.4",
     "better-sqlite3": "^7.1.0",
-    "pino": "^6.4.1",
+    "pino": "^6.5.0",
     "pino-pretty": "^4.1.0"
   },
   "scripts": {
@@ -57,16 +57,16 @@
   "license": "BSD-2-Clause",
   "devDependencies": {
     "@ava/babel": "^1.0.1",
-    "@babel/core": "^7.10.5",
+    "@babel/core": "^7.11.0",
     "@babel/polyfill": "^7.10.4",
-    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-env": "^7.11.0",
     "@babel/register": "^7.10.5",
     "@rollup/plugin-babel": "^5.1.0",
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
-    "ava": "^3.8.2",
-    "eslint": "^7.5.0",
+    "ava": "^3.11.1",
+    "eslint": "^7.6.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^3.6.5",
     "jsdoc-to-markdown": "^6.0.1",

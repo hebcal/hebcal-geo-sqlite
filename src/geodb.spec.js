@@ -20,10 +20,11 @@ test.before(async (t) => {
     Latitude decimal(12, 6),
     Longitude decimal(12, 6),
     TimeZone char(2) NULL,
-    DayLightSaving char(1) NULL
+    DayLightSaving char(1) NULL,
+    Elevation int NULL
     );
 
-    INSERT INTO ZIPCodes_Primary VALUES ('02912', 'Providence', 'RI', 41.826254, -71.402502, 5, 'Y');
+    INSERT INTO ZIPCodes_Primary VALUES ('02912', 'Providence', 'RI', 41.826254, -71.402502, 5, 'Y', 11);
   `;
   zipsDb.exec(sql);
   zipsDb.close();
@@ -97,6 +98,7 @@ test('geoname', (t) => {
   const expected = {
     latitude: 34.74648,
     longitude: -92.28959,
+    elevation: 102,
     il: false,
     tzid: 'America/Chicago',
     name: 'Little Rock, Arkansas, USA',
@@ -121,6 +123,7 @@ test('zip', (t) => {
   const expected = {
     latitude: 41.826254,
     longitude: -71.402502,
+    elevation: 11,
     il: false,
     tzid: 'America/New_York',
     name: 'Providence, RI 02912',
@@ -132,4 +135,37 @@ test('zip', (t) => {
     zip: '02912',
   };
   t.deepEqual(Object.assign({}, loc), expected);
+});
+
+test('autoComplete', (t) => {
+  const expected = [
+    {
+      id: 293397,
+      value: 'Tel Aviv, Israel',
+      asciiname: 'Tel Aviv',
+      latitude: 32.08088,
+      longitude: 34.78057,
+      timezone: 'Asia/Jerusalem',
+      population: 432892,
+      geo: 'geoname',
+      country: 'Israel',
+      admin1: 'Tel Aviv',
+      tokens: ['Tel', 'Aviv', 'Israel'],
+    },
+    {
+      id: 11049562,
+      value: 'Kiryat Ono, Israel',
+      asciiname: 'Kiryat Ono',
+      latitude: 32.05503,
+      longitude: 34.85789,
+      timezone: 'Asia/Jerusalem',
+      population: 37791,
+      geo: 'geoname',
+      country: 'Israel',
+      admin1: 'Tel Aviv',
+      tokens: ['Kiryat', 'Ono', 'Tel', 'Aviv', 'Israel'],
+    },
+  ];
+  const result = t.context.db.autoComplete('tel');
+  t.deepEqual(result, expected);
 });

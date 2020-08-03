@@ -10,23 +10,24 @@ const GEONAME_SQL = `SELECT
   a.asciiname as admin1,
   g.latitude as latitude,
   g.longitude as longitude,
-  g.timezone as timezone
+  g.timezone as timezone,
+  g.elevation as elevation
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
 LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 WHERE g.geonameid = ?
 `;
 
-const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Elevation
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
-const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Elevation
 FROM ZIPCodes_Primary
 WHERE ZipCode LIKE ?
 LIMIT 10`;
 
 const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
-population, latitude, longitude, timezone
+population, latitude, longitude, timezone, elevation
 FROM geoname_fulltext
 WHERE longname MATCH ?
 GROUP BY geonameid
@@ -79,6 +80,9 @@ export class GeoDb {
     location.admin1 = location.state = result.State;
     location.geo = 'zip';
     location.zip = zip;
+    if (result.Elevation) {
+      location.elevation = +result.Elevation;
+    }
     this.cache.set(zip, location);
     return location;
   }
@@ -118,6 +122,9 @@ export class GeoDb {
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
     }
+    if (result.elevation) {
+      location.elevation = +result.elevation;
+    }
     this.cache.set(geonameid, location);
     return location;
   }
@@ -151,7 +158,7 @@ export class GeoDb {
         this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
       }
       return this.zipCompStmt.all(qraw + '%').map((res) => {
-        return {
+        const obj = {
           id: String(res.ZipCode),
           value: `${res.CityMixedCase}, ${res.State} ${res.ZipCode}`,
           admin1: res.State,
@@ -162,6 +169,10 @@ export class GeoDb {
           timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
           geo: 'zip',
         };
+        if (res.Elevation) {
+          obj.elevation = +res.Elevation;
+        }
+        return obj;
       });
     } else {
       if (!this.geonamesCompStmt) {
@@ -185,6 +196,9 @@ export class GeoDb {
         }
         if (admin1) {
           obj.admin1 = admin1;
+        }
+        if (res.elevation) {
+          obj.elevation = +res.elevation;
         }
         obj.tokens = Array.from(new Set(res.asciiname.split(' ').concat(admin1.split(' '), country.split(' '))));
         return obj;
