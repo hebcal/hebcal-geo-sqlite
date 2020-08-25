@@ -8,6 +8,7 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import pino from 'pino';
+import legacyCities from './legacy.json';
 
 test.before(async (t) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
@@ -84,6 +85,14 @@ test('legacy', (t) => {
     t.is(loc.getGeoId(), val);
   }
   t.is(t.context.db.lookupLegacyCity('*nonexistent*'), null);
+});
+
+test('legacy2', (t) => {
+  for (const key of legacyCities) {
+    const name = key.replace(/\+/g, ' ').replace(/'/g, '').toLowerCase();
+    const geonameid = t.context.db.legacyCities.get(name);
+    t.is(typeof geonameid, 'number', key);
+  }
 });
 
 test('geoname', (t) => {
