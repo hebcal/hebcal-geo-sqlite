@@ -21,13 +21,13 @@ WHERE g.geonameid = ?
 const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Elevation
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
-const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Elevation
+const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary
 WHERE ZipCode LIKE ?
 LIMIT 10`;
 
 const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
-population, latitude, longitude, timezone, elevation
+population, latitude, longitude, timezone
 FROM geoname_fulltext
 WHERE longname MATCH ?
 GROUP BY geonameid
@@ -169,9 +169,6 @@ export class GeoDb {
           timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
           geo: 'zip',
         };
-        if (res.Elevation) {
-          obj.elevation = +res.Elevation;
-        }
         return obj;
       });
     } else {
@@ -196,9 +193,6 @@ export class GeoDb {
         }
         if (admin1) {
           obj.admin1 = admin1;
-        }
-        if (res.elevation) {
-          obj.elevation = +res.elevation;
         }
         obj.tokens = Array.from(new Set(res.asciiname.split(' ').concat(admin1.split(' '), country.split(' '))));
         return obj;

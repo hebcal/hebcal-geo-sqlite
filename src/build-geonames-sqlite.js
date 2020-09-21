@@ -130,8 +130,7 @@ export async function buildGeonamesSqlite(
       `CREATE VIRTUAL TABLE geoname_fulltext
       USING fts3(geonameid int, longname text,
       asciiname text, admin1 text, country text,
-      population int, latitude real, longitude real, timezone text,
-      elevation int
+      population int, latitude real, longitude real, timezone text
       );
     `,
 
@@ -143,8 +142,7 @@ export async function buildGeonamesSqlite(
       `INSERT INTO geoname_fulltext
       SELECT g.geonameid, g.asciiname||', '||a.asciiname||', '||c.Country,
       g.asciiname, a.asciiname, c.Country,
-      g.population, g.latitude, g.longitude, g.timezone,
-      g.elevation
+      g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, admin1 a, country c
       WHERE g.country = c.ISO
       AND g.country||'.'||g.admin1 = a.key
@@ -153,8 +151,7 @@ export async function buildGeonamesSqlite(
       `INSERT INTO geoname_fulltext
       SELECT g.geonameid, g.asciiname||', '||c.Country,
       g.asciiname, '', c.Country,
-      g.population, g.latitude, g.longitude, g.timezone,
-      g.elevation
+      g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, country c
       WHERE g.country = c.ISO
       AND (g.admin1 = '' OR g.admin1 = '00')
@@ -163,8 +160,7 @@ export async function buildGeonamesSqlite(
       `INSERT INTO geoname_fulltext
       SELECT g.geonameid, g.name||', '||a.name||', '||c.Country,
       g.name, a.name, c.Country,
-      g.population, g.latitude, g.longitude, g.timezone,
-      g.elevation
+      g.population, g.latitude, g.longitude, g.timezone
       FROM geoname_non_ascii gna, geoname g, admin1 a, country c
       WHERE gna.geonameid = g.geonameid
       AND g.country = c.ISO
@@ -174,8 +170,7 @@ export async function buildGeonamesSqlite(
       `INSERT INTO geoname_fulltext
       SELECT g.geonameid, g.name||', ישראל',
       g.name, '', 'ישראל',
-      g.population, g.latitude, g.longitude, g.timezone,
-      g.elevation
+      g.population, g.latitude, g.longitude, g.timezone
       FROM geoname_he g, admin1 a, country c
       WHERE g.country = c.ISO
       AND g.country||'.'||g.admin1 = a.key
