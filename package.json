@@ -7,6 +7,7 @@
   ],
   "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "bin": {
     "build-geonames-sqlite": "bin/build-geonames-sqlite"
   },
