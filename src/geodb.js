@@ -48,8 +48,9 @@ export class GeoDb {
     if (this.logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
+    this.zipCache = new Map();
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
-    this.cache = new Map();
+    this.geonamesCache = new Map();
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
       this.legacyCities.set(name.replace(/'/g, '').toLowerCase(), id);
@@ -67,11 +68,12 @@ export class GeoDb {
    * @return {Location}
    */
   lookupZip(zip) {
-    const found = this.cache.get(zip);
-    if (found) return found;
+    const found = this.zipCache.get(zip);
+    if (typeof found !== 'undefined') return found;
     const result = this.zipStmt.get(zip);
     if (!result) {
       if (this.logger) this.logger.warn(`GeoDb: unknown zipcode=${zip}`);
+      this.zipCache.set(zip, null);
       return null;
     }
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
@@ -83,7 +85,7 @@ export class GeoDb {
     if (result.Elevation) {
       location.elevation = +result.Elevation;
     }
-    this.cache.set(zip, location);
+    this.zipCache.set(zip, location);
     return location;
   }
 
@@ -92,11 +94,13 @@ export class GeoDb {
    * @return {Location}
    */
   lookupGeoname(geonameid) {
-    const found = this.cache.get(geonameid);
-    if (found) return found;
+    geonameid = +geonameid;
+    const found = this.geonamesCache.get(geonameid);
+    if (typeof found !== 'undefined') return found;
     const result = this.geonamesStmt.get(geonameid);
     if (!result) {
       if (this.logger) this.logger.warn(`GeoDb: unknown geonameid=${geonameid}`);
+      this.geonamesCache.set(geonameid, null);
       return null;
     }
     const country = result.country || '';
@@ -125,7 +129,7 @@ export class GeoDb {
     if (result.elevation) {
       location.elevation = +result.elevation;
     }
-    this.cache.set(geonameid, location);
+    this.geonamesCache.set(geonameid, location);
     return location;
   }
 

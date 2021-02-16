@@ -97,6 +97,8 @@ test('legacy2', (t) => {
 
 test('geoname', (t) => {
   t.is(t.context.db.lookupGeoname(0), null);
+  t.is(t.context.db.lookupGeoname('0'), null);
+  t.is(t.context.db.lookupGeoname(1234), null);
   const loc = t.context.db.lookupGeoname(4119403);
   t.is(loc == null, false);
   t.is(typeof loc, 'object');
@@ -121,6 +123,8 @@ test('geoname', (t) => {
 });
 
 test('zip', (t) => {
+  t.is(t.context.db.lookupZip('00000'), null);
+  t.is(t.context.db.lookupZip('00001'), null);
   t.is(t.context.db.lookupZip('00000'), null);
   const loc = t.context.db.lookupZip('02912');
   t.is(loc == null, false);
