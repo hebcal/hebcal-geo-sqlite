@@ -53,7 +53,7 @@ export class GeoDb {
     this.geonamesCache = new Map();
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
-      this.legacyCities.set(name.replace(/'/g, '').toLowerCase(), id);
+      this.legacyCities.set(GeoDb.munge(name), id);
     }
   }
 
@@ -61,6 +61,18 @@ export class GeoDb {
   close() {
     this.zipsDb.close();
     this.geonamesDb.close();
+  }
+
+  /**
+   * @private
+   * @param {string} s
+   * @return {string}
+   */
+  static munge(s) {
+    return s.toLowerCase()
+        .replace(/'/g, '')
+        .replace(/ /g, '')
+        .replace(/\+/g, '');
   }
 
   /**
@@ -138,7 +150,7 @@ export class GeoDb {
    * @return {Location}
    */
   lookupLegacyCity(cityName) {
-    const name = cityName.replace(/\+/g, ' ').replace(/'/g, '').toLowerCase();
+    const name = GeoDb.munge(cityName);
     const geonameid = this.legacyCities.get(name);
     if (geonameid) {
       return this.lookupGeoname(geonameid);

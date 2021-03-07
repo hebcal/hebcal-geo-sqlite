@@ -87,9 +87,25 @@ test('legacy', (t) => {
   t.is(t.context.db.lookupLegacyCity('*nonexistent*'), null);
 });
 
+test('munge', (t) => {
+  const expected = {
+    'Tel Aviv': 'telaviv',
+    'Tel+Aviv': 'telaviv',
+    'TelAviv': 'telaviv',
+    'Tel-Aviv': 'tel-aviv',
+    'US-Las Vegas-NV': 'us-lasvegas-nv',
+    'CR-San José': 'cr-sanjosé',
+    'Ra\'anana': 'raanana',
+    'Petaẖ Tiqwa': 'petaẖtiqwa',
+  };
+  for (const [key, val] of Object.entries(expected)) {
+    t.is(GeoDb.munge(key), val, `munge(${key}) should be ${val}`);
+  }
+});
+
 test('legacy2', (t) => {
   for (const key of legacyCities) {
-    const name = key.replace(/\+/g, ' ').replace(/'/g, '').toLowerCase();
+    const name = GeoDb.munge(key);
     const geonameid = t.context.db.legacyCities.get(name);
     t.is(typeof geonameid, 'number', key);
   }
