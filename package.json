@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -9,7 +9,8 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "bin": {
-    "build-geonames-sqlite": "bin/build-geonames-sqlite"
+    "build-geonames-sqlite": "bin/build-geonames-sqlite",
+    "download-and-make-dbs": "bin/download-and-make-dbs"
   },
   "repository": {
     "type": "git",
