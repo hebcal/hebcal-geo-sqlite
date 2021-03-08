@@ -125,7 +125,6 @@ test('geoname', (t) => {
   const expected = {
     latitude: 34.74648,
     longitude: -92.28959,
-    elevation: 102,
     il: false,
     tzid: 'America/Chicago',
     name: 'Little Rock, Arkansas, USA',
@@ -152,7 +151,6 @@ test('zip', (t) => {
   const expected = {
     latitude: 41.826254,
     longitude: -71.402502,
-    elevation: 11,
     il: false,
     tzid: 'America/New_York',
     name: 'Providence, RI 02912',

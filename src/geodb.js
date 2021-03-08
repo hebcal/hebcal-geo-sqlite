@@ -10,15 +10,14 @@ const GEONAME_SQL = `SELECT
   a.asciiname as admin1,
   g.latitude as latitude,
   g.longitude as longitude,
-  g.timezone as timezone,
-  g.elevation as elevation
+  g.timezone as timezone
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
 LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 WHERE g.geonameid = ?
 `;
 
-const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Elevation
+const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
@@ -94,9 +93,6 @@ export class GeoDb {
     location.admin1 = location.state = result.State;
     location.geo = 'zip';
     location.zip = zip;
-    if (result.Elevation) {
-      location.elevation = +result.Elevation;
-    }
     this.zipCache.set(zip, location);
     return location;
   }
@@ -137,9 +133,6 @@ export class GeoDb {
     }
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
-    }
-    if (result.elevation) {
-      location.elevation = +result.elevation;
     }
     this.geonamesCache.set(geonameid, location);
     return location;

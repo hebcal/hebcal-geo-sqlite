@@ -8,6 +8,7 @@ via a Creative Commons license) and a USA ZIP code database (commercial license)
 ## Installation
 ```bash
 $ npm install @hebcal/geo-sqlite
+$ ./node_modules/.bin/download-and-make-dbs
 ```
 
 ## Synopsis
