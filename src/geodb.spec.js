@@ -196,3 +196,13 @@ test('autoComplete', (t) => {
   const result = t.context.db.autoComplete('tel');
   t.deepEqual(result, expected);
 });
+
+test('cacheZips', (t) => {
+  t.context.db.cacheZips();
+  t.pass('OK');
+});
+
+test('cacheGeonames', (t) => {
+  t.context.db.cacheGeonames();
+  t.pass('OK');
+});

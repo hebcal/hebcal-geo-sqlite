@@ -17,8 +17,26 @@ LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 WHERE g.geonameid = ?
 `;
 
+const GEONAME_ALL_SQL = `SELECT
+  g.geonameid as geonameid,
+  g.name as name,
+  g.asciiname as asciiname,
+  g.country as cc,
+  c.country as country,
+  a.asciiname as admin1,
+  g.latitude as latitude,
+  g.longitude as longitude,
+  g.timezone as timezone
+FROM geoname g
+LEFT JOIN country c on g.country = c.iso
+LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
+`;
+
 const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
+
+const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+FROM ZIPCodes_Primary`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary
@@ -42,9 +60,9 @@ export class GeoDb {
    */
   constructor(logger, zipsFilename, geonamesFilename) {
     this.logger = logger;
-    if (this.logger) logger.info(`GeoDb: opening ${zipsFilename}...`);
+    if (logger) logger.info(`GeoDb: opening ${zipsFilename}...`);
     this.zipsDb = new Database(zipsFilename, {fileMustExist: true});
-    if (this.logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
+    if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     this.zipCache = new Map();
@@ -87,13 +105,25 @@ export class GeoDb {
       this.zipCache.set(zip, null);
       return null;
     }
+    result.ZipCode = String(zip);
+    const location = this.makeZipLocation(result);
+    this.zipCache.set(zip, location);
+    return location;
+  }
+
+  /**
+   * @private
+   * @param {any} result
+   * @return {Location}
+   */
+  makeZipLocation(result) {
+    const zip = result.ZipCode;
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr, 'US', zip);
     location.admin1 = location.state = result.State;
     location.geo = 'zip';
     location.zip = zip;
-    this.zipCache.set(zip, location);
     return location;
   }
 
@@ -111,6 +141,18 @@ export class GeoDb {
       this.geonamesCache.set(geonameid, null);
       return null;
     }
+    const location = this.makeGeonameLocation(geonameid, result);
+    this.geonamesCache.set(geonameid, location);
+    return location;
+  }
+
+  /**
+   * @private
+   * @param {number} geonameid
+   * @param {any} result
+   * @return {Location}
+   */
+  makeGeonameLocation(geonameid, result) {
     const country = result.country || '';
     const admin1 = result.admin1 || '';
     const cityDescr = Location.geonameCityDescr(result.name, admin1, country);
@@ -134,7 +176,6 @@ export class GeoDb {
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
     }
-    this.geonamesCache.set(geonameid, location);
     return location;
   }
 
@@ -207,5 +248,33 @@ export class GeoDb {
         return obj;
       });
     }
+  }
+
+  /** Reads entire ZIP database and caches in-memory */
+  cacheZips() {
+    const start = Date.now();
+    if (this.logger) this.logger.info(`GeoDb: caching all ZIP codes...`);
+    const stmt = this.zipsDb.prepare(ZIPCODE_ALL_SQL);
+    const rows = stmt.all();
+    for (const row of rows) {
+      const location = this.makeZipLocation(row);
+      this.zipCache.set(row.ZipCode, location);
+    }
+    const end = Date.now();
+    if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} ZIP codes in ${end - start}ms`);
+  }
+
+  /** Reads entire geonames database and caches in-memory */
+  cacheGeonames() {
+    const start = Date.now();
+    if (this.logger) this.logger.info(`GeoDb: caching all geonames...`);
+    const stmt = this.geonamesDb.prepare(GEONAME_ALL_SQL);
+    const rows = stmt.all();
+    for (const row of rows) {
+      const location = this.makeGeonameLocation(row.geonameid, row);
+      this.geonamesCache.set(row.geonameid, location);
+    }
+    const end = Date.now();
+    if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} geonames in ${end - start}ms`);
   }
 }
