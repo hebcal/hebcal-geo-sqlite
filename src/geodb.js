@@ -253,7 +253,6 @@ export class GeoDb {
   /** Reads entire ZIP database and caches in-memory */
   cacheZips() {
     const start = Date.now();
-    if (this.logger) this.logger.info(`GeoDb: caching all ZIP codes...`);
     const stmt = this.zipsDb.prepare(ZIPCODE_ALL_SQL);
     const rows = stmt.all();
     for (const row of rows) {
@@ -267,7 +266,6 @@ export class GeoDb {
   /** Reads entire geonames database and caches in-memory */
   cacheGeonames() {
     const start = Date.now();
-    if (this.logger) this.logger.info(`GeoDb: caching all geonames...`);
     const stmt = this.geonamesDb.prepare(GEONAME_ALL_SQL);
     const rows = stmt.all();
     for (const row of rows) {
