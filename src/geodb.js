@@ -225,6 +225,7 @@ export class GeoDb {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
+      qraw = qraw.replace(/\"/g, '""');
       return this.geonamesCompStmt.all(`"${qraw}*"`).map((res) => {
         const country = res.country || '';
         const admin1 = res.admin1 || '';
