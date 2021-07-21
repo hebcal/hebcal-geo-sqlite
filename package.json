@@ -28,10 +28,10 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/core": "^3.13.0",
-    "better-sqlite3": "^7.1.2",
-    "pino": "^6.11.2",
-    "pino-pretty": "^4.7.1"
+    "@hebcal/core": "^3.21.1",
+    "better-sqlite3": "^7.4.3",
+    "pino": "^7.0.0-rc.1",
+    "pino-pretty": "^5.1.2"
   },
   "scripts": {
     "build": "rollup -c",
@@ -59,20 +59,20 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@ava/babel": "^1.0.1",
-    "@babel/core": "^7.13.14",
+    "@ava/babel": "^2.0.0",
+    "@babel/core": "^7.14.8",
     "@babel/polyfill": "^7.12.1",
-    "@babel/preset-env": "^7.13.12",
-    "@babel/register": "^7.13.14",
+    "@babel/preset-env": "^7.14.8",
+    "@babel/register": "^7.14.5",
     "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-commonjs": "^18.0.0",
+    "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-node-resolve": "^13.0.2",
     "ava": "^3.15.0",
-    "eslint": "^7.23.0",
+    "eslint": "^7.31.0",
     "eslint-config-google": "^0.14.0",
-    "jsdoc": "^3.6.6",
-    "jsdoc-to-markdown": "^6.0.1",
-    "rollup": "^2.44.0"
+    "jsdoc": "^3.6.7",
+    "jsdoc-to-markdown": "^7.0.1",
+    "rollup": "^2.53.3"
   }
 }
