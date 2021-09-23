@@ -4,11 +4,6 @@ import events from 'events';
 import fs from 'fs';
 import readline from 'readline';
 
-const logger = pino({
-  // level: argv.quiet ? 'warn' : 'info',
-  prettyPrint: {translateTime: true, ignore: 'pid,hostname'},
-});
-
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
  * @param {string} dbFilename
@@ -26,10 +21,14 @@ export async function buildGeonamesSqlite(
     admin1CodesASCIItxt,
     ILtxt,
 ) {
+  const logger = pino({
+    // level: argv.quiet ? 'warn' : 'info',
+    prettyPrint: {translateTime: true, ignore: 'pid,hostname'},
+  });
   const db = new Database(dbFilename);
   db.pragma('journal_mode = MEMORY');
 
-  doSql(db,
+  doSql(logger, db,
       `DROP TABLE IF EXISTS country`,
 
       `CREATE TABLE country (
@@ -54,9 +53,9 @@ export async function buildGeonamesSqlite(
       EquivalentFipsCode TEXT NOT NULL
     );`,
   );
-  await doFile(db, countryInfotxt, 'country', 19);
+  await doFile(logger, db, countryInfotxt, 'country', 19);
 
-  doSql(db,
+  doSql(logger, db,
       `DROP TABLE IF EXISTS geoname`,
 
       `CREATE TABLE geoname (
@@ -81,13 +80,13 @@ export async function buildGeonamesSqlite(
       moddate date);`,
   );
 
-  await doFile(db, cities5000txt, 'geoname', 19);
-  await doFile(db, citiesPatch, 'geoname', 19);
-  await doFile(db, ILtxt, 'geoname', 19, (a) => {
+  await doFile(logger, db, cities5000txt, 'geoname', 19);
+  await doFile(logger, db, citiesPatch, 'geoname', 19);
+  await doFile(logger, db, ILtxt, 'geoname', 19, (a) => {
     return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
   });
 
-  doSql(db,
+  doSql(logger, db,
       `DROP TABLE IF EXISTS admin1`,
 
       `CREATE TABLE admin1 (
@@ -98,10 +97,10 @@ export async function buildGeonamesSqlite(
       );`,
   );
 
-  await doFile(db, admin1CodesASCIItxt, 'admin1', 4);
+  await doFile(logger, db, admin1CodesASCIItxt, 'admin1', 4);
 
   // fix inconsistencies with the USA capitol
-  doSql(db,
+  doSql(logger, db,
       `UPDATE geoname
       SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
       WHERE geonameid = 4140963;`,
@@ -111,20 +110,20 @@ export async function buildGeonamesSqlite(
       WHERE key = 'US.DC';`,
   );
 
-  doSql(db,
+  doSql(logger, db,
       `DROP TABLE IF EXISTS geoname_he`,
       `CREATE TABLE geoname_he AS SELECT * FROM geoname LIMIT 0`,
   );
 
-  await doFile(db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
+  await doFile(logger, db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
 
-  doSql(db,
+  doSql(logger, db,
       `update admin1 set name='',asciiname='' where key like 'PS.%';`,
       `update country set country = '' where iso = 'PS';`,
       `delete from geoname where geonameid = 7303419;`,
   );
 
-  doSql(db,
+  doSql(logger, db,
       `DROP TABLE IF EXISTS geoname_fulltext`,
 
       `CREATE VIRTUAL TABLE geoname_fulltext
@@ -201,10 +200,11 @@ function filterPlacesHebrew(a) {
 }
 
 /**
+ * @param {pino.Logger} logger
  * @param {Database} db
  * @param  {...string} sqls
  */
-function doSql(db, ...sqls) {
+function doSql(logger, db, ...sqls) {
   for (let i = 0; i < sqls.length; i++) {
     logger.info(sqls[i]);
     db.exec(sqls[i]);
@@ -212,13 +212,14 @@ function doSql(db, ...sqls) {
 }
 
 /**
+ * @param {pino.Logger} logger
  * @param {Database} db
  * @param {string} infile
  * @param {string} tableName
  * @param {number} expectedFields
  * @param {Function} callback
  */
-async function doFile(db, infile, tableName, expectedFields, callback) {
+async function doFile(logger, db, infile, tableName, expectedFields, callback) {
   logger.info(`${infile} => ${tableName}`);
   db.exec('BEGIN');
   let sql = `INSERT OR IGNORE INTO ${tableName} VALUES (?`;
