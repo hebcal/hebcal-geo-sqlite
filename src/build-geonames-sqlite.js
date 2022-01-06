@@ -3,6 +3,7 @@ import pino from 'pino';
 import events from 'events';
 import fs from 'fs';
 import readline from 'readline';
+import {Locale} from '@hebcal/core';
 
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
@@ -192,7 +193,7 @@ function filterPlacesHebrew(a) {
   for (const name of alternatenames) {
     const firstchar = name[0];
     if (firstchar >= '\u05D0' && firstchar <= '\u05EA') {
-      a[1] = name; // replace 'name' field with Hebrew
+      a[1] = Locale.hebrewStripNikkud(name); // replace 'name' field with Hebrew
       return true;
     }
   }
