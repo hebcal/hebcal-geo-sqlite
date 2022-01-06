@@ -44,13 +44,74 @@ WHERE ZipCode LIKE ?
 ORDER BY Population DESC
 LIMIT 10`;
 
+const ZIP_FULLTEXT_COMPLETE_SQL =
+`SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
+FROM ZIPCodes_CityFullText
+WHERE CityMixedCase MATCH ?
+ORDER BY Population DESC
+LIMIT 15`;
+
 const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
 population, latitude, longitude, timezone
 FROM geoname_fulltext
 WHERE longname MATCH ?
 GROUP BY geonameid
 ORDER BY population DESC
-LIMIT 10`;
+LIMIT 15`;
+
+const stateNames = {
+  'AK': 'Alaska',
+  'AL': 'Alabama',
+  'AR': 'Arkansas',
+  'AZ': 'Arizona',
+  'CA': 'California',
+  'CO': 'Colorado',
+  'CT': 'Connecticut',
+  'DC': 'Washington, D.C.',
+  'DE': 'Delaware',
+  'FL': 'Florida',
+  'GA': 'Georgia',
+  'HI': 'Hawaii',
+  'IA': 'Iowa',
+  'ID': 'Idaho',
+  'IL': 'Illinois',
+  'IN': 'Indiana',
+  'KS': 'Kansas',
+  'KY': 'Kentucky',
+  'LA': 'Louisiana',
+  'MA': 'Massachusetts',
+  'MD': 'Maryland',
+  'ME': 'Maine',
+  'MI': 'Michigan',
+  'MN': 'Minnesota',
+  'MO': 'Missouri',
+  'MS': 'Mississippi',
+  'MT': 'Montana',
+  'NC': 'North Carolina',
+  'ND': 'North Dakota',
+  'NE': 'Nebraska',
+  'NH': 'New Hampshire',
+  'NJ': 'New Jersey',
+  'NM': 'New Mexico',
+  'NV': 'Nevada',
+  'NY': 'New York',
+  'OH': 'Ohio',
+  'OK': 'Oklahoma',
+  'OR': 'Oregon',
+  'PA': 'Pennsylvania',
+  'RI': 'Rhode Island',
+  'SC': 'South Carolina',
+  'SD': 'South Dakota',
+  'TN': 'Tennessee',
+  'TX': 'Texas',
+  'UT': 'Utah',
+  'VA': 'Virginia',
+  'VT': 'Vermont',
+  'WA': 'Washington',
+  'WI': 'Wisconsin',
+  'WV': 'West Virginia',
+  'WY': 'Wyoming',
+};
 
 /** Wrapper around sqlite databases */
 export class GeoDb {
@@ -196,6 +257,27 @@ export class GeoDb {
   }
 
   /**
+   * @private
+   * @param {any[]} res
+   * @return {Object[]}
+   */
+  static zipResultToObj(res) {
+    const obj = {
+      id: String(res.ZipCode),
+      value: `${res.CityMixedCase}, ${res.State} ${res.ZipCode}`,
+      admin1: res.State,
+      asciiname: res.CityMixedCase,
+      country: 'United States',
+      latitude: res.Latitude,
+      longitude: res.Longitude,
+      timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
+      population: res.Population,
+      geo: 'zip',
+    };
+    return obj;
+  }
+
+  /**
    * Generates autocomplete results based on a query string
    * @param {string} qraw
    * @return {Object[]}
@@ -208,33 +290,22 @@ export class GeoDb {
       if (!this.zipCompStmt) {
         this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
       }
-      return this.zipCompStmt.all(qraw + '%').map((res) => {
-        const obj = {
-          id: String(res.ZipCode),
-          value: `${res.CityMixedCase}, ${res.State} ${res.ZipCode}`,
-          admin1: res.State,
-          asciiname: res.CityMixedCase,
-          country: 'United States',
-          latitude: res.Latitude,
-          longitude: res.Longitude,
-          timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
-          population: res.Population,
-          geo: 'zip',
-        };
-        return obj;
-      });
+      return this.zipCompStmt.all(qraw + '%').map(GeoDb.zipResultToObj);
     } else {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
       qraw = qraw.replace(/\"/g, '""');
-      return this.geonamesCompStmt.all(`"${qraw}*"`).map((res) => {
+      const geoRows = this.geonamesCompStmt.all(`"${qraw}*"`);
+      const geoMatches = geoRows.map((res) => {
         const country = res.country || '';
         const admin1 = res.admin1 || '';
         const obj = {
           id: res.geonameid,
           value: Location.geonameCityDescr(res.asciiname, admin1, country),
           asciiname: res.asciiname,
+          admin1,
+          country,
           latitude: res.latitude,
           longitude: res.longitude,
           timezone: res.timezone,
@@ -250,6 +321,26 @@ export class GeoDb {
         obj.tokens = Array.from(new Set(res.asciiname.split(' ').concat(admin1.split(' '), country.split(' '))));
         return obj;
       });
+      if (!this.zipFulltextCompStmt) {
+        this.zipFulltextCompStmt = this.zipsDb.prepare(ZIP_FULLTEXT_COMPLETE_SQL);
+      }
+      const zipRows = this.zipFulltextCompStmt.all(`"${qraw}*"`);
+      const zipMatches = zipRows.map(GeoDb.zipResultToObj);
+      const map = new Map();
+      for (const obj of zipMatches) {
+        const key = [obj.asciiname, stateNames[obj.admin1], obj.country].join('|');
+        if (!map.has(key)) {
+          map.set(key, obj);
+        }
+      }
+      // GeoNames takes priority over USA ZIP code matches
+      for (const obj of geoMatches) {
+        const key = [obj.asciiname, obj.admin1, obj.country].join('|');
+        map.set(key, obj);
+      }
+      const values = Array.from(map.values());
+      values.sort((a, b) => b.population - a.population);
+      return values.slice(0, 10);
     }
   }
 

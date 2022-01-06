@@ -8,3 +8,6 @@ CREATE TABLE ZIPCodes_Primary (
   DayLightSaving char(1) NULL,
   Population int NULL
 );
+
+CREATE VIRTUAL TABLE ZIPCodes_CityFullText
+USING fts3(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
