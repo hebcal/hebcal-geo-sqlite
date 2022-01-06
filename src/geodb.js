@@ -41,6 +41,7 @@ FROM ZIPCodes_Primary`;
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary
 WHERE ZipCode LIKE ?
+ORDER BY Population DESC
 LIMIT 10`;
 
 const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
@@ -217,6 +218,7 @@ export class GeoDb {
           latitude: res.Latitude,
           longitude: res.Longitude,
           timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
+          population: res.Population,
           geo: 'zip',
         };
         return obj;

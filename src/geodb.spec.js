@@ -22,7 +22,7 @@ test.before(async (t) => {
     Longitude decimal(12, 6),
     TimeZone char(2) NULL,
     DayLightSaving char(1) NULL,
-    Elevation int NULL
+    Population int NULL
     );
 
     INSERT INTO ZIPCodes_Primary VALUES ('02912', 'Providence', 'RI', 41.826254, -71.402502, 5, 'Y', 11);

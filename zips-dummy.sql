@@ -6,5 +6,5 @@ CREATE TABLE ZIPCodes_Primary (
   Longitude decimal(12, 6),
   TimeZone char(2) NULL,
   DayLightSaving char(1) NULL,
-  Elevation int NULL
+  Population int NULL
 );
