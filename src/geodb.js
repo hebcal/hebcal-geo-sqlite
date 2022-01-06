@@ -38,7 +38,7 @@ FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
 FROM ZIPCodes_Primary`;
 
-const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary
 WHERE ZipCode LIKE ?
 ORDER BY Population DESC
