@@ -283,14 +283,17 @@ export class GeoDb {
    * @return {Object[]}
    */
   autoComplete(qraw) {
+    qraw = qraw.trim();
     if (qraw.length === 0) {
       return [];
     }
-    if (qraw.charCodeAt(0) >= 48 && qraw.charCodeAt(0) <= 57) {
+    const firstCharCode = qraw.charCodeAt(0);
+    if (firstCharCode >= 48 && firstCharCode <= 57) {
       if (!this.zipCompStmt) {
         this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
       }
-      return this.zipCompStmt.all(qraw + '%').map(GeoDb.zipResultToObj);
+      const zip5 = qraw.substring(0, 5);
+      return this.zipCompStmt.all(zip5 + '%').map(GeoDb.zipResultToObj);
     } else {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);

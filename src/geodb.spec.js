@@ -258,6 +258,25 @@ test('autoCompleteZip', (t) => {
   t.deepEqual(result, expected);
 });
 
+test('autoCompleteZipPlus4', (t) => {
+  const expected = [
+    {
+      id: '62704',
+      value: 'Springfield, IL 62704',
+      admin1: 'IL',
+      asciiname: 'Springfield',
+      country: 'United States',
+      latitude: 39.771921,
+      longitude: -89.686047,
+      timezone: 'America/Chicago',
+      population: 39831,
+      geo: 'zip',
+    },
+  ];
+  const result = t.context.db.autoComplete('62704-1234');
+  t.deepEqual(result, expected);
+});
+
 test('autoCompleteZipMerge', (t) => {
   const expected = [
     {
