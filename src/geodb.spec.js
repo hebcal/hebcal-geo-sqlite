@@ -370,3 +370,9 @@ test('cacheGeonames', (t) => {
   t.context.db.cacheGeonames();
   t.pass('OK');
 });
+
+test('countryNames', (t) => {
+  const m = t.context.db.countryNames;
+  t.is(typeof m, 'object');
+  t.is(m.get('ZA'), 'South Africa');
+});

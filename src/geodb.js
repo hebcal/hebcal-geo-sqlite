@@ -127,13 +127,24 @@ export class GeoDb {
     if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
+    /** @type {Map<string, Location>} */
     this.zipCache = new Map();
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
+    /** @type {Map<number, Location>} */
     this.geonamesCache = new Map();
+    /** @type {Map<string, Location>} */
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
       this.legacyCities.set(GeoDb.munge(name), id);
     }
+    const stmt = this.geonamesDb.prepare(`SELECT ISO, Country FROM country WHERE Country <> ''`);
+    const rows = stmt.all();
+    const map = new Map();
+    for (const row of rows) {
+      map.set(row.ISO, row.Country);
+    }
+    /** @type {Map<string, string>} */
+    this.countryNames = map;
   }
 
   /** Closes database handles */
@@ -159,17 +170,18 @@ export class GeoDb {
    * @return {Location}
    */
   lookupZip(zip) {
-    const found = this.zipCache.get(zip);
+    const zip5 = zip.trim().substring(0, 5);
+    const found = this.zipCache.get(zip5);
     if (typeof found !== 'undefined') return found;
-    const result = this.zipStmt.get(zip);
+    const result = this.zipStmt.get(zip5);
     if (!result) {
-      if (this.logger) this.logger.warn(`GeoDb: unknown zipcode=${zip}`);
-      this.zipCache.set(zip, null);
+      if (this.logger) this.logger.warn(`GeoDb: unknown zipcode=${zip5}`);
+      this.zipCache.set(zip5, null);
       return null;
     }
-    result.ZipCode = String(zip);
+    result.ZipCode = String(zip5);
     const location = this.makeZipLocation(result);
-    this.zipCache.set(zip, location);
+    this.zipCache.set(zip5, location);
     return location;
   }
 
