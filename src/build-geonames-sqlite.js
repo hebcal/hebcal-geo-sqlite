@@ -24,7 +24,10 @@ export async function buildGeonamesSqlite(
 ) {
   const logger = pino({
     // level: argv.quiet ? 'warn' : 'info',
-    prettyPrint: {translateTime: true, ignore: 'pid,hostname'},
+    transport: {
+      target: 'pino-pretty',
+      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
+    },
   });
   const db = new Database(dbFilename);
   db.pragma('journal_mode = MEMORY');
