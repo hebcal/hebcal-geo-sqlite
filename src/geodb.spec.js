@@ -90,7 +90,10 @@ IL.01\tSouthern District\tSouthern District\t294952
   const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
   await buildGeonamesSqlite(testDbPath, ciPath, c5path, 'cities-patch.txt', a1path, '/dev/null');
   const logger = pino({
-    prettyPrint: {translateTime: true, ignore: 'pid,hostname'},
+    transport: {
+      target: 'pino-pretty',
+      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
+    },
   });
   t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
 });
