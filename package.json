@@ -30,7 +30,7 @@
   "dependencies": {
     "@hebcal/core": "^3.33.2",
     "better-sqlite3": "^7.5.0",
-    "pino": "^7.6.4",
+    "pino": "^7.8.0",
     "pino-pretty": "^7.5.1"
   },
   "scripts": {
@@ -45,34 +45,25 @@
     ],
     "require": [
       "@babel/register",
-      "@babel/polyfill"
+      "regenerator-runtime/runtime"
     ],
-    "babel": {
-      "testOptions": {
-        "presets": [
-          "@babel/env"
-        ]
-      }
-    },
     "inherit": true,
     "verbose": true
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@ava/babel": "^2.0.0",
-    "@babel/core": "^7.16.12",
-    "@babel/polyfill": "^7.12.1",
+    "@babel/core": "^7.17.3",
     "@babel/preset-env": "^7.16.11",
-    "@babel/register": "^7.16.9",
+    "@babel/register": "^7.17.0",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
-    "ava": "^3.15.0",
-    "eslint": "^8.7.0",
+    "ava": "^4.0.1",
+    "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^3.6.10",
-    "jsdoc-to-markdown": "^7.1.0",
-    "rollup": "^2.66.1"
+    "jsdoc-to-markdown": "^7.1.1",
+    "rollup": "^2.67.2"
   }
 }
