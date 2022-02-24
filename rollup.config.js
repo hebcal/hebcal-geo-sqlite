@@ -22,6 +22,6 @@ export default [
       nodeResolve(),
       commonjs(),
     ],
-    external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline', 'events'],
+    external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline', 'events', '@hebcal/cities'],
   },
 ];

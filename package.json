@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -28,6 +28,7 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
+    "@hebcal/cities": "^3.1.1",
     "@hebcal/core": "^3.33.3",
     "better-sqlite3": "^7.5.0",
     "pino": "^7.8.0",
@@ -55,8 +56,8 @@
     "@babel/core": "^7.17.5",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.0",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "ava": "^4.0.1",

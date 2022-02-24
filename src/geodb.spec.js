@@ -379,3 +379,20 @@ test('countryNames', (t) => {
   t.is(typeof m, 'object');
   t.is(m.get('ZA'), 'South Africa');
 });
+
+test('legacy3', (t) => {
+  // fetch from @hebacal/cities because no trailing "h"
+  const loc = t.context.db.lookupLegacyCity('IL-Petah Tikva');
+  t.is(loc instanceof Location, true);
+  const expected = {
+    latitude: 32.08707,
+    longitude: 34.88747,
+    il: true,
+    tzid: 'Asia/Jerusalem',
+    name: 'Petah Tiqwa',
+    cc: 'IL',
+    geoid: 1007988,
+  };
+  const plainObj = JSON.parse(JSON.stringify(loc));
+  t.deepEqual(plainObj, expected);
+});

@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import {Location} from '@hebcal/core';
+import '@hebcal/cities';
 import city2geonameid from './city2geonameid.json';
 
 const GEONAME_SQL = `SELECT
@@ -263,6 +264,10 @@ export class GeoDb {
     if (geonameid) {
       return this.lookupGeoname(geonameid);
     } else {
+      const location = Location.lookup(cityName);
+      if (location) {
+        return location;
+      }
       if (this.logger) this.logger.warn(`GeoDb: unknown city=${cityName}`);
       return null;
     }
