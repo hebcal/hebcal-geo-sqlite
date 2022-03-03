@@ -125,15 +125,33 @@ export async function buildGeonamesSqlite(opts) {
     periodTo NULL
     );`,
   );
-  await doFile(logger, db, ILalternate, 'alternatenames', 10,
-      (a) => a[2] === 'he' || a[2] === 'en');
 
+  await doFile(logger, db, ILalternate, 'alternatenames', 10, (a) => {
+    if (a[2] === 'he' || a[2] === 'en') {
+      if (a[2] === 'he') {
+        a[3] = a[3].replace(/‘/g, '׳');
+        a[3] = a[3].replace(/’/g, '׳');
+        a[3] = a[3].replace(/\'/g, '׳');
+        a[3] = Locale.hebrewStripNikkud(a[3]);
+      } else {
+        a[3] = a[3].replace(/‘/g, '\'');
+        a[3] = a[3].replace(/’/g, '\'');
+      }
+      return true;
+    }
+    return false;
+  });
+
+  // remove duplicates from alternatenames
   doSql(logger, db,
-      `DROP TABLE IF EXISTS geoname_he`,
-      `CREATE TABLE geoname_he AS SELECT * FROM geoname LIMIT 0`,
-  );
+      `DROP TABLE IF EXISTS altnames`,
 
-  await doFile(logger, db, ILtxt, 'geoname_he', 19, filterPlacesHebrew);
+      `CREATE TABLE altnames
+    AS SELECT geonameid, isolanguage, name
+    FROM alternatenames
+    GROUP BY 1, 2, 3
+    `,
+  );
 
   doSql(logger, db,
       `update admin1 set name='',asciiname='' where key like 'PS.%';`,
@@ -185,36 +203,18 @@ export async function buildGeonamesSqlite(opts) {
       `,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, g.name||', ישראל',
-      g.name, '', 'ישראל',
+      SELECT g.geonameid, alt.name||', ישראל',
+      alt.name, '', 'ישראל',
       g.population, g.latitude, g.longitude, g.timezone
-      FROM geoname_he g, admin1 a, country c
-      WHERE g.country = c.ISO
-      AND g.country||'.'||g.admin1 = a.key
+      FROM geoname g, country c, altnames alt
+      WHERE g.country = 'IL'
+      AND alt.isolanguage = 'he'
+      AND g.geonameid = alt.geonameid
       `,
   );
 
   db.close();
   return Promise.resolve(true);
-}
-
-/**
- * @param {string[]} a
- * @return {boolean}
- */
-function filterPlacesHebrew(a) {
-  if (a[6] != 'P' || (a[7] != 'PPL' && a[7] != 'STLMT')) {
-    return false;
-  }
-  const alternatenames = a[3].split(',');
-  for (const name of alternatenames) {
-    const firstchar = name[0];
-    if (firstchar >= '\u05D0' && firstchar <= '\u05EA') {
-      a[1] = Locale.hebrewStripNikkud(name); // replace 'name' field with Hebrew
-      return true;
-    }
-  }
-  return false;
 }
 
 /**
