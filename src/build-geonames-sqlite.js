@@ -79,9 +79,14 @@ export async function buildGeonamesSqlite(opts) {
       moddate date);`,
   );
 
-  await doFile(logger, db, cities5000txt, 'geoname', 19);
-  await doFile(logger, db, citiesPatch, 'geoname', 19);
+  const truncateAlternateNames = (a) => {
+    a[3] = '';
+    return true;
+  };
+  await doFile(logger, db, cities5000txt, 'geoname', 19, truncateAlternateNames);
+  await doFile(logger, db, citiesPatch, 'geoname', 19, truncateAlternateNames);
   await doFile(logger, db, ILtxt, 'geoname', 19, (a) => {
+    a[3] = '';
     return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
   });
 
