@@ -87,8 +87,56 @@ IL.01\tSouthern District\tSouthern District\t294952
 4951788\tSpringfield\tSpringfield\tAgawam,Agawome,Campifons,Nayasset,SFY,Springfield,Springfield City,Springfijld,Springfild,Springfilda,Springfildas,Springfīlda,Spryngfild,aspryngfyld  masachwst,sbrynghfyld,seupeulingpildeu,si pu lin fei er de,spryngpyld,supuringufirudo,Спрингфийлд,Спрингфилд,Спрингфілд,Спрынгфілд,ספרינגפילד,اسپرینگفیلد، ماساچوست,سبرينغفيلد,سپرنگفیلڈ، میساچوسٹس,スプリングフィールド,斯普林菲尔德,스프링필드\t42.10148\t-72.58981\tP\tPPL\tUS\t\tMA\t013\t67000\t\t154341\t25\t49\tAmerica/New_York\t2017-05-23
 `;
   fs.writeFileSync(c5path, c5str);
+  const altNamePath = path.join(tmpDir, 'test-IL-alt.txt');
+  const altNameStr =
+`1605940\t294801\tde\tHaifa\t\t\t\t\t\t
+1605941\t294801\ten\tHaifa\t1\t\t\t\t\t
+1605942\t294801\tes\tHaifa\t\t\t\t\t\t
+1605943\t294801\tar\tحيفا\t1\t\t\t\t\t
+1605944\t294801\tbg\tХайфа\t\t\t\t\t\t
+1605945\t294801\tca\tHaifa\t\t\t\t\t\t
+1605946\t294801\tda\tHaifa\t\t\t\t\t\t
+1605947\t294801\teo\tHajfo\t\t\t\t\t\t
+1605948\t294801\tfr\tHaïfa\t\t\t\t\t\t
+1605949\t294801\the\tחיפה\t1\t\t\t\t\t
+1605950\t294801\tid\tHaifa\t\t\t\t\t\t
+1605951\t294801\tit\tHaifa\t\t\t\t\t\t
+1605952\t294801\tja\tハイファ\t\t\t\t\t\t
+1605953\t294801\tlb\tHaifa\t\t\t\t\t\t
+1605954\t294801\tnl\tHaifa\t\t\t\t\t\t
+1620514\t293397\ten\tTel Aviv\t1\t\t\t\t\t
+1620515\t293397\tes\tTel Aviv\t\t\t\t\t\t
+1620516\t293397\tar\tتل أبيب\t1\t\t\t\t\t
+1620517\t293397\tbg\tТел Авив\t\t\t\t\t\t
+1620518\t293397\tca\tTel Aviv\t\t\t\t\t\t
+1620519\t293397\tcs\tTel Aviv\t\t\t\t\t\t
+1620520\t293397\tda\tTel Aviv\t\t\t\t\t\t
+1620521\t293397\teo\tTel-Avivo\t\t\t\t\t\t
+1620522\t293397\tfa\tتل‌آویو\t\t\t\t\t\t
+1620523\t293397\tfi\tTel Aviv\t\t\t\t\t\t
+1620525\t293397\the\tתל אביב-יפו\t\t\t\t\t\t
+1620526\t293397\thr\tTel Aviv\t\t\t\t\t\t
+205898\t293807\ten\tRa‘anana\t\t\t\t\t\t
+205899\t293807\ten\tRa‘ananah\t\t\t\t\t\t
+4472882\t293807\ten\tRa‘ananna\t\t\t\t\t\t
+7954091\t293807\the\tרעננה\t1\t\t\t\t\t
+8289411\t293807\tlink\thttps://en.wikipedia.org/wiki/Ra%27anana\t\t\t\t\t\t
+8289412\t293807\ten\tRaanana\t1\t\t\t\t\t
+15350968\t293807\twkdt\tQ309164\t\t\t\t\t\t
+16933760\t293807\tunlc\tILRAA\t\t\t\t\t\t
+`;
+  fs.writeFileSync(altNamePath, altNameStr);
   const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
-  await buildGeonamesSqlite(testDbPath, ciPath, c5path, 'cities-patch.txt', a1path, '/dev/null');
+  const filenames = {
+    dbFilename: testDbPath,
+    countryInfotxt: ciPath,
+    cities5000txt: c5path,
+    citiesPatch: 'cities-patch.txt',
+    admin1CodesASCIItxt: a1path,
+    ILtxt: '/dev/null',
+    ILalternate: altNamePath,
+  };
+  await buildGeonamesSqlite(filenames);
   const logger = pino({
     transport: {
       target: 'pino-pretty',

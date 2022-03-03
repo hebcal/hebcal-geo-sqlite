@@ -7,21 +7,16 @@ import {Locale} from '@hebcal/core';
 
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
- * @param {string} dbFilename
- * @param {string} countryInfotxt
- * @param {string} cities5000txt
- * @param {string} citiesPatch
- * @param {string} admin1CodesASCIItxt
- * @param {string} ILtxt
+ * @param {any} opts
  */
-export async function buildGeonamesSqlite(
-    dbFilename,
-    countryInfotxt,
-    cities5000txt,
-    citiesPatch,
-    admin1CodesASCIItxt,
-    ILtxt,
-) {
+export async function buildGeonamesSqlite(opts) {
+  const dbFilename = opts.dbFilename;
+  const countryInfotxt = opts.countryInfotxt;
+  const cities5000txt = opts.cities5000txt;
+  const citiesPatch = opts.citiesPatch;
+  const admin1CodesASCIItxt = opts.admin1CodesASCIItxt;
+  const ILtxt = opts.ILtxt;
+  const ILalternate = opts.ILalternate;
   const logger = pino({
     // level: argv.quiet ? 'warn' : 'info',
     transport: {
@@ -113,6 +108,25 @@ export async function buildGeonamesSqlite(
       SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
       WHERE key = 'US.DC';`,
   );
+
+  doSql(logger, db,
+      `DROP TABLE IF EXISTS alternatenames`,
+
+      `CREATE TABLE alternatenames (
+    id int PRIMARY KEY,
+    geonameid int NOT NULL,
+    isolanguage varchar(7),
+    name varchar(400),
+    isPreferredName tinyint,
+    isShortName tinyint,
+    isColloquial tinyint,
+    isHistoric tinyint,
+    periodFrom NULL,
+    periodTo NULL
+    );`,
+  );
+  await doFile(logger, db, ILalternate, 'alternatenames', 10,
+      (a) => a[2] === 'he' || a[2] === 'en');
 
   doSql(logger, db,
       `DROP TABLE IF EXISTS geoname_he`,

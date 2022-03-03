@@ -2,21 +2,22 @@
 
 const {buildGeonamesSqlite} = require('@hebcal/geo-sqlite');
 
-if (process.argv.length != 8) {
-  const infiles = 'countryInfo.txt cities5000.txt cities-patch.txt admin1CodesASCII.txt IL.txt';
+const argv = process.argv.slice(2);
+if (argv.length !== 7) {
+  const infiles = 'countryInfo.txt cities5000.txt cities-patch.txt admin1CodesASCII.txt IL.txt IL-alternatenames.txt';
   console.error(`Usage: build-geonames-sqlite geonames.sqlite3 ${infiles}`);
   process.exit(1);
 }
 
-const [dbFilename, countryInfo, cities, citiesPatch, admin1CodesASCII, il] = process.argv.slice(2);
-
-buildGeonamesSqlite(
-    dbFilename,
-    countryInfo,
-    cities,
-    citiesPatch,
-    admin1CodesASCII,
-    il,
-).then(() => {
+const filenames = {
+  dbFilename: argv[0],
+  countryInfotxt: argv[1],
+  cities5000txt: argv[2],
+  citiesPatch: argv[3],
+  admin1CodesASCIItxt: argv[4],
+  ILtxt: argv[5],
+  ILalternate: argv[6],
+};
+buildGeonamesSqlite(filenames).then(() => {
   console.log('Done!');
 });
