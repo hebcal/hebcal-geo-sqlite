@@ -9,9 +9,13 @@ curl -o $TMPDIR/countryInfo.txt http://download.geonames.org/export/dump/country
 curl -o $TMPDIR/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
 curl -o $TMPDIR/cities5000.zip http://download.geonames.org/export/dump/cities5000.zip
 curl -o $TMPDIR/IL.zip http://download.geonames.org/export/dump/IL.zip
+curl -o $TMPDIR/alt-IL.zip http://download.geonames.org/export/dump/alternatenames/IL.zip
 
 cd $TMPDIR
 unzip cities5000.zip
+unzip alt-IL.zip
+mv IL.txt alt-IL.txt
+rm readme.txt
 unzip IL.zip
 
 cd $CURDIR
@@ -23,7 +27,8 @@ $CURDIR/node_modules/.bin/build-geonames-sqlite \
   $TMPDIR/cities5000.txt \
   "$CURDIR/node_modules/@hebcal/geo-sqlite/cities-patch.txt" \
   $TMPDIR/admin1CodesASCII.txt \
-  $TMPDIR/IL.txt
+  $TMPDIR/IL.txt \
+  $TMPDIR/alt-IL.txt
 
 rm -rf $TMPDIR
 
