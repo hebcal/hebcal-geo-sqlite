@@ -197,6 +197,7 @@ export class GeoDb {
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr, 'US', zip);
     location.admin1 = location.state = result.State;
+    location.stateName = stateNames[location.state];
     location.geo = 'zip';
     location.zip = zip;
     return location;

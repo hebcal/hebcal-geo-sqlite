@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -28,7 +28,7 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/cities": "^3.1.1",
+    "@hebcal/cities": "^3.1.2",
     "@hebcal/core": "^3.33.3",
     "better-sqlite3": "^7.5.0",
     "pino": "^7.8.0",

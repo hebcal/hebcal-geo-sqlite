@@ -240,6 +240,7 @@ test('zip', (t) => {
     geoid: '02912',
     state: 'RI',
     admin1: 'RI',
+    stateName: 'Rhode Island',
     geo: 'zip',
     zip: '02912',
   };
