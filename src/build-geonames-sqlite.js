@@ -231,6 +231,8 @@ export async function buildGeonamesSqlite(opts) {
       AND g.geonameid = alt.geonameid
       AND g.country||'.'||g.admin1 = a1.key
       `,
+
+      'VACUUM',
   );
 
   db.close();
