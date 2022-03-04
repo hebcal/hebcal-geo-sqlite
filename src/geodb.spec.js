@@ -93,17 +93,18 @@ IL.01\tSouthern District\tSouthern District\t294952
 1605941\t294801\ten\tHaifa\t1\t\t\t\t\t
 1605942\t294801\tes\tHaifa\t\t\t\t\t\t
 1605943\t294801\tar\tحيفا\t1\t\t\t\t\t
-1605944\t294801\tbg\tХайфа\t\t\t\t\t\t
-1605945\t294801\tca\tHaifa\t\t\t\t\t\t
-1605946\t294801\tda\tHaifa\t\t\t\t\t\t
-1605947\t294801\teo\tHajfo\t\t\t\t\t\t
 1605948\t294801\tfr\tHaïfa\t\t\t\t\t\t
 1605949\t294801\the\tחיפה\t1\t\t\t\t\t
 1605950\t294801\tid\tHaifa\t\t\t\t\t\t
-1605951\t294801\tit\tHaifa\t\t\t\t\t\t
-1605952\t294801\tja\tハイファ\t\t\t\t\t\t
-1605953\t294801\tlb\tHaifa\t\t\t\t\t\t
-1605954\t294801\tnl\tHaifa\t\t\t\t\t\t
+204884\t293100\ten\tSfat\t\t\t\t\t\t
+204885\t293100\ten\tSafed\t1\t\t\t\t\t
+204886\t293100\ten\tTsefat\t\t\t\t\t\t
+2922563\t293100\tlink\thttps://en.wikipedia.org/wiki/Safed\t\t\t\t\t\t
+3037853\t293100\tru\tЦфат\t\t\t\t\t\t
+3047569\t293100\tlink\thttps://ru.wikipedia.org/wiki/%D0%A6%D1%84%D0%B0%D1%82\t\t\t\t\t\t
+7202955\t293100\ten\tẔefat\t\t\t\t\t\t
+7202956\t293100\the\tצפת\t1\t\t\t\t\t
+8701460\t293100\tan\tSafet\t\t\t\t\t\t
 1620514\t293397\ten\tTel Aviv\t1\t\t\t\t\t
 1620515\t293397\tes\tTel Aviv\t\t\t\t\t\t
 1620516\t293397\tar\tتل أبيب\t1\t\t\t\t\t
@@ -443,4 +444,19 @@ test('legacy3', (t) => {
   };
   const plainObj = JSON.parse(JSON.stringify(loc));
   t.deepEqual(plainObj, expected);
+});
+
+test('alternatenames', (t) => {
+  const sql = `SELECT * from alternatenames where geonameid = ?`;
+  const stmt = t.context.db.geonamesDb.prepare(sql);
+  const results = stmt.all([293100]);
+  const actual = JSON.parse(JSON.stringify(results));
+  const expected = [
+    {'id': 204884, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Sfat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    {'id': 204885, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Safed', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    {'id': 204886, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tsefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    {'id': 7202955, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Ẕefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    {'id': 7202956, 'geonameid': 293100, 'isolanguage': 'he', 'name': 'צפת', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+  ];
+  t.deepEqual(actual, expected);
 });

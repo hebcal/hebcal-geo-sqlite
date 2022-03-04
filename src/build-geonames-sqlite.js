@@ -132,6 +132,10 @@ export async function buildGeonamesSqlite(opts) {
   );
 
   await doFile(logger, db, ILalternate, 'alternatenames', 10, (a) => {
+    const firstchar = a[3][0];
+    if (a[2] === 'he' && (firstchar < '\u05D0' || firstchar > '\u05EA')) {
+      a[2] = 'en';
+    }
     if (a[2] === 'he' || a[2] === 'en') {
       if (a[2] === 'he') {
         a[3] = a[3].replace(/‘/g, '׳');
@@ -211,10 +215,21 @@ export async function buildGeonamesSqlite(opts) {
       SELECT g.geonameid, alt.name||', ישראל',
       alt.name, '', 'ישראל',
       g.population, g.latitude, g.longitude, g.timezone
-      FROM geoname g, country c, altnames alt
+      FROM geoname g, altnames alt
       WHERE g.country = 'IL'
       AND alt.isolanguage = 'he'
       AND g.geonameid = alt.geonameid
+      `,
+
+      `INSERT INTO geoname_fulltext
+      SELECT g.geonameid, alt.name||', '||a1.asciiname||', Israel',
+      alt.name, a1.asciiname, 'Israel',
+      g.population, g.latitude, g.longitude, g.timezone
+      FROM geoname g, admin1 a1, altnames alt
+      WHERE g.country = 'IL'
+      AND alt.isolanguage = 'en'
+      AND g.geonameid = alt.geonameid
+      AND g.country||'.'||g.admin1 = a1.key
       `,
   );
 
