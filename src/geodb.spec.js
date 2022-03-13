@@ -260,7 +260,6 @@ test('autoComplete', (t) => {
       geo: 'geoname',
       country: 'Israel',
       admin1: 'Tel Aviv',
-      tokens: ['Tel', 'Aviv', 'Israel'],
     },
     {
       id: 11049562,
@@ -273,10 +272,9 @@ test('autoComplete', (t) => {
       geo: 'geoname',
       country: 'Israel',
       admin1: 'Tel Aviv',
-      tokens: ['Kiryat', 'Ono', 'Tel', 'Aviv', 'Israel'],
     },
   ];
-  const result = t.context.db.autoComplete('tel');
+  const result = t.context.db.autoComplete('tel', true);
   t.deepEqual(result, expected);
 });
 
@@ -307,7 +305,7 @@ test('autoCompleteZip', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('6');
+  const result = t.context.db.autoComplete('6', true);
   t.deepEqual(result, expected);
 });
 
@@ -326,7 +324,7 @@ test('autoCompleteZipPlus4', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('62704-1234');
+  const result = t.context.db.autoComplete('62704-1234', true);
   t.deepEqual(result, expected);
 });
 
@@ -343,7 +341,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Denver',
       population: 456568,
       geo: 'geoname',
-      tokens: ['Colorado', 'Springs', 'United', 'States'],
     },
     {
       id: 952865,
@@ -356,7 +353,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'Africa/Johannesburg',
       population: 186394,
       geo: 'geoname',
-      tokens: ['Springs', 'Gauteng', 'South', 'Africa'],
     },
     {
       id: 4409896,
@@ -369,7 +365,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Chicago',
       population: 166810,
       geo: 'geoname',
-      tokens: ['Springfield', 'Missouri', 'United', 'States'],
     },
     {
       id: 4951788,
@@ -382,7 +377,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/New_York',
       population: 154341,
       geo: 'geoname',
-      tokens: ['Springfield', 'Massachusetts', 'United', 'States'],
     },
     {
       id: '62704',
@@ -409,7 +403,26 @@ test('autoCompleteZipMerge', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('Spring').slice(0, 6);
+  const result = t.context.db.autoComplete('Spring', true).slice(0, 6);
+  t.deepEqual(result, expected);
+});
+
+test('autoComplete-no-match', (t) => {
+  const expected = [];
+  const result = t.context.db.autoComplete('foobar', false);
+  t.deepEqual(result, expected);
+});
+
+test('autoComplete-nolatlong', (t) => {
+  const expected = [{
+    id: 293807,
+    value: 'Raanana, Israel',
+    asciiname: 'Raanana',
+    geo: 'geoname',
+    country: 'Israel',
+    admin1: 'Central District',
+  }];
+  const result = t.context.db.autoComplete('Raa', false);
   t.deepEqual(result, expected);
 });
 
@@ -456,7 +469,7 @@ test('alternatenames', (t) => {
     {'id': 204884, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Sfat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
     {'id': 204885, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Safed', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
     {'id': 204886, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tsefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
-    {'id': 7202955, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Ẕefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    {'id': 7202955, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tzefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
     {'id': 7202956, 'geonameid': 293100, 'isolanguage': 'he', 'name': 'צפת', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
   ];
   t.deepEqual(actual, expected);

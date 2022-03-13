@@ -145,6 +145,13 @@ export async function buildGeonamesSqlite(opts) {
       } else {
         a[3] = a[3].replace(/‘/g, '\'');
         a[3] = a[3].replace(/’/g, '\'');
+        a[3] = a[3].replace(/Ḥ/g, 'Ch');
+        a[3] = a[3].replace(/H̱/g, 'Ch');
+        a[3] = a[3].replace(/ẖ/g, 'ch');
+        a[3] = a[3].replace(/Ẕ/g, 'Tz');
+        a[3] = a[3].replace(/ẕ/g, 'tz');
+        a[3] = a[3].replace(/ā/g, 'a');
+        a[3] = a[3].replace(/é/g, 'e');
       }
       return true;
     }

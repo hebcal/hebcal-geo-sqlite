@@ -298,9 +298,10 @@ export class GeoDb {
   /**
    * Generates autocomplete results based on a query string
    * @param {string} qraw
+   * @param {boolean} latlong
    * @return {Object[]}
    */
-  autoComplete(qraw) {
+  autoComplete(qraw, latlong=false) {
     qraw = qraw.trim();
     if (qraw.length === 0) {
       return [];
@@ -339,7 +340,6 @@ export class GeoDb {
         if (admin1) {
           obj.admin1 = admin1;
         }
-        obj.tokens = Array.from(new Set(res.asciiname.split(' ').concat(admin1.split(' '), country.split(' '))));
         return obj;
       });
       if (!this.zipFulltextCompStmt) {
@@ -361,7 +361,16 @@ export class GeoDb {
       }
       const values = Array.from(map.values());
       values.sort((a, b) => b.population - a.population);
-      return values.slice(0, 10);
+      const topN = values.slice(0, 10);
+      if (!latlong) {
+        for (const val of topN) {
+          delete val.latitude;
+          delete val.longitude;
+          delete val.timezone;
+          delete val.population;
+        }
+      }
+      return topN;
     }
   }
 
