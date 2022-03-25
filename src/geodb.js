@@ -133,7 +133,7 @@ export class GeoDb {
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
     /** @type {Map<number, Location>} */
     this.geonamesCache = new Map();
-    /** @type {Map<string, Location>} */
+    /** @type {Map<string, number>} */
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
       this.legacyCities.set(GeoDb.munge(name), id);

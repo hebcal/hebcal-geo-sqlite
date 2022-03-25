@@ -14,7 +14,7 @@ export default [
       {file: pkg.module, format: 'es', name: pkg.name, banner},
     ],
     plugins: [
-      json({compact: true}),
+      json({compact: true, preferConst: true}),
       babel({
         babelHelpers: 'bundled',
         exclude: ['node_modules/**'],
