@@ -29,7 +29,7 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^3.1.2",
-    "@hebcal/core": "^3.34.1",
+    "@hebcal/core": "^3.35.0",
     "better-sqlite3": "^7.5.1",
     "pino": "^7.10.0",
     "pino-pretty": "^7.6.1"
@@ -57,11 +57,11 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.7",
     "@rollup/plugin-babel": "^5.3.1",
-    "@rollup/plugin-commonjs": "^21.1.0",
+    "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "ava": "^4.2.0",
-    "eslint": "^8.13.0",
+    "eslint": "^8.14.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^3.6.10",
     "jsdoc-to-markdown": "^7.1.1",
