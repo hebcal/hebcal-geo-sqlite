@@ -34,7 +34,7 @@ INSERT INTO ZIPCodes_Primary VALUES ('01089', 'West Springfield', 'MA', 42.12568
 INSERT INTO ZIPCodes_Primary VALUES ('19064', 'Springfield', 'PA', 39.932544, -75.342975, 5, 'Y', 24459);
 
 CREATE VIRTUAL TABLE ZIPCodes_CityFullText
-USING fts3(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
+USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
 
 INSERT INTO ZIPCodes_CityFullText
 SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
@@ -253,25 +253,27 @@ test('autoComplete', (t) => {
       id: 293397,
       value: 'Tel Aviv, Israel',
       asciiname: 'Tel Aviv',
+      admin1: 'Tel Aviv',
+      country: 'Israel',
       latitude: 32.08088,
       longitude: 34.78057,
       timezone: 'Asia/Jerusalem',
       population: 432892,
       geo: 'geoname',
-      country: 'Israel',
-      admin1: 'Tel Aviv',
+      rank: 104.55,
     },
     {
       id: 11049562,
       value: 'Kiryat Ono, Israel',
       asciiname: 'Kiryat Ono',
+      admin1: 'Tel Aviv',
+      country: 'Israel',
       latitude: 32.05503,
       longitude: 34.85789,
       timezone: 'Asia/Jerusalem',
       population: 37791,
       geo: 'geoname',
-      country: 'Israel',
-      admin1: 'Tel Aviv',
+      rank: 68.99,
     },
   ];
   const result = t.context.db.autoComplete('tel', true);
@@ -341,6 +343,7 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Denver',
       population: 456568,
       geo: 'geoname',
+      rank: 72.42,
     },
     {
       id: 952865,
@@ -353,6 +356,7 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'Africa/Johannesburg',
       population: 186394,
       geo: 'geoname',
+      rank: 68.12,
     },
     {
       id: 4409896,
@@ -365,6 +369,7 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Chicago',
       population: 166810,
       geo: 'geoname',
+      rank: 67.54,
     },
     {
       id: 4951788,
@@ -377,6 +382,7 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/New_York',
       population: 154341,
       geo: 'geoname',
+      rank: 65.35,
     },
     {
       id: '62704',
@@ -418,9 +424,10 @@ test('autoComplete-nolatlong', (t) => {
     id: 293807,
     value: 'Raanana, Israel',
     asciiname: 'Raanana',
-    geo: 'geoname',
-    country: 'Israel',
     admin1: 'Central District',
+    country: 'Israel',
+    geo: 'geoname',
+    rank: 101.63,
   }];
   const result = t.context.db.autoComplete('Raa', false);
   t.deepEqual(result, expected);

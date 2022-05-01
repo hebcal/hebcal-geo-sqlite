@@ -179,9 +179,9 @@ export async function buildGeonamesSqlite(opts) {
       `DROP TABLE IF EXISTS geoname_fulltext`,
 
       `CREATE VIRTUAL TABLE geoname_fulltext
-      USING fts3(geonameid int, longname text,
-      asciiname text, admin1 text, country text,
-      population int, latitude real, longitude real, timezone text
+      USING fts5(geonameid,
+      asciiname, admin1, country,
+      population, latitude, longitude, timezone
       );
     `,
 
@@ -191,7 +191,7 @@ export async function buildGeonamesSqlite(opts) {
       SELECT geonameid FROM geoname WHERE asciiname <> name`,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, g.asciiname||', '||a.asciiname||', '||c.Country,
+      SELECT g.geonameid,
       g.asciiname, a.asciiname, c.Country,
       g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, admin1 a, country c
@@ -200,7 +200,7 @@ export async function buildGeonamesSqlite(opts) {
       `,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, g.asciiname||', '||c.Country,
+      SELECT g.geonameid,
       g.asciiname, '', c.Country,
       g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, country c
@@ -209,7 +209,7 @@ export async function buildGeonamesSqlite(opts) {
       `,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, g.name||', '||a.name||', '||c.Country,
+      SELECT g.geonameid,
       g.name, a.name, c.Country,
       g.population, g.latitude, g.longitude, g.timezone
       FROM geoname_non_ascii gna, geoname g, admin1 a, country c
@@ -219,7 +219,7 @@ export async function buildGeonamesSqlite(opts) {
       `,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, alt.name||', ישראל',
+      SELECT g.geonameid,
       alt.name, '', 'ישראל',
       g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, altnames alt
@@ -229,7 +229,7 @@ export async function buildGeonamesSqlite(opts) {
       `,
 
       `INSERT INTO geoname_fulltext
-      SELECT g.geonameid, alt.name||', '||a1.asciiname||', Israel',
+      SELECT g.geonameid,
       alt.name, a1.asciiname, 'Israel',
       g.population, g.latitude, g.longitude, g.timezone
       FROM geoname g, admin1 a1, altnames alt

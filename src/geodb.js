@@ -53,11 +53,12 @@ ORDER BY Population DESC
 LIMIT 15`;
 
 const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
-population, latitude, longitude, timezone
+population, latitude, longitude, timezone,
+((sqrt(population)/40) + (-30 * rank)) as myrank
 FROM geoname_fulltext
-WHERE longname MATCH ?
+WHERE geoname_fulltext MATCH ?
 GROUP BY geonameid
-ORDER BY population DESC
+ORDER BY myrank DESC
 LIMIT 15`;
 
 const stateNames = {
@@ -318,10 +319,11 @@ export class GeoDb {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
       qraw = qraw.replace(/\"/g, '""');
-      const geoRows = this.geonamesCompStmt.all(`"${qraw}*"`);
+      const geoRows = this.geonamesCompStmt.all(`{asciiname country admin1} : "${qraw}" *`);
       const geoMatches = geoRows.map((res) => {
         const country = res.country || '';
         const admin1 = res.admin1 || '';
+        const rank = Math.trunc(res.myrank * 100.0) / 100.0;
         const obj = {
           id: res.geonameid,
           value: Location.geonameCityDescr(res.asciiname, admin1, country),
@@ -333,6 +335,7 @@ export class GeoDb {
           timezone: res.timezone,
           population: res.population,
           geo: 'geoname',
+          rank: rank,
         };
         if (country) {
           obj.country = country;
