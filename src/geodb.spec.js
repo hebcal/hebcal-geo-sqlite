@@ -260,7 +260,6 @@ test('autoComplete', (t) => {
       timezone: 'Asia/Jerusalem',
       population: 432892,
       geo: 'geoname',
-      rank: 104.55,
     },
     {
       id: 11049562,
@@ -273,10 +272,12 @@ test('autoComplete', (t) => {
       timezone: 'Asia/Jerusalem',
       population: 37791,
       geo: 'geoname',
-      rank: 68.99,
     },
   ];
   const result = t.context.db.autoComplete('tel', true);
+  for (const res of result) {
+    delete res.rank;
+  }
   t.deepEqual(result, expected);
 });
 
@@ -343,7 +344,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Denver',
       population: 456568,
       geo: 'geoname',
-      rank: 72.42,
     },
     {
       id: 952865,
@@ -356,7 +356,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'Africa/Johannesburg',
       population: 186394,
       geo: 'geoname',
-      rank: 68.12,
     },
     {
       id: 4409896,
@@ -369,7 +368,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/Chicago',
       population: 166810,
       geo: 'geoname',
-      rank: 67.54,
     },
     {
       id: 4951788,
@@ -382,7 +380,6 @@ test('autoCompleteZipMerge', (t) => {
       timezone: 'America/New_York',
       population: 154341,
       geo: 'geoname',
-      rank: 65.35,
     },
     {
       id: '62704',
@@ -410,6 +407,9 @@ test('autoCompleteZipMerge', (t) => {
     },
   ];
   const result = t.context.db.autoComplete('Spring', true).slice(0, 6);
+  for (const res of result) {
+    delete res.rank;
+  }
   t.deepEqual(result, expected);
 });
 
@@ -427,9 +427,11 @@ test('autoComplete-nolatlong', (t) => {
     admin1: 'Central District',
     country: 'Israel',
     geo: 'geoname',
-    rank: 101.63,
   }];
   const result = t.context.db.autoComplete('Raa', false);
+  for (const res of result) {
+    delete res.rank;
+  }
   t.deepEqual(result, expected);
 });
 

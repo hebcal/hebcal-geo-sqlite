@@ -319,7 +319,7 @@ export class GeoDb {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
       qraw = qraw.replace(/\"/g, '""');
-      const geoRows = this.geonamesCompStmt.all(`{asciiname country admin1} : "${qraw}" *`);
+      const geoRows = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
       const geoMatches = geoRows.map((res) => {
         const country = res.country || '';
         const admin1 = res.admin1 || '';
