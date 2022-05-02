@@ -10,4 +10,7 @@ CREATE TABLE ZIPCodes_Primary (
 );
 
 CREATE VIRTUAL TABLE ZIPCodes_CityFullText
-USING fts3(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
+USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
+
+CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
+USING fts5(ZipCode,CityMixedCase,Population);

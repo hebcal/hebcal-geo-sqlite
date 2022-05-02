@@ -11,6 +11,7 @@ const GEONAME_SQL = `SELECT
   a.asciiname as admin1,
   g.latitude as latitude,
   g.longitude as longitude,
+  g.population as population,
   g.timezone as timezone
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
@@ -27,16 +28,17 @@ const GEONAME_ALL_SQL = `SELECT
   a.asciiname as admin1,
   g.latitude as latitude,
   g.longitude as longitude,
+  g.population as population,
   g.timezone as timezone
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
 LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 `;
 
-const ZIPCODE_SQL = `SELECT CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+const ZIPCODE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
-const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving
+const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
@@ -46,14 +48,13 @@ ORDER BY Population DESC
 LIMIT 10`;
 
 const ZIP_FULLTEXT_COMPLETE_SQL =
-`SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
-FROM ZIPCodes_CityFullText
+`SELECT ZipCode,CityMixedCase,rank
+FROM ZIPCodes_CityFullText5
 WHERE CityMixedCase MATCH ?
 ORDER BY Population DESC
 LIMIT 15`;
 
-const GEONAME_COMPLETE_SQL = `SELECT geonameid, asciiname, admin1, country,
-population, latitude, longitude, timezone,
+const GEONAME_COMPLETE_SQL = `SELECT geonameid, longname,
 ((sqrt(population)/40) + (-30 * rank)) as myrank
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
@@ -201,6 +202,7 @@ export class GeoDb {
     location.stateName = stateNames[location.state];
     location.geo = 'zip';
     location.zip = zip;
+    location.population = result.Population;
     return location;
   }
 
@@ -242,16 +244,17 @@ export class GeoDb {
         result.cc,
         geonameid,
     );
-    if (result.asciiname !== result.name) {
-      location.asciiname = result.asciiname;
-    }
     location.geo = 'geoname';
     location.geonameid = geonameid;
+    location.asciiname = result.asciiname;
     if (admin1) {
       location.admin1 = admin1;
     }
     if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
+    }
+    if (result.population) {
+      location.population = result.population;
     }
     return location;
   }
@@ -321,22 +324,27 @@ export class GeoDb {
       qraw = qraw.replace(/\"/g, '""');
       const geoRows = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
       const geoMatches = geoRows.map((res) => {
-        const country = res.country || '';
-        const admin1 = res.admin1 || '';
+        const loc = this.lookupGeoname(res.geonameid);
+        const country = this.countryNames.get(loc.getCountryCode()) || '';
+        const admin1 = loc.admin1 || '';
         const rank = Math.trunc(res.myrank * 100.0) / 100.0;
         const obj = {
           id: res.geonameid,
-          value: Location.geonameCityDescr(res.asciiname, admin1, country),
-          asciiname: res.asciiname,
+          value: loc.name,
           admin1,
           country,
-          latitude: res.latitude,
-          longitude: res.longitude,
-          timezone: res.timezone,
-          population: res.population,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          timezone: loc.getTzid(),
           geo: 'geoname',
           rank: rank,
         };
+        if (loc.population) {
+          obj.population = loc.population;
+        }
+        if (loc.asciiname) {
+          obj.asciiname = loc.asciiname;
+        }
         if (country) {
           obj.country = country;
         }
@@ -348,8 +356,26 @@ export class GeoDb {
       if (!this.zipFulltextCompStmt) {
         this.zipFulltextCompStmt = this.zipsDb.prepare(ZIP_FULLTEXT_COMPLETE_SQL);
       }
-      const zipRows = this.zipFulltextCompStmt.all(`"${qraw}*"`);
-      const zipMatches = zipRows.map(GeoDb.zipResultToObj);
+      const zipRows = this.zipFulltextCompStmt.all(`"${qraw}" *`);
+      const zipMatches = zipRows.map((res) => {
+        const zipCode = res.ZipCode;
+        const loc = this.lookupZip(zipCode);
+        const myrank = ((Math.sqrt(loc.population)/40) + (-30 * res.rank));
+        const obj = {
+          id: zipCode,
+          value: loc.getName(),
+          admin1: loc.admin1,
+          asciiname: loc.getShortName(),
+          country: 'United States',
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          timezone: loc.getTzid(),
+          population: loc.population,
+          geo: 'zip',
+          rank: myrank,
+        };
+        return obj;
+      });
       const map = new Map();
       for (const obj of zipMatches) {
         const key = [obj.asciiname, stateNames[obj.admin1], obj.country].join('|');
@@ -363,7 +389,7 @@ export class GeoDb {
         map.set(key, obj);
       }
       const values = Array.from(map.values());
-      values.sort((a, b) => b.population - a.population);
+      values.sort((a, b) => b.rank - a.rank);
       const topN = values.slice(0, 10);
       if (!latlong) {
         for (const val of topN) {

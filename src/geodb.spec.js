@@ -11,8 +11,15 @@ import pino from 'pino';
 import legacyCities from './legacy.json';
 
 test.before(async (t) => {
+  const logger = t.context.logger = pino({
+    transport: {
+      target: 'pino-pretty',
+      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
+    },
+  });
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
   const testZipsPath = path.join(tmpDir, 'zips.sqlite3');
+  logger.info(testZipsPath);
   const zipsDb = new Database(testZipsPath);
   const sql = `CREATE TABLE ZIPCodes_Primary (
     ZipCode char(5) NOT NULL PRIMARY KEY,
@@ -39,8 +46,15 @@ USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSavin
 INSERT INTO ZIPCodes_CityFullText
 SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary;
+
+CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
+USING fts5(ZipCode,CityMixedCase,Population);
+
+INSERT INTO ZIPCodes_CityFullText5
+SELECT ZipCode,CityMixedCase,Population
+FROM ZIPCodes_Primary;
   `;
-  console.log(sql);
+  logger.info(sql);
   zipsDb.exec(sql);
   zipsDb.close();
 
@@ -128,6 +142,7 @@ IL.01\tSouthern District\tSouthern District\t294952
 `;
   fs.writeFileSync(altNamePath, altNameStr);
   const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
+  logger.info(testDbPath);
   const filenames = {
     dbFilename: testDbPath,
     countryInfotxt: ciPath,
@@ -138,12 +153,6 @@ IL.01\tSouthern District\tSouthern District\t294952
     ILalternate: altNamePath,
   };
   await buildGeonamesSqlite(filenames);
-  const logger = pino({
-    transport: {
-      target: 'pino-pretty',
-      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-    },
-  });
   t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
 });
 
@@ -210,10 +219,12 @@ test('geoname', (t) => {
     il: false,
     tzid: 'America/Chicago',
     name: 'Little Rock, Arkansas, USA',
+    asciiname: 'Little Rock',
     cc: 'US',
     geoid: 4119403,
     geo: 'geoname',
     geonameid: 4119403,
+    population: 197992,
     admin1: 'Arkansas',
   };
   t.deepEqual(Object.assign({}, loc), expected);
@@ -243,6 +254,7 @@ test('zip', (t) => {
     stateName: 'Rhode Island',
     geo: 'zip',
     zip: '02912',
+    population: 1370,
   };
   t.deepEqual(Object.assign({}, loc), expected);
 });
@@ -346,18 +358,6 @@ test('autoCompleteZipMerge', (t) => {
       geo: 'geoname',
     },
     {
-      id: 952865,
-      value: 'Springs, Gauteng, South Africa',
-      asciiname: 'Springs',
-      admin1: 'Gauteng',
-      country: 'South Africa',
-      latitude: -26.25,
-      longitude: 28.4,
-      timezone: 'Africa/Johannesburg',
-      population: 186394,
-      geo: 'geoname',
-    },
-    {
       id: 4409896,
       value: 'Springfield, Missouri, USA',
       asciiname: 'Springfield',
@@ -379,6 +379,18 @@ test('autoCompleteZipMerge', (t) => {
       longitude: -72.58981,
       timezone: 'America/New_York',
       population: 154341,
+      geo: 'geoname',
+    },
+    {
+      id: 952865,
+      value: 'Springs, Gauteng, South Africa',
+      asciiname: 'Springs',
+      admin1: 'Gauteng',
+      country: 'South Africa',
+      latitude: -26.25,
+      longitude: 28.4,
+      timezone: 'Africa/Johannesburg',
+      population: 186394,
       geo: 'geoname',
     },
     {
@@ -422,8 +434,8 @@ test('autoComplete-no-match', (t) => {
 test('autoComplete-nolatlong', (t) => {
   const expected = [{
     id: 293807,
-    value: 'Raanana, Israel',
-    asciiname: 'Raanana',
+    value: 'Ra\'anana, Israel',
+    asciiname: 'Ra\'anana',
     admin1: 'Central District',
     country: 'Israel',
     geo: 'geoname',
