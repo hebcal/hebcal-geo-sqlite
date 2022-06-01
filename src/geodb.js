@@ -51,12 +51,14 @@ const ZIP_FULLTEXT_COMPLETE_SQL =
 `SELECT ZipCode
 FROM ZIPCodes_CityFullText5
 WHERE ZIPCodes_CityFullText5 MATCH ?
+ORDER BY Population DESC
 LIMIT 20`;
 
 const GEONAME_COMPLETE_SQL =
 `SELECT geonameid
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
+ORDER BY population DESC
 LIMIT 20`;
 
 const stateNames = {
