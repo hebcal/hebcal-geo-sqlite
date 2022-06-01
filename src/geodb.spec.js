@@ -21,41 +21,59 @@ test.before(async (t) => {
   const testZipsPath = path.join(tmpDir, 'zips.sqlite3');
   logger.info(testZipsPath);
   const zipsDb = new Database(testZipsPath);
-  const sql = `CREATE TABLE ZIPCodes_Primary (
+  const sqls = [`CREATE TABLE ZIPCodes_Primary (
     ZipCode char(5) NOT NULL PRIMARY KEY,
     CityMixedCase varchar(35) NULL,
     State char(2),
+    StateFullName TEXT,
     Latitude decimal(12, 6),
     Longitude decimal(12, 6),
     TimeZone char(2),
     DayLightSaving char(1),
     Population int
-    );
+    );`,
 
-INSERT INTO ZIPCodes_Primary VALUES ('02912', 'Providence', 'RI', 41.826254, -71.402502, 5, 'Y', 1370);
-INSERT INTO ZIPCodes_Primary VALUES ('65807', 'Springfield', 'MO', 37.171008, -93.331857, 6, 'Y', 54952);
-INSERT INTO ZIPCodes_Primary VALUES ('62704', 'Springfield', 'IL', 39.771921, -89.686047, 6, 'Y', 39831);
-INSERT INTO ZIPCodes_Primary VALUES ('11413', 'Springfield Gardens', 'NY', 40.665415, -73.749702, 5, 'Y', 38912);
-INSERT INTO ZIPCodes_Primary VALUES ('01109', 'Springfield', 'MA', 42.118748, -72.549032, 5, 'Y', 30250);
-INSERT INTO ZIPCodes_Primary VALUES ('01089', 'West Springfield', 'MA', 42.125682, -72.641677, 5, 'Y', 28391);
-INSERT INTO ZIPCodes_Primary VALUES ('19064', 'Springfield', 'PA', 39.932544, -75.342975, 5, 'Y', 24459);
+  `INSERT INTO ZIPCodes_Primary VALUES ('65807','Springfield','MO','Missouri',37.171008,-93.331857,6,'Y',54952);
+INSERT INTO ZIPCodes_Primary VALUES ('62704','Springfield','IL','Illinois',39.771921,-89.686047,6,'Y',39831);
+INSERT INTO ZIPCodes_Primary VALUES ('11413','Springfield Gardens','NY','New York',40.665415,-73.749702,5,'Y',38912);
+INSERT INTO ZIPCodes_Primary VALUES ('01109','Springfield','MA','Massachusetts',42.118748,-72.549032,5,'Y',30250);
+INSERT INTO ZIPCodes_Primary VALUES ('01089','West Springfield','MA','Massachusetts',42.125682,-72.641677,5,'Y',28391);
+INSERT INTO ZIPCodes_Primary VALUES ('19064','Springfield','PA','Pennsylvania',39.932544,-75.342975,5,'Y',24459);
+INSERT INTO ZIPCodes_Primary VALUES ('02901','Providence','RI','Rhode Island',41.823800000000002086,-71.413300000000008438,'5','Y',0);
+INSERT INTO ZIPCodes_Primary VALUES ('02902','Providence','RI','Rhode Island',41.823800000000002086,-71.413300000000008438,'5','Y',0);
+INSERT INTO ZIPCodes_Primary VALUES ('02903','Providence','RI','Rhode Island',41.818167000000006083,-71.409728000000001202,'5','Y',10780);
+INSERT INTO ZIPCodes_Primary VALUES ('02904','Providence','RI','Rhode Island',41.854637999999999564,-71.437492000000002434,'5','Y',29359);
+INSERT INTO ZIPCodes_Primary VALUES ('02905','Providence','RI','Rhode Island',41.786946000000000367,-71.399191999999995772,'5','Y',25223);
+INSERT INTO ZIPCodes_Primary VALUES ('02906','Providence','RI','Rhode Island',41.838150000000000616,-71.393139000000003235,'5','Y',28387);
+INSERT INTO ZIPCodes_Primary VALUES ('02907','Providence','RI','Rhode Island',41.795126000000006882,-71.424763999999996144,'5','Y',27445);
+INSERT INTO ZIPCodes_Primary VALUES ('02908','Providence','RI','Rhode Island',41.839295999999999153,-71.438804000000004634,'5','Y',37467);
+INSERT INTO ZIPCodes_Primary VALUES ('02909','Providence','RI','Rhode Island',41.822232000000001406,-71.448291999999993251,'5','Y',43540);
+INSERT INTO ZIPCodes_Primary VALUES ('02912','Providence','RI','Rhode Island',41.826254000000000488,-71.402501999999996584,'5','Y',1370);
+INSERT INTO ZIPCodes_Primary VALUES ('02918','Providence','RI','Rhode Island',41.844266000000001071,-71.434915999999999414,'5','Y',0);
+INSERT INTO ZIPCodes_Primary VALUES ('02940','Providence','RI','Rhode Island',41.823800000000002086,-71.413300000000008438,'5','Y',0);
+INSERT INTO ZIPCodes_Primary VALUES ('27315','Providence','NC','North Carolina',36.500447999999998671,-79.393259999999994391,'5','Y',2243);
+INSERT INTO ZIPCodes_Primary VALUES ('42450','Providence','KY','Kentucky',37.391308000000003097,-87.762130999999996561,'6','Y',4063);
+INSERT INTO ZIPCodes_Primary VALUES ('84332','Providence','UT','Utah',41.673151999999999972,-111.81449999999999445,'7','Y',7218);
+`,
+  `CREATE VIRTUAL TABLE ZIPCodes_CityFullText
+USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);`,
 
-CREATE VIRTUAL TABLE ZIPCodes_CityFullText
-USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
-
-INSERT INTO ZIPCodes_CityFullText
+  `INSERT INTO ZIPCodes_CityFullText
 SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
-FROM ZIPCodes_Primary;
+FROM ZIPCodes_Primary;`,
 
-CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
-USING fts5(ZipCode,CityMixedCase,Population);
+  `CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
+USING fts5(ZipCode UNINDEXED,CityMixedCase,Population UNINDEXED,longname);`,
 
-INSERT INTO ZIPCodes_CityFullText5
-SELECT ZipCode,CityMixedCase,Population
-FROM ZIPCodes_Primary;
-  `;
-  logger.info(sql);
-  zipsDb.exec(sql);
+  `INSERT INTO ZIPCodes_CityFullText5
+SELECT ZipCode,CityMixedCase,Population,
+CityMixedCase||', '||StateFullName||', '||ZipCode
+FROM ZIPCodes_Primary;`,
+  ];
+  for (const sql of sqls) {
+    logger.info(sql);
+    zipsDb.exec(sql);
+  }
   zipsDb.close();
 
   const ciPath = path.join(tmpDir, 'test-countryInfo.txt');
@@ -64,6 +82,7 @@ FROM ZIPCodes_Primary;
 US\tUSA\t840\tUS\tUnited States\tWashington\t9629091\t327167434\tNA\t.us\tUSD\tDollar\t1\t#####-####\t^\\d{5}(-\\d{4})?$\ten-US,es-US,haw,fr\t6252001\tCA,MX,CU\t
 ZA\tZAF\t710\tSF\tSouth Africa\tPretoria\t1219912\t57779622\tAF\t.za\tZAR\tRand\t27\t####\t^(\\d{4})$\tzu,xh,af,nso,en-ZA,tn,st,ts,ss,ve,nr\t953987\tZW,SZ,MZ,BW,NA,LS\t
 AX\tALA\t248\t\tAland Islands\tMariehamn\t1580\t26711\tEU\t.ax\tEUR\tEuro\t+358-18\t#####\t^(?:FI)*(\\d{5})$\tsv-AX\t661882\t\tFI
+BS\tBHS\t044\tBF\tBahamas\tNassau\t13940\t385640\tNA\t.bs\tBSD\tDollar\t+1-242\t\t\ten-BS\t3572887\t\t
 `;
   fs.writeFileSync(ciPath, ciStr);
   const a1path = path.join(tmpDir, 'test-admin1CodesASCII.txt');
@@ -73,10 +92,15 @@ US.DC\tWashington, D.C.\tWashington, D.C.\t4138106
 US.DE\tDelaware\tDelaware\t4142224
 US.FL\tFlorida\tFlorida\t4155751
 US.IL\tIllinois\tIllinois\t4896861
+US.KY\tKentucky\tKentucky\t6254925
 US.MA\tMassachusetts\tMassachusetts\t6254926
 US.MO\tMissouri\tMissouri\t4398678
+US.NC\tNorth Carolina\tNorth Carolina\t4482348
 US.NY\tNew York\tNew York\t5128638
 US.PA\tPennsylvania\tPennsylvania\t6254927
+US.RI\tRhode Island\tRhode Island\t5224323
+US.UT\tUtah\tUtah\t5549030
+BS.23\tNew Providence\tNew Providence\t3571815
 ZA.06\tGauteng\tGauteng\t1085594
 IL.06\tJerusalem\tJerusalem\t293198
 IL.05\tTel Aviv\tTel Aviv\t293396
@@ -99,6 +123,18 @@ IL.01\tSouthern District\tSouthern District\t294952
 952865\tSprings\tSprings\tSprings\t-26.25\t28.4\tP\tPPLX\tZA\t\t06\tEKU\tEKU\t\t186394\t\t1630\tAfrica/Johannesburg\t2018-09-27
 4409896\tSpringfield\tSpringfield\tNorth Springfield,SGF,Springfield,Springfijld,Springfild,aspryngfyld  myzwry,sbrynghfyld,seupeulingpildeu,si pu lin fei er de,spryngpyld,supuringufirudo,Спрингфийлд,Спрингфилд,Спрингфілд,ספרינגפילד,اسپرینگفیلد، میزوری,سبرينغفيلد,سپرنگفیلڈ، مسوری,スプリングフィールド,斯普林菲尔德,스프링필드\t37.21533\t-93.29824\tP\tPPLA2\tUS\t\tMO\t077\t70009\t\t166810\t396\t399\tAmerica/Chicago\t2019-02-27
 4951788\tSpringfield\tSpringfield\tAgawam,Agawome,Campifons,Nayasset,SFY,Springfield,Springfield City,Springfijld,Springfild,Springfilda,Springfildas,Springfīlda,Spryngfild,aspryngfyld  masachwst,sbrynghfyld,seupeulingpildeu,si pu lin fei er de,spryngpyld,supuringufirudo,Спрингфийлд,Спрингфилд,Спрингфілд,Спрынгфілд,ספרינגפילד,اسپرینگفیلد، ماساچوست,سبرينغفيلد,سپرنگفیلڈ، میساچوسٹس,スプリングフィールド,斯普林菲尔德,스프링필드\t42.10148\t-72.58981\tP\tPPL\tUS\t\tMA\t013\t67000\t\t154341\t25\t49\tAmerica/New_York\t2017-05-23
+934138\tProvidence\tProvidence\tProvidence\t-20.24472\t57.61222\tP\tPPL\tMU\t\t15\t\t\t\t3126\t\t395\tIndian/Mauritius\t2018-12-05
+3571824\tNassau\tNassau\tCity of Nassau,NAS,Nasau,Nasauo,Nasaŭo,Naso,Nassaou,Nassau,Nassau City,Nassau pa Bahamas,Nassau på Bahamas,Nasáu,na sao,nasa'u,nasau,nasaw,nasayw,nasea,naso,nasso,neco,nsaw,Νασσάου,Насау,Нассау,Նասաու,נסאו,ناسائو,ناساو,نساؤ,नासाउ,নাসাউ,ਨਸਾਊ,நேசோ,നാസോ,แนสซอ,ན་སའོ།,ნასაუ,ናሶ,ナッソー,拿騷,拿骚,나사우,나소\t25.05823\t-77.34306\tP\tPPLC\tBS\t\t23\t\t\t\t227940\t\t5\tAmerica/Nassau\t2019-09-05
+3703837\tNueva Providencia\tNueva Providencia\tNew Providence,Nueva Providencia\t9.26333\t-79.81556\tP\tPPLA3\tPA\t\t04\t0301\t030109\t\t0\t\t39\tAmerica/Panama\t2020-10-21
+4305294\tProvidence\tProvidence\t\t38.57451\t-85.22107\tP\tPPL\tUS\t\tKY\t223\t\t\t3492\t259\t255\tAmerica/New_York\t2006-01-17
+4305295\tProvidence\tProvidence\tProvidence,Providens,Savageville,Провиденс\t37.39755\t-87.76279\tP\tPPL\tUS\t\tKY\t233\t\t\t3065\t134\t135\tAmerica/Chicago\t2017-03-09
+4330331\tLake Providence\tLake Providence\tLejk Providens,lai ke pu luo wei deng si,lyk brwfaydns,lyk prawydns  lwyyzyana,Лејк Провиденс,ليك بروفايدنس,لیک پراویدنس، لوئیزیانا,莱克普罗维登斯\t32.80499\t-91.17098\tP\tPPLA2\tUS\t\tLA\t035\t\t\t3715\t32\t35\tAmerica/Chicago\t2018-05-17
+5101775\tNew Providence\tNew Providence\tNju Providens,Nju-Providens,New Providence,Nju Providens,Turkey,nyw prawydns  nywjrsy,Њу Провиденс,Нью Провиденс,Нью-Провиденс,نیو پراویدنس، نیوجرسی\t40.69843\t-74.40154\tP\tPPL\tUS\t\tNJ\t039\t51810\t\t12469\t67\t71\tAmerica/New_York\t2017-05-23
+5221931\tEast Providence\tEast Providence\tIst Providens,Ist-Providens,ayst brwfydans,ayst prawydns  rwd aylnd,dong pu luo wei deng si,isutopurobidensu,xis t phr x wi den s,Іст-Провіденс,Ист Провиденс,إيست بروفيدانس,ایست پراویدنس، رود آیلند,ایسٹ پروویڈنس، روڈ آئلینڈ,อีสต์พรอวิเดนซ์,イーストプロビデンス,东普罗维登斯\t41.81371\t-71.37005\tP\tPPL\tUS\t\tRI\t007\t22960\t\t47408\t19\t-2\tAmerica/New_York\t2017-05-23
+5223681\tNorth Providence\tNorth Providence\tNort Providens,Nort-Providens,North Providence,North-Providence,nosupurobidensu,nwrth brwfydans,nxrth phr x wi den s,Норт Провиденс,Норт-Провіденс,نارتھ پروویڈنس، روڈ آئلینڈ,نورث بروفيدانس,นอร์ทพรอวิเดนซ์,ノースプロビデンス\t41.8501\t-71.46617\tP\tPPLA3\tUS\t\tRI\t007\t5223683\t\t33835\t56\t39\tAmerica/New_York\t2013-08-25
+5224151\tProvidence\tProvidence\tPVD,Provedensos,Providns,Providehns,Providence,Providenco,Providens,Providensa,Providensas,Providentia,Provintens,Provėdensos,brwfydns,peulobideonseu,phr x wi den s,piravitens,prabhidensa,pravidens,prawydns,probhidensa,provhidansa,prwbydns,prwwyڈns  rwڈ aylynڈ,pu luo wei deng si,pu luo wei dun si,purobidensu,purovuidensu,Πρόβιντενς,Провиденс,Провидънс,Провіденс,Провідэнс,Փրովիդենս,פראווידענס,פרובידנס,بروفيدنس,پراویدنس,پروویڈنس,پروویڈنس، روڈ آئلینڈ,प्रभिदेन्स,प्राविडेन्स्,प्रॉव्हिडन्स,प्रोभिडेन्स,பிராவிடென்ஸ்,พรอวิเดนซ์,プロビデンス,プロヴィデンス,普洛威頓斯,普罗维登斯,프로비던스\t41.82399\t-71.41283\tP\tPPLA\tUS\t\tRI\t007\t59000\t\t190934\t2\t-17\tAmerica/New_York\t2021-10-13
+5780020\tProvidence\tProvidence\tProvidence,Providens,Providuns,Spring Creek,brwfydans,prawydns  ywta,pu luo wei deng si,Провиденс,Провидънс,بروفيدانس,پراویدنس، یوتا,پروویڈنس، یوٹاہ,普罗维登斯\t41.70632\t-111.81717\tP\tPPL\tUS\t\tUT\t005\t\t\t7124\t1401\t1401\tAmerica/Denver\t2017-03-09
+7315379\tProvidence Village\tProvidence Village\tProvidence Village\t33.2334\t-96.96158\tP\tPPL\tUS\t\tTX\t121\t\t\t4786\t177\t180\tAmerica/Chicago\t2022-02-25
 `;
   fs.writeFileSync(c5path, c5str);
   const altNamePath = path.join(tmpDir, 'test-IL-alt.txt');
@@ -406,22 +442,43 @@ test('autoCompleteZipMerge', (t) => {
       geo: 'zip',
     },
     {
-      id: '11413',
-      value: 'Springfield Gardens, NY 11413',
-      admin1: 'NY',
-      asciiname: 'Springfield Gardens',
+      admin1: 'PA',
+      asciiname: 'Springfield',
       country: 'United States',
-      latitude: 40.665415,
-      longitude: -73.749702,
-      timezone: 'America/New_York',
-      population: 38912,
       geo: 'zip',
+      id: '19064',
+      latitude: 39.932544,
+      longitude: -75.342975,
+      population: 24459,
+      timezone: 'America/New_York',
+      value: 'Springfield, PA 19064',
     },
   ];
   const result = t.context.db.autoComplete('Spring', true).slice(0, 6);
   for (const res of result) {
     delete res.rank;
   }
+  t.deepEqual(result, expected);
+});
+
+test('autoCompleteZipMerge2', (t) => {
+  const result = t.context.db.autoComplete('Providence', true)
+      .map((res) => {
+        return {
+          id: res.id,
+          val: res.value,
+          pop: res.population,
+        };
+      });
+  const expected = [
+    {id: 3571824, val: 'Nassau, New Providence, Bahamas', pop: 227940},
+    {id: 5224151, val: 'Providence, Rhode Island, USA', pop: 190934},
+    {id: 5780020, val: 'Providence, Utah, USA', pop: 7124},
+    {id: 4305295, val: 'Providence, Kentucky, USA', pop: 3065},
+    {id: 5221931, val: 'East Providence, Rhode Island, USA', pop: 47408},
+    {id: 5223681, val: 'North Providence, Rhode Island, USA', pop: 33835},
+    {id: '27315', val: 'Providence, NC 27315', pop: 2243},
+  ];
   t.deepEqual(result, expected);
 });
 

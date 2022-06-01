@@ -48,19 +48,16 @@ ORDER BY Population DESC
 LIMIT 10`;
 
 const ZIP_FULLTEXT_COMPLETE_SQL =
-`SELECT ZipCode,CityMixedCase,rank
+`SELECT ZipCode, rank
 FROM ZIPCodes_CityFullText5
-WHERE CityMixedCase MATCH ?
-ORDER BY Population DESC
-LIMIT 15`;
+WHERE ZIPCodes_CityFullText5 MATCH ?
+LIMIT 20`;
 
-const GEONAME_COMPLETE_SQL = `SELECT geonameid, longname,
-((sqrt(population)/40) + (-30 * rank)) as myrank
+const GEONAME_COMPLETE_SQL =
+`SELECT geonameid, rank
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
-GROUP BY geonameid
-ORDER BY myrank DESC
-LIMIT 15`;
+LIMIT 20`;
 
 const stateNames = {
   'AK': 'Alaska',
@@ -322,12 +319,21 @@ export class GeoDb {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
       qraw = qraw.replace(/\"/g, '""');
-      const geoRows = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
+      const geoRows0 = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
+      const ids = new Set();
+      const geoRows = [];
+      for (const row of geoRows0) {
+        const id = row.geonameid;
+        if (!ids.has(id)) {
+          ids.add(id);
+          geoRows.push(row);
+        }
+      }
       const geoMatches = geoRows.map((res) => {
         const loc = this.lookupGeoname(res.geonameid);
         const country = this.countryNames.get(loc.getCountryCode()) || '';
         const admin1 = loc.admin1 || '';
-        const rank = Math.trunc(res.myrank * 100.0) / 100.0;
+        const rankPop = Math.sqrt(loc.population) / 40;
         const obj = {
           id: res.geonameid,
           value: loc.name,
@@ -337,7 +343,7 @@ export class GeoDb {
           longitude: loc.longitude,
           timezone: loc.getTzid(),
           geo: 'geoname',
-          rank: rank,
+          rank: rankPop + (-30 * res.rank),
         };
         if (loc.population) {
           obj.population = loc.population;
@@ -356,11 +362,11 @@ export class GeoDb {
       if (!this.zipFulltextCompStmt) {
         this.zipFulltextCompStmt = this.zipsDb.prepare(ZIP_FULLTEXT_COMPLETE_SQL);
       }
-      const zipRows = this.zipFulltextCompStmt.all(`"${qraw}" *`);
+      const zipRows = this.zipFulltextCompStmt.all(`{longname} : "${qraw}" *`);
       const zipMatches = zipRows.map((res) => {
         const zipCode = res.ZipCode;
         const loc = this.lookupZip(zipCode);
-        const myrank = ((Math.sqrt(loc.population)/40) + (-30 * res.rank));
+        const rankPop = Math.sqrt(loc.population) / 40;
         const obj = {
           id: zipCode,
           value: loc.getName(),
@@ -372,7 +378,7 @@ export class GeoDb {
           timezone: loc.getTzid(),
           population: loc.population,
           geo: 'zip',
-          rank: myrank,
+          rank: rankPop + (-30 * res.rank),
         };
         return obj;
       });

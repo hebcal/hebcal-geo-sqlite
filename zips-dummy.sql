@@ -13,4 +13,4 @@ CREATE VIRTUAL TABLE ZIPCodes_CityFullText
 USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);
 
 CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
-USING fts5(ZipCode,CityMixedCase,Population);
+USING fts5(ZipCode UNINDEXED,CityMixedCase,Population UNINDEXED,longname);
