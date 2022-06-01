@@ -48,13 +48,13 @@ ORDER BY Population DESC
 LIMIT 10`;
 
 const ZIP_FULLTEXT_COMPLETE_SQL =
-`SELECT ZipCode, rank
+`SELECT ZipCode
 FROM ZIPCodes_CityFullText5
 WHERE ZIPCodes_CityFullText5 MATCH ?
 LIMIT 20`;
 
 const GEONAME_COMPLETE_SQL =
-`SELECT geonameid, rank
+`SELECT geonameid
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
 LIMIT 20`;
@@ -333,7 +333,6 @@ export class GeoDb {
         const loc = this.lookupGeoname(res.geonameid);
         const country = this.countryNames.get(loc.getCountryCode()) || '';
         const admin1 = loc.admin1 || '';
-        const rankPop = Math.sqrt(loc.population) / 40;
         const obj = {
           id: res.geonameid,
           value: loc.name,
@@ -343,7 +342,6 @@ export class GeoDb {
           longitude: loc.longitude,
           timezone: loc.getTzid(),
           geo: 'geoname',
-          rank: rankPop + (-30 * res.rank),
         };
         if (loc.population) {
           obj.population = loc.population;
@@ -366,7 +364,6 @@ export class GeoDb {
       const zipMatches = zipRows.map((res) => {
         const zipCode = res.ZipCode;
         const loc = this.lookupZip(zipCode);
-        const rankPop = Math.sqrt(loc.population) / 40;
         const obj = {
           id: zipCode,
           value: loc.getName(),
@@ -378,7 +375,6 @@ export class GeoDb {
           timezone: loc.getTzid(),
           population: loc.population,
           geo: 'zip',
-          rank: rankPop + (-30 * res.rank),
         };
         return obj;
       });
@@ -395,8 +391,8 @@ export class GeoDb {
         map.set(key, obj);
       }
       const values = Array.from(map.values());
-      values.sort((a, b) => b.rank - a.rank);
-      const topN = values.slice(0, 10);
+      values.sort((a, b) => b.population - a.population);
+      const topN = values.slice(0, 15);
       if (!latlong) {
         for (const val of topN) {
           delete val.latitude;
