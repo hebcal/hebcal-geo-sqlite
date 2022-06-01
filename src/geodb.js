@@ -289,6 +289,7 @@ export class GeoDb {
       admin1: res.State,
       asciiname: res.CityMixedCase,
       country: 'United States',
+      cc: 'US',
       latitude: res.Latitude,
       longitude: res.Longitude,
       timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
@@ -333,13 +334,15 @@ export class GeoDb {
       }
       const geoMatches = geoRows.map((res) => {
         const loc = this.lookupGeoname(res.geonameid);
-        const country = this.countryNames.get(loc.getCountryCode()) || '';
+        const cc = loc.getCountryCode();
+        const country = this.countryNames.get(cc) || '';
         const admin1 = loc.admin1 || '';
         const obj = {
           id: res.geonameid,
           value: loc.name,
           admin1,
           country,
+          cc,
           latitude: loc.latitude,
           longitude: loc.longitude,
           timezone: loc.getTzid(),
@@ -372,6 +375,7 @@ export class GeoDb {
           admin1: loc.admin1,
           asciiname: loc.getShortName(),
           country: 'United States',
+          cc: 'US',
           latitude: loc.latitude,
           longitude: loc.longitude,
           timezone: loc.getTzid(),
