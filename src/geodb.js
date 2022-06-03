@@ -55,7 +55,7 @@ ORDER BY Population DESC
 LIMIT 20`;
 
 const GEONAME_COMPLETE_SQL =
-`SELECT geonameid
+`SELECT geonameid, longname, city, admin1, country
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
 ORDER BY population DESC
@@ -335,11 +335,11 @@ export class GeoDb {
       const geoMatches = geoRows.map((res) => {
         const loc = this.lookupGeoname(res.geonameid);
         const cc = loc.getCountryCode();
-        const country = this.countryNames.get(cc) || '';
-        const admin1 = loc.admin1 || '';
+        const country = res.country || this.countryNames.get(cc) || '';
+        const admin1 = res.admin || loc.admin1 || '';
         const obj = {
           id: res.geonameid,
-          value: loc.name,
+          value: res.longname,
           admin1,
           country,
           cc,
@@ -350,6 +350,9 @@ export class GeoDb {
         };
         if (loc.population) {
           obj.population = loc.population;
+        }
+        if (res.city !== loc.asciiname) {
+          obj.name = res.city;
         }
         if (loc.asciiname) {
           obj.asciiname = loc.asciiname;
@@ -386,14 +389,14 @@ export class GeoDb {
       });
       const map = new Map();
       for (const obj of zipMatches) {
-        const key = [obj.asciiname, stateNames[obj.admin1], obj.country].join('|');
+        const key = [obj.asciiname, stateNames[obj.admin1], obj.cc].join('|');
         if (!map.has(key)) {
           map.set(key, obj);
         }
       }
       // GeoNames takes priority over USA ZIP code matches
       for (const obj of geoMatches) {
-        const key = [obj.asciiname, obj.admin1, obj.country].join('|');
+        const key = [obj.asciiname, obj.admin1, obj.cc].join('|');
         map.set(key, obj);
       }
       const values = Array.from(map.values());

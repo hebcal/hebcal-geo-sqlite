@@ -195,6 +195,8 @@ export async function buildGeonamesSqlite(opts) {
       FROM geoname g, admin1 a, country c
       WHERE g.country = c.ISO
       AND g.country <> 'US'
+      AND g.country <> 'IL'
+      AND g.country <> 'GB'
       AND g.country||'.'||g.admin1 = a.key
       `,
 
@@ -202,10 +204,29 @@ export async function buildGeonamesSqlite(opts) {
       SELECT g.geonameid,
       g.asciiname||', '||a.asciiname||', USA',
       g.population,
-      g.asciiname,a.asciiname,'USA'
+      g.asciiname,a.asciiname,'United States'
       FROM geoname g, admin1 a
       WHERE g.country = 'US'
       AND g.country||'.'||g.admin1 = a.key
+      `,
+
+      `INSERT INTO geoname_fulltext
+      SELECT g.geonameid,
+      g.asciiname||', '||a.asciiname||', UK',
+      g.population,
+      g.asciiname,a.asciiname,'UK'
+      FROM geoname g, admin1 a
+      WHERE g.country = 'GB'
+      AND g.country||'.'||g.admin1 = a.key
+      `,
+
+      `INSERT INTO geoname_fulltext
+      SELECT g.geonameid,
+      g.asciiname||', Israel',
+      g.population,
+      g.asciiname,NULL,'Israel'
+      FROM geoname g
+      WHERE g.country = 'IL'
       `,
 
       `INSERT INTO geoname_fulltext
@@ -242,14 +263,13 @@ export async function buildGeonamesSqlite(opts) {
 
       `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
-      alt.name||', '||a1.asciiname||', Israel',
+      alt.name||', Israel',
       g.population,
-      alt.name,a1.asciiname,'Israel'
-      FROM geoname g, admin1 a1, altnames alt
+      alt.name,NULL,'Israel'
+      FROM geoname g, altnames alt
       WHERE g.country = 'IL'
       AND alt.isolanguage = 'en'
       AND g.geonameid = alt.geonameid
-      AND g.country||'.'||g.admin1 = a1.key
       `,
 
       'VACUUM',

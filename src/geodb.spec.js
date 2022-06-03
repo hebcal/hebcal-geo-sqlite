@@ -310,19 +310,6 @@ test('autoComplete', (t) => {
       population: 432892,
       geo: 'geoname',
     },
-    {
-      id: 11049562,
-      value: 'Kiryat Ono, Israel',
-      asciiname: 'Kiryat Ono',
-      admin1: 'Tel Aviv',
-      country: 'Israel',
-      cc: 'IL',
-      latitude: 32.05503,
-      longitude: 34.85789,
-      timezone: 'Asia/Jerusalem',
-      population: 37791,
-      geo: 'geoname',
-    },
   ];
   const result = t.context.db.autoComplete('tel', true);
   for (const res of result) {
@@ -509,7 +496,7 @@ test('autoComplete-nolatlong', (t) => {
     cc: 'IL',
     geo: 'geoname',
   }];
-  const result = t.context.db.autoComplete('Raa', false);
+  const result = t.context.db.autoComplete('Ra\'a', false);
   for (const res of result) {
     delete res.rank;
   }
