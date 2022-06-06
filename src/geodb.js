@@ -211,6 +211,9 @@ export class GeoDb {
    */
   lookupGeoname(geonameid) {
     geonameid = +geonameid;
+    if (geonameid === 293396) {
+      geonameid = 293397;
+    }
     const found = this.geonamesCache.get(geonameid);
     if (typeof found !== 'undefined') return found;
     const result = this.geonamesStmt.get(geonameid);

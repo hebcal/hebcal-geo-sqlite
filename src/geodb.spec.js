@@ -582,3 +582,9 @@ test('autoCompleteZipPartial', (t) => {
   }];
   t.deepEqual(result.slice(0, 2), firstTwo);
 });
+
+test('Tel Aviv alias', (t) => {
+  const alias = t.context.db.lookupGeoname(293396);
+  t.is(alias.geoid, 293397);
+  t.is(alias.getName(), 'Tel Aviv, Israel');
+});
