@@ -67,7 +67,7 @@ USING fts5(ZipCode UNINDEXED,CityMixedCase,Population UNINDEXED,longname);`,
 
   `INSERT INTO ZIPCodes_CityFullText5
 SELECT ZipCode,CityMixedCase,Population,
-CityMixedCase||', '||StateFullName||', '||ZipCode
+CityMixedCase||', '||State||' '||ZipCode
 FROM ZIPCodes_Primary;`,
   ];
   for (const sql of sqls) {
@@ -550,4 +550,35 @@ test('alternatenames', (t) => {
     {'id': 7202956, 'geonameid': 293100, 'isolanguage': 'he', 'name': 'צפת', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
   ];
   t.deepEqual(actual, expected);
+});
+
+test('autoCompleteZipPartial', (t) => {
+  const result = t.context.db.autoComplete('Providence, RI 029', true);
+  t.is(result.length, 12);
+  const firstTwo = [{
+    id: '02909',
+    value: 'Providence, RI 02909',
+    admin1: 'RI',
+    asciiname: 'Providence',
+    country: 'United States',
+    cc: 'US',
+    latitude: 41.822232,
+    longitude: -71.448292,
+    timezone: 'America/New_York',
+    population: 43540,
+    geo: 'zip',
+  }, {
+    id: '02908',
+    value: 'Providence, RI 02908',
+    admin1: 'RI',
+    asciiname: 'Providence',
+    country: 'United States',
+    cc: 'US',
+    latitude: 41.839296,
+    longitude: -71.438804,
+    timezone: 'America/New_York',
+    population: 37467,
+    geo: 'zip',
+  }];
+  t.deepEqual(result.slice(0, 2), firstTwo);
 });

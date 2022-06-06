@@ -334,74 +334,19 @@ export class GeoDb {
       }
       const geoMatches = geoRows.map((res) => {
         const loc = this.lookupGeoname(res.geonameid);
-        const cc = loc.getCountryCode();
-        const country = res.country || this.countryNames.get(cc) || '';
-        const admin1 = res.admin || loc.admin1 || '';
-        const obj = {
-          id: res.geonameid,
-          value: res.longname,
-          admin1,
-          country,
-          cc,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          timezone: loc.getTzid(),
-          geo: 'geoname',
-        };
-        if (loc.population) {
-          obj.population = loc.population;
-        }
-        if (res.city !== loc.asciiname) {
-          obj.name = res.city;
-        }
-        if (loc.asciiname) {
-          obj.asciiname = loc.asciiname;
-        }
-        if (country) {
-          obj.country = country;
-        }
-        if (admin1) {
-          obj.admin1 = admin1;
-        }
-        return obj;
+        return this.geonameLocToAutocomplete(loc, res);
       });
       if (!this.zipFulltextCompStmt) {
         this.zipFulltextCompStmt = this.zipsDb.prepare(ZIP_FULLTEXT_COMPLETE_SQL);
       }
       const zipRows = this.zipFulltextCompStmt.all(`{longname} : "${qraw}" *`);
       const zipMatches = zipRows.map((res) => {
-        const zipCode = res.ZipCode;
-        const loc = this.lookupZip(zipCode);
-        const obj = {
-          id: zipCode,
-          value: loc.getName(),
-          admin1: loc.admin1,
-          asciiname: loc.getShortName(),
-          country: 'United States',
-          cc: 'US',
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          timezone: loc.getTzid(),
-          population: loc.population,
-          geo: 'zip',
-        };
-        return obj;
+        const loc = this.lookupZip(res.ZipCode);
+        return GeoDb.zipLocToAutocomplete(loc);
       });
-      const map = new Map();
-      for (const obj of zipMatches) {
-        const key = [obj.asciiname, stateNames[obj.admin1], obj.cc].join('|');
-        if (!map.has(key)) {
-          map.set(key, obj);
-        }
-      }
-      // GeoNames takes priority over USA ZIP code matches
-      for (const obj of geoMatches) {
-        const key = [obj.asciiname, obj.admin1, obj.cc].join('|');
-        map.set(key, obj);
-      }
-      const values = Array.from(map.values());
+      const values = this.mergeZipGeo(zipMatches, geoMatches);
       values.sort((a, b) => b.population - a.population);
-      const topN = values.slice(0, 15);
+      const topN = values.slice(0, 12);
       if (!latlong) {
         for (const val of topN) {
           delete val.latitude;
@@ -412,6 +357,95 @@ export class GeoDb {
       }
       return topN;
     }
+  }
+
+  /**
+   * @private
+   * @param {Location} loc
+   * @param {any} res
+   * @return {any}
+   */
+  geonameLocToAutocomplete(loc, res) {
+    const cc = loc.getCountryCode();
+    const country = res.country || this.countryNames.get(cc) || '';
+    const admin1 = res.admin || loc.admin1 || '';
+    const obj = {
+      id: res.geonameid,
+      value: res.longname,
+      admin1,
+      country,
+      cc,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      timezone: loc.getTzid(),
+      geo: 'geoname',
+    };
+    if (loc.population) {
+      obj.population = loc.population;
+    }
+    if (res.city !== loc.asciiname) {
+      obj.name = res.city;
+    }
+    if (loc.asciiname) {
+      obj.asciiname = loc.asciiname;
+    }
+    if (country) {
+      obj.country = country;
+    }
+    if (admin1) {
+      obj.admin1 = admin1;
+    }
+    return obj;
+  }
+
+  /**
+   * @private
+   * @param {Location} loc
+   * @return {any}
+   */
+  static zipLocToAutocomplete(loc) {
+    return {
+      id: loc.zip,
+      value: loc.getName(),
+      admin1: loc.admin1,
+      asciiname: loc.getShortName(),
+      country: 'United States',
+      cc: 'US',
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      timezone: loc.getTzid(),
+      population: loc.population,
+      geo: 'zip',
+    };
+  }
+
+  /**
+   * GeoNames matches takes priority over USA ZIP code matches
+   * @private
+   * @param {any[]} zipMatches
+   * @param {any[]} geoMatches
+   * @return {any[]}
+   */
+  mergeZipGeo(zipMatches, geoMatches) {
+    const zlen = zipMatches.length;
+    const glen = geoMatches.length;
+    if (zlen && !glen) {
+      return zipMatches;
+    } else if (glen && !zlen) {
+      return geoMatches;
+    }
+    const map = new Map();
+    for (const obj of zipMatches) {
+      const key = [obj.asciiname, stateNames[obj.admin1], obj.cc].join('|');
+      if (!map.has(key)) {
+        map.set(key, obj);
+      }
+    }
+    for (const obj of geoMatches) {
+      const key = [obj.asciiname, obj.admin1, obj.cc].join('|');
+      map.set(key, obj);
+    }
+    return Array.from(map.values());
   }
 
   /** Reads entire ZIP database and caches in-memory */
