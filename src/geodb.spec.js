@@ -588,3 +588,12 @@ test('Tel Aviv alias', (t) => {
   t.is(alias.geoid, 293397);
   t.is(alias.getName(), 'Tel Aviv, Israel');
 });
+
+test('geonameCityDescr', (t) => {
+  t.is(GeoDb.geonameCityDescr('Providence', 'Rhode Island', 'United States'), 'Providence, Rhode Island, USA');
+  t.is(GeoDb.geonameCityDescr('London', 'England', 'United Kingdom'), 'London, England, UK');
+  t.is(GeoDb.geonameCityDescr('Tel Aviv', 'Central District', 'Israel'), 'Tel Aviv, Israel');
+  t.is(GeoDb.geonameCityDescr('Montréal', 'Quebec', 'Canada'), 'Montréal, Quebec, Canada');
+  t.is(GeoDb.geonameCityDescr('Panamá', 'Panama', 'Panama'), 'Panamá, Panama');
+  t.is(GeoDb.geonameCityDescr('São Paulo', 'Sao Paulo', 'Brazil'), 'São Paulo, Brazil');
+});

@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import {Location} from '@hebcal/core';
 import '@hebcal/cities';
 import city2geonameid from './city2geonameid.json';
+import {transliterate} from 'transliteration';
 
 const GEONAME_SQL = `SELECT
   g.name as name,
@@ -228,6 +229,41 @@ export class GeoDb {
   }
 
   /**
+   * Convenience wrapper of the `transliterate` function from `transliteration` npm package.
+   * Transliterate the string `source` and return the result.
+   * @param {string} source
+   * @param {any} [options]
+   * @return {string}
+   */
+  static transliterate(source, options) {
+    return transliterate(source, options);
+  }
+
+  /**
+   * Builds a city description from geonameid string components
+   * @param {string} cityName e.g. 'Tel Aviv' or 'Chicago'
+   * @param {string} admin1 e.g. 'England' or 'Massachusetts'
+   * @param {string} countryName full country name, e.g. 'Israel' or 'United States'
+   * @return {string}
+   */
+  static geonameCityDescr(cityName, admin1, countryName) {
+    if (countryName === 'United States') countryName = 'USA';
+    if (countryName === 'United Kingdom') countryName = 'UK';
+    let cityDescr = cityName;
+    if (countryName !== 'Israel' && admin1 && admin1.indexOf(cityName) !== 0) {
+      const tlitCityName = transliterate(cityName);
+      const tlitAdmin1 = transliterate(admin1);
+      if (tlitAdmin1.indexOf(tlitCityName) != 0) {
+        cityDescr += ', ' + admin1;
+      }
+    }
+    if (countryName) {
+      cityDescr += ', ' + countryName;
+    }
+    return cityDescr;
+  }
+
+  /**
    * @private
    * @param {number} geonameid
    * @param {any} result
@@ -236,7 +272,7 @@ export class GeoDb {
   makeGeonameLocation(geonameid, result) {
     const country = result.country || '';
     const admin1 = result.admin1 || '';
-    const cityDescr = Location.geonameCityDescr(result.name, admin1, country);
+    const cityDescr = GeoDb.geonameCityDescr(result.name, admin1, country);
     const location = new Location(
         result.latitude,
         result.longitude,
