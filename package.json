@@ -29,8 +29,8 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^3.1.2",
-    "@hebcal/core": "^3.46.0",
-    "better-sqlite3": "^8.0.0",
+    "@hebcal/core": "^3.46.6",
+    "better-sqlite3": "^8.0.1",
     "pino": "^8.7.0",
     "pino-pretty": "^9.1.1",
     "transliteration": "^2.3.5"
@@ -54,18 +54,18 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@babel/core": "^7.20.2",
+    "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
-    "@rollup/plugin-babel": "^6.0.2",
-    "@rollup/plugin-commonjs": "^23.0.2",
-    "@rollup/plugin-json": "^5.0.1",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^23.0.3",
+    "@rollup/plugin-json": "^5.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "ava": "^5.1.0",
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^4.0.0",
-    "jsdoc-to-markdown": "^7.1.1",
-    "rollup": "^3.3.0"
+    "jsdoc-to-markdown": "^8.0.0",
+    "rollup": "^3.6.0"
   }
 }
