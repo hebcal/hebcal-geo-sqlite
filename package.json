@@ -8,6 +8,10 @@
   "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js"
+  },
   "bin": {
     "build-geonames-sqlite": "bin/build-geonames-sqlite",
     "download-and-make-dbs": "bin/download-and-make-dbs"
@@ -29,9 +33,9 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^3.1.2",
-    "@hebcal/core": "^3.46.6",
+    "@hebcal/core": "^3.47.1",
     "better-sqlite3": "^8.0.1",
-    "pino": "^8.7.0",
+    "pino": "^8.8.0",
     "pino-pretty": "^9.1.1",
     "transliteration": "^2.3.5"
   },
@@ -42,15 +46,7 @@
     "test": "ava"
   },
   "ava": {
-    "files": [
-      "src/**/*.spec.js"
-    ],
-    "require": [
-      "@babel/register",
-      "regenerator-runtime/runtime"
-    ],
-    "inherit": true,
-    "verbose": true
+    "require": ["@babel/register"]
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
@@ -58,14 +54,14 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
     "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^23.0.3",
-    "@rollup/plugin-json": "^5.0.2",
+    "@rollup/plugin-commonjs": "^23.0.7",
+    "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "ava": "^5.1.0",
-    "eslint": "^8.29.0",
+    "eslint": "^8.30.0",
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^4.0.0",
     "jsdoc-to-markdown": "^8.0.0",
-    "rollup": "^3.6.0"
+    "rollup": "^3.7.5"
   }
 }
