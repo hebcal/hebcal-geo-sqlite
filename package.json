@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "4.8.1",
+  "version": "4.9.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -32,11 +32,11 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/cities": "^3.1.2",
-    "@hebcal/core": "^3.47.1",
-    "better-sqlite3": "^8.0.1",
-    "pino": "^8.8.0",
-    "pino-pretty": "^9.1.1",
+    "@hebcal/cities": "^3.2.0",
+    "@hebcal/core": "^4.0.0",
+    "better-sqlite3": "^8.3.0",
+    "pino": "^8.11.0",
+    "pino-pretty": "^10.0.0",
     "transliteration": "^2.3.5"
   },
   "scripts": {
@@ -50,18 +50,18 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@babel/core": "^7.20.5",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/register": "^7.18.9",
+    "@babel/core": "^7.21.5",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/register": "^7.21.0",
     "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^23.0.7",
+    "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "ava": "^5.1.0",
-    "eslint": "^8.30.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "ava": "^5.2.0",
+    "eslint": "^8.39.0",
     "eslint-config-google": "^0.14.0",
-    "jsdoc": "^4.0.0",
+    "jsdoc": "^4.0.2",
     "jsdoc-to-markdown": "^8.0.0",
-    "rollup": "^3.7.5"
+    "rollup": "^3.21.0"
   }
 }
