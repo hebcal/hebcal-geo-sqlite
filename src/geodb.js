@@ -153,8 +153,12 @@ export class GeoDb {
 
   /** Closes database handles */
   close() {
+    this.zipStmt = undefined;
+    this.geonamesStmt = undefined;
     this.zipsDb.close();
+    this.zipsDb = undefined;
     this.geonamesDb.close();
+    this.geonamesDb = undefined;
   }
 
   /**

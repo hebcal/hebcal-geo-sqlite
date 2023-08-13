@@ -276,12 +276,17 @@ export async function buildGeonamesSqlite(opts) {
       'VACUUM',
   );
 
-  logger.info(`Closing ${dbFilename}`);
-  db.close();
-  db = null;
-  logger.info('buildGeonamesSqlite finished');
-  logger = null;
-  return Promise.resolve(true);
+  return new Promise((resolve, reject) => {
+    try {
+      logger.info(`Closing ${dbFilename}`);
+      db.close();
+      logger.info('buildGeonamesSqlite finished');
+      resolve(true);
+    } catch (err) {
+      logger.error(err);
+      reject(err);
+    }
+  });
 }
 
 /**
@@ -305,17 +310,16 @@ function doSql(logger, db, ...sqls) {
  * @param {Function} callback
  */
 async function doFile(logger, db, infile, tableName, expectedFields, callback) {
-  logger.info(`${infile} => ${tableName}`);
-  db.exec('BEGIN');
-  let sql = `INSERT OR IGNORE INTO ${tableName} VALUES (?`;
-  for (let i = 0; i < expectedFields - 1; i++) {
-    sql += ',?';
-  }
-  sql += ')';
-  logger.info(sql);
-  const stmt = db.prepare(sql);
-
   return new Promise((resolve, reject) => {
+    logger.info(`${infile} => ${tableName}`);
+    db.exec('BEGIN');
+    let sql = `INSERT OR IGNORE INTO ${tableName} VALUES (?`;
+    for (let i = 0; i < expectedFields - 1; i++) {
+      sql += ',?';
+    }
+    sql += ')';
+    logger.info(sql);
+    let stmt = db.prepare(sql);
     try {
       const rl = readline.createInterface({
         input: fs.createReadStream(infile),
@@ -345,6 +349,7 @@ async function doFile(logger, db, infile, tableName, expectedFields, callback) {
 
       rl.on('close', () => {
         logger.info(`Inserted ${accepted} / ${num} into ${tableName} from ${infile}`);
+        stmt = null;
         db.exec('COMMIT');
       });
 

@@ -10,6 +10,7 @@ import pino from 'pino';
 import legacyCities from './legacy.json';
 import {makeDummyZipsDb} from './makeDummyZipsDb';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt';
+import {munge} from './munge';
 
 test.before(async (t) => {
   const logger = t.context.logger = pino({
@@ -34,6 +35,7 @@ test.before(async (t) => {
   };
   await buildGeonamesSqlite(filenames);
   t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
+  logger.info('setup: complete');
 });
 
 test.after((t) => {
@@ -61,7 +63,7 @@ test('legacy', (t) => {
 
 test('legacy2', (t) => {
   for (const key of legacyCities) {
-    const name = GeoDb.munge(key);
+    const name = munge(key);
     const geonameid = t.context.db.legacyCities.get(name);
     t.is(typeof geonameid, 'number', key);
   }
