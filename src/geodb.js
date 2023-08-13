@@ -3,6 +3,7 @@ import {Location} from '@hebcal/core';
 import '@hebcal/cities';
 import city2geonameid from './city2geonameid.json';
 import {transliterate} from 'transliteration';
+import {munge} from './munge';
 
 const GEONAME_SQL = `SELECT
   g.name as name,
@@ -138,7 +139,7 @@ export class GeoDb {
     /** @type {Map<string, number>} */
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
-      this.legacyCities.set(GeoDb.munge(name), id);
+      this.legacyCities.set(munge(name), id);
     }
     const stmt = this.geonamesDb.prepare(`SELECT ISO, Country FROM country WHERE Country <> ''`);
     const rows = stmt.all();
@@ -162,10 +163,7 @@ export class GeoDb {
    * @return {string}
    */
   static munge(s) {
-    return s.toLowerCase()
-        .replace(/'/g, '')
-        .replace(/ /g, '')
-        .replace(/\+/g, '');
+    return munge(s);
   }
 
   /**
@@ -302,7 +300,7 @@ export class GeoDb {
    * @return {Location}
    */
   lookupLegacyCity(cityName) {
-    const name = GeoDb.munge(cityName);
+    const name = munge(cityName);
     const geonameid = this.legacyCities.get(name);
     if (geonameid) {
       return this.lookupGeoname(geonameid);

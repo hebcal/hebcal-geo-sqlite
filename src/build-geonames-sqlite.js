@@ -24,6 +24,7 @@ export async function buildGeonamesSqlite(opts) {
       options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
     },
   });
+  logger.info(`Opening ${dbFilename}`);
   const db = new Database(dbFilename);
   db.pragma('journal_mode = MEMORY');
 
@@ -275,7 +276,11 @@ export async function buildGeonamesSqlite(opts) {
       'VACUUM',
   );
 
+  logger.info(`Closing ${dbFilename}`);
   db.close();
+  db = null;
+  logger.info('buildGeonamesSqlite finished');
+  logger = null;
   return Promise.resolve(true);
 }
 
