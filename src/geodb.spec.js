@@ -12,7 +12,7 @@ import {makeDummyZipsDb} from './makeDummyZipsDb';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt';
 import {munge} from './munge';
 
-const logger = pino();
+const logger = pino({level: 'error'});
 
 test.before(async (t) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
