@@ -12,16 +12,12 @@ import {makeDummyZipsDb} from './makeDummyZipsDb';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt';
 import {munge} from './munge';
 
+const logger = pino();
+
 test.before(async (t) => {
-  const logger = t.context.logger = pino({
-    transport: {
-      target: 'pino-pretty',
-      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-    },
-  });
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
-  const {ciPath, c5path, a1path, altNamePath} = makeDummyInfoTxt(tmpDir);
-  const testZipsPath = makeDummyZipsDb(tmpDir);
+  const {ciPath, c5path, a1path, altNamePath} = makeDummyInfoTxt(logger, tmpDir);
+  const testZipsPath = makeDummyZipsDb(logger, tmpDir);
   const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
   logger.info(testDbPath);
   const filenames = {
@@ -32,15 +28,18 @@ test.before(async (t) => {
     admin1CodesASCIItxt: a1path,
     ILtxt: '/dev/null',
     ILalternate: altNamePath,
+    logger: logger,
   };
   await buildGeonamesSqlite(filenames);
   t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 6500);
   logger.info('setup: complete');
 });
 
 test.after((t) => {
+  logger.info('Cleaning up');
   t.context.db.close();
-  t.context.logger.info('Finished');
+  logger.info('Finished');
 });
 
 test('legacy', (t) => {

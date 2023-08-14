@@ -1,5 +1,4 @@
 import Database from 'better-sqlite3';
-import pino from 'pino';
 import events from 'events';
 import fs from 'fs';
 import readline from 'readline';
@@ -17,13 +16,7 @@ export async function buildGeonamesSqlite(opts) {
   const admin1CodesASCIItxt = opts.admin1CodesASCIItxt;
   const ILtxt = opts.ILtxt;
   const ILalternate = opts.ILalternate;
-  const logger = pino({
-    // level: argv.quiet ? 'warn' : 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-    },
-  });
+  const logger = opts.logger;
   logger.info(`Opening ${dbFilename}`);
   const db = new Database(dbFilename);
   db.pragma('journal_mode = MEMORY');

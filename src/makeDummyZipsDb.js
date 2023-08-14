@@ -1,15 +1,8 @@
 /* eslint-disable require-jsdoc, max-len */
 import Database from 'better-sqlite3';
 import path from 'path';
-import pino from 'pino';
 
-export function makeDummyZipsDb(tmpDir) {
-  const logger = pino({
-    transport: {
-      target: 'pino-pretty',
-      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-    },
-  });
+export function makeDummyZipsDb(logger, tmpDir) {
   const testZipsPath = path.join(tmpDir, 'zips.sqlite3');
   logger.info(testZipsPath);
   const zipsDb = new Database(testZipsPath);

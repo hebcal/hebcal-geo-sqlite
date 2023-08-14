@@ -1,15 +1,8 @@
 /* eslint-disable require-jsdoc, max-len */
 import fs from 'fs';
 import path from 'path';
-import pino from 'pino';
 
-export function makeDummyInfoTxt(tmpDir) {
-  const logger = pino({
-    transport: {
-      target: 'pino-pretty',
-      options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-    },
-  });
+export function makeDummyInfoTxt(logger, tmpDir) {
   const ciPath = path.join(tmpDir, 'test-countryInfo.txt');
   const ciStr =
 `IL\tISR\t376\tIS\tIsrael\tJerusalem\t20770\t8883800\tAS\t.il\tILS\tShekel\t972\t#######\t^(\\d{7}|\\d{5})$\the,ar-IL,en-IL,\t294640\tSY,JO,LB,EG,PS\t
