@@ -32,7 +32,6 @@ test.before(async (t) => {
   };
   await buildGeonamesSqlite(filenames);
   t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 6500);
   logger.info('setup: complete');
 });
 
