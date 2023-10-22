@@ -1,9 +1,9 @@
 import Database from 'better-sqlite3';
 import {Location} from '@hebcal/core';
 import '@hebcal/cities';
-import city2geonameid from './city2geonameid.json';
+import city2geonameid from './city2geonameid.json' assert { type: "json" };
 import {transliterate} from 'transliteration';
-import {munge} from './munge';
+import {munge} from './munge.js';
 
 const GEONAME_SQL = `SELECT
   g.name as name,

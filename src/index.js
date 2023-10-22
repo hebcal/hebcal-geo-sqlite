@@ -1,2 +1,2 @@
-export {GeoDb} from './geodb';
-export {buildGeonamesSqlite} from './build-geonames-sqlite';
+export {GeoDb} from './geodb.js';
+export {buildGeonamesSqlite} from './build-geonames-sqlite.js';

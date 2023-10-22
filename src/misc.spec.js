@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'ava';
-import {GeoDb} from './geodb';
-import {munge} from './munge';
+import {GeoDb} from './geodb.js';
+import {munge} from './munge.js';
 
 test('geonameCityDescr', (t) => {
   t.is(GeoDb.geonameCityDescr('Providence', 'Rhode Island', 'United States'), 'Providence, Rhode Island, USA');

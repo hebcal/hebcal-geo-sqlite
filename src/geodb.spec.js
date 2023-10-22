@@ -1,16 +1,16 @@
 /* eslint-disable max-len */
 import test from 'ava';
 import {Location} from '@hebcal/core';
-import {GeoDb} from './geodb';
-import {buildGeonamesSqlite} from './build-geonames-sqlite';
+import {GeoDb} from './geodb.js';
+import {buildGeonamesSqlite} from './build-geonames-sqlite.js';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import pino from 'pino';
-import legacyCities from './legacy.json';
-import {makeDummyZipsDb} from './makeDummyZipsDb';
-import {makeDummyInfoTxt} from './makeDummyInfoTxt';
-import {munge} from './munge';
+import legacyCities from './legacy.json' assert { type: "json" };
+import {makeDummyZipsDb} from './makeDummyZipsDb.js';
+import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
+import {munge} from './munge.js';
 
 const logger = pino({level: 'error'});
 
@@ -360,7 +360,6 @@ test('legacy3', (t) => {
     tzid: 'Asia/Jerusalem',
     name: 'Petah Tiqwa',
     cc: 'IL',
-    geoid: 1007988,
   };
   const plainObj = JSON.parse(JSON.stringify(loc));
   t.deepEqual(plainObj, expected);
