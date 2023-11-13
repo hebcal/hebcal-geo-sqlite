@@ -90,6 +90,7 @@ test('geoname', (t) => {
     geo: 'geoname',
     geonameid: 4119403,
     population: 197992,
+    elevation: 105,
     admin1: 'Arkansas',
   };
   t.deepEqual(Object.assign({}, loc), expected);
@@ -119,7 +120,8 @@ test('zip', (t) => {
     stateName: 'Rhode Island',
     geo: 'zip',
     zip: '02912',
-    population: 1370,
+    population: 4739,
+    elevation: 118,
   };
   t.deepEqual(Object.assign({}, loc), expected);
 });
@@ -159,7 +161,7 @@ test('autoCompleteZip', (t) => {
       latitude: 37.171008,
       longitude: -93.331857,
       timezone: 'America/Chicago',
-      population: 54952,
+      population: 55168,
       geo: 'zip',
     },
     {
@@ -172,7 +174,7 @@ test('autoCompleteZip', (t) => {
       latitude: 39.771921,
       longitude: -89.686047,
       timezone: 'America/Chicago',
-      population: 39831,
+      population: 39157,
       geo: 'zip',
     },
   ];
@@ -192,7 +194,7 @@ test('autoCompleteZipPlus4', (t) => {
       latitude: 39.771921,
       longitude: -89.686047,
       timezone: 'America/Chicago',
-      population: 39831,
+      population: 39157,
       geo: 'zip',
     },
   ];
@@ -255,19 +257,6 @@ test('autoCompleteZipMerge', (t) => {
       asciiname: 'Springfield',
     },
     {
-      id: '62704',
-      value: 'Springfield, IL 62704',
-      admin1: 'IL',
-      asciiname: 'Springfield',
-      country: 'United States',
-      cc: 'US',
-      latitude: 39.771921,
-      longitude: -89.686047,
-      timezone: 'America/Chicago',
-      population: 39831,
-      geo: 'zip',
-    },
-    {
       id: '11413',
       value: 'Springfield Gardens, NY 11413',
       admin1: 'NY',
@@ -277,7 +266,20 @@ test('autoCompleteZipMerge', (t) => {
       latitude: 40.665415,
       longitude: -73.749702,
       timezone: 'America/New_York',
-      population: 38912,
+      population: 42978,
+      geo: 'zip',
+    },
+    {
+      id: '62704',
+      value: 'Springfield, IL 62704',
+      admin1: 'IL',
+      asciiname: 'Springfield',
+      country: 'United States',
+      cc: 'US',
+      latitude: 39.771921,
+      longitude: -89.686047,
+      timezone: 'America/Chicago',
+      population: 39157,
       geo: 'zip',
     },
   ];
@@ -304,7 +306,7 @@ test('autoCompleteZipMerge2', (t) => {
     {i: 5223681, v: 'North Providence, Rhode Island, USA', p: 33835},
     {i: 5780020, v: 'Providence, Utah, USA', p: 7124},
     {i: 4305295, v: 'Providence, Kentucky, USA', p: 3065},
-    {i: '27315', v: 'Providence, NC 27315', p: 2243},
+    {i: '27315', v: 'Providence, NC 27315', p: 1892},
   ];
   t.deepEqual(result, expected);
 });
@@ -393,7 +395,7 @@ test('autoCompleteZipPartial', (t) => {
     latitude: 41.822232,
     longitude: -71.448292,
     timezone: 'America/New_York',
-    population: 43540,
+    population: 46119,
     geo: 'zip',
   }, {
     id: '02908',
@@ -405,7 +407,7 @@ test('autoCompleteZipPartial', (t) => {
     latitude: 41.839296,
     longitude: -71.438804,
     timezone: 'America/New_York',
-    population: 37467,
+    population: 38507,
     geo: 'zip',
   }];
   t.deepEqual(result.slice(0, 2), firstTwo);

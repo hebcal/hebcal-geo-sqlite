@@ -14,6 +14,7 @@ const GEONAME_SQL = `SELECT
   g.latitude as latitude,
   g.longitude as longitude,
   g.population as population,
+  g.gtopo30 as elevation,
   g.timezone as timezone
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
@@ -31,16 +32,19 @@ const GEONAME_ALL_SQL = `SELECT
   g.latitude as latitude,
   g.longitude as longitude,
   g.population as population,
+  g.gtopo30 as elevation,
   g.timezone as timezone
 FROM geoname g
 LEFT JOIN country c on g.country = c.iso
 LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 `;
 
-const ZIPCODE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
+const ZIPCODE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,Elevation,
+TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
 
-const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
+const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,Elevation,
+TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
@@ -205,6 +209,9 @@ export class GeoDb {
     location.geo = 'zip';
     location.zip = zip;
     location.population = result.Population;
+    if (result.Elevation) {
+      location.elevation = result.Elevation;
+    }
     return location;
   }
 
@@ -296,6 +303,9 @@ export class GeoDb {
     if (result.population) {
       location.population = result.population;
     }
+    if (result.elevation) {
+      location.elevation = result.elevation;
+    }
     return location;
   }
 
@@ -337,6 +347,9 @@ export class GeoDb {
       population: res.Population,
       geo: 'zip',
     };
+    if (res.Elevation) {
+      obj.elevation = res.Elevation;
+    }
     return obj;
   }
 
