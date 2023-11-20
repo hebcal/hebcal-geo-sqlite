@@ -209,7 +209,7 @@ export class GeoDb {
     location.geo = 'zip';
     location.zip = zip;
     location.population = result.Population;
-    if (result.Elevation) {
+    if (result.Elevation && result.Elevation > 0) {
       location.elevation = result.Elevation;
     }
     return location;
@@ -303,7 +303,7 @@ export class GeoDb {
     if (result.population) {
       location.population = result.population;
     }
-    if (result.elevation) {
+    if (result.elevation && result.elevation > 0) {
       location.elevation = result.elevation;
     }
     return location;
@@ -347,7 +347,7 @@ export class GeoDb {
       population: res.Population,
       geo: 'zip',
     };
-    if (res.Elevation) {
+    if (res.Elevation && res.Elevation > 0) {
       obj.elevation = res.Elevation;
     }
     return obj;
