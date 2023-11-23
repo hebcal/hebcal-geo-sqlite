@@ -203,15 +203,14 @@ export class GeoDb {
     const zip = result.ZipCode;
     const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
-    const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr, 'US', zip);
+    const elevation = result?.Elevation > 0 ? result.Elevation : 0;
+    const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr,
+        'US', zip, elevation);
     location.admin1 = location.state = result.State;
     location.stateName = stateNames[location.state];
     location.geo = 'zip';
     location.zip = zip;
     location.population = result.Population;
-    if (result.Elevation && result.Elevation > 0) {
-      location.elevation = result.Elevation;
-    }
     return location;
   }
 
@@ -282,6 +281,7 @@ export class GeoDb {
     const country = result.country || '';
     const admin1 = result.admin1 || '';
     const cityDescr = GeoDb.geonameCityDescr(result.name, admin1, country);
+    const elevation = result?.elevation > 0 ? result.elevation : 0;
     const location = new Location(
         result.latitude,
         result.longitude,
@@ -290,6 +290,7 @@ export class GeoDb {
         cityDescr,
         result.cc,
         geonameid,
+        elevation,
     );
     location.geo = 'geoname';
     location.geonameid = geonameid;
@@ -302,9 +303,6 @@ export class GeoDb {
     }
     if (result.population) {
       location.population = result.population;
-    }
-    if (result.elevation && result.elevation > 0) {
-      location.elevation = result.elevation;
     }
     return location;
   }
