@@ -79,21 +79,22 @@ test('geoname', (t) => {
   t.is(loc.getShortName(), 'Little Rock');
   t.is(loc.getName(), 'Little Rock, Arkansas, USA');
   const expected = {
+    locationName: 'Little Rock, Arkansas, USA',
     latitude: 34.74648,
     longitude: -92.28959,
+    elevation: 105,
+    timeZoneId: 'America/Chicago',
     il: false,
-    tzid: 'America/Chicago',
-    name: 'Little Rock, Arkansas, USA',
-    asciiname: 'Little Rock',
     cc: 'US',
     geoid: 4119403,
     geo: 'geoname',
     geonameid: 4119403,
-    population: 197992,
-    elevation: 105,
+    asciiname: 'Little Rock',
     admin1: 'Arkansas',
+    population: 197992,
   };
-  t.deepEqual(Object.assign({}, loc), expected);
+  const plainObj = Object.assign({}, loc);
+  t.deepEqual(plainObj, expected);
 });
 
 test('zip', (t) => {
@@ -108,11 +109,12 @@ test('zip', (t) => {
   t.is(loc.getShortName(), 'Providence');
   t.is(loc.getName(), 'Providence, RI 02912');
   const expected = {
+    locationName: 'Providence, RI 02912',
     latitude: 41.826254,
     longitude: -71.402502,
+    elevation: 118,
+    timeZoneId: 'America/New_York',
     il: false,
-    tzid: 'America/New_York',
-    name: 'Providence, RI 02912',
     cc: 'US',
     geoid: '02912',
     state: 'RI',
@@ -121,9 +123,9 @@ test('zip', (t) => {
     geo: 'zip',
     zip: '02912',
     population: 4739,
-    elevation: 118,
   };
-  t.deepEqual(Object.assign({}, loc), expected);
+  const plainObj = Object.assign({}, loc);
+  t.deepEqual(plainObj, expected);
 });
 
 test('autoComplete', (t) => {
@@ -356,11 +358,12 @@ test('legacy3', (t) => {
   const loc = t.context.db.lookupLegacyCity('IL-Petah Tikva');
   t.is(loc instanceof Location, true);
   const expected = {
+    locationName: 'Petah Tiqwa',
     latitude: 32.08707,
     longitude: 34.88747,
+    elevation: 0,
+    timeZoneId: 'Asia/Jerusalem',
     il: true,
-    tzid: 'Asia/Jerusalem',
-    name: 'Petah Tiqwa',
     cc: 'IL',
   };
   const plainObj = JSON.parse(JSON.stringify(loc));
