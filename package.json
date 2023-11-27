@@ -29,7 +29,7 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^5.0.0",
-    "@hebcal/core": "^5.0.0-rc2",
+    "@hebcal/core": "^5.0.0-rc6",
     "better-sqlite3": "^9.1.1",
     "pino": "^8.16.2",
     "pino-pretty": "^10.2.3",
@@ -60,6 +60,6 @@
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^4.0.2",
     "jsdoc-to-markdown": "^8.0.0",
-    "rollup": "^4.5.1"
+    "rollup": "^4.6.0"
   }
 }
