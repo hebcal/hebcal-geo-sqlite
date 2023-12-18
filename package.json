@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -8,6 +8,11 @@
   "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.cjs"
+  },
   "bin": {
     "build-geonames-sqlite": "bin/build-geonames-sqlite",
     "download-and-make-dbs": "bin/download-and-make-dbs"
@@ -20,6 +25,9 @@
     "url": "https://github.com/hebcal/hebcal-geo-sqlite/issues"
   },
   "typings": "geo-sqlite.d.ts",
+  "engines": {
+    "node": ">= 20.0.0"
+  },
   "files": [
     "dist",
     "bin",
@@ -28,7 +36,7 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/cities": "^5.0.0",
+    "@hebcal/cities": "^5.0.1",
     "@hebcal/core": "^5.0.3",
     "better-sqlite3": "^9.2.2",
     "pino": "^8.17.1",
@@ -41,17 +49,8 @@
     "readme": "npx jsdoc2md dist/index.js",
     "test": "ava"
   },
-  "ava": {
-    "require": [
-      "@babel/register"
-    ]
-  },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@babel/core": "^7.23.6",
-    "@babel/preset-env": "^7.23.6",
-    "@babel/register": "^7.22.15",
-    "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
