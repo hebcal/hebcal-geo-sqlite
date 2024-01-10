@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -11,7 +11,8 @@
   "type": "module",
   "exports": {
     "import": "./dist/index.mjs",
-    "require": "./dist/index.cjs"
+    "require": "./dist/index.cjs",
+    "types": "./geo-sqlite.d.ts"
   },
   "bin": {
     "build-geonames-sqlite": "bin/build-geonames-sqlite",
@@ -37,10 +38,10 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^5.0.1",
-    "@hebcal/core": "^5.0.3",
+    "@hebcal/core": "^5.0.7",
     "better-sqlite3": "^9.2.2",
-    "pino": "^8.17.1",
-    "pino-pretty": "^10.3.0",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
     "transliteration": "^2.3.5"
   },
   "scripts": {
@@ -59,6 +60,6 @@
     "eslint-config-google": "^0.14.0",
     "jsdoc": "^4.0.2",
     "jsdoc-to-markdown": "^8.0.0",
-    "rollup": "^4.9.1"
+    "rollup": "^4.9.4"
   }
 }

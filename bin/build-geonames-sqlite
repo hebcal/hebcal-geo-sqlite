@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const {buildGeonamesSqlite} = require('@hebcal/geo-sqlite');
-const {pino} = require('pino');
+import {buildGeonamesSqlite} from '@hebcal/geo-sqlite';
+import {pino} from 'pino';
 
 const logger = pino({
   // level: argv.quiet ? 'warn' : 'info',
