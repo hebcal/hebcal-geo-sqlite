@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -38,10 +38,10 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^5.0.1",
-    "@hebcal/core": "^5.2.2",
-    "better-sqlite3": "^9.4.0",
-    "pino": "^8.18.0",
-    "pino-pretty": "^10.3.1",
+    "@hebcal/core": "^5.3.8",
+    "better-sqlite3": "^10.0.0",
+    "pino": "^9.0.0",
+    "pino-pretty": "^11.0.0",
     "transliteration": "^2.3.5"
   },
   "scripts": {
@@ -55,11 +55,11 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "ava": "^6.1.1",
-    "eslint": "^8.56.0",
+    "ava": "^6.1.3",
+    "eslint": "^8.57.0",
     "eslint-config-google": "^0.14.0",
-    "jsdoc": "^4.0.2",
+    "jsdoc": "^4.0.3",
     "jsdoc-to-markdown": "^8.0.1",
-    "rollup": "^4.9.6"
+    "rollup": "^4.17.2"
   }
 }
