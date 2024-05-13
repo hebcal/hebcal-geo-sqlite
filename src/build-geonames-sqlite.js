@@ -134,7 +134,7 @@ export async function buildGeonamesSqlite(opts) {
       if (a[2] === 'he') {
         a[3] = a[3].replace(/‘/g, '׳');
         a[3] = a[3].replace(/’/g, '׳');
-        a[3] = a[3].replace(/\'/g, '׳');
+        a[3] = a[3].replace(/'/g, '׳');
         a[3] = Locale.hebrewStripNikkud(a[3]);
       } else {
         a[3] = a[3].replace(/‘/g, '\'');
@@ -164,8 +164,8 @@ export async function buildGeonamesSqlite(opts) {
   );
 
   doSql(logger, db,
-//      `update admin1 set name='',asciiname='' where key like 'PS.%';`,
-//      `update country set country = '' where iso = 'PS';`,
+      // `update admin1 set name='',asciiname='' where key like 'PS.%';`,
+      // `update country set country = '' where iso = 'PS';`,
       `delete from geoname where country = 'PS' and admin1 = 'GZ';`,
       `delete from geoname where geonameid = 7303419;`,
       `update geoname set country = 'IL' where country = 'PS' and admin1 = 'WE';`,

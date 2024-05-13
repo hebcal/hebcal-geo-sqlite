@@ -374,7 +374,7 @@ export class GeoDb {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
-      qraw = qraw.replace(/\"/g, '""');
+      qraw = qraw.replace(/"/g, '""');
       const geoRows0 = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
       const ids = new Set();
       const geoRows = [];

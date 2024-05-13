@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc, max-len */
+/* eslint-disable max-len */
 import Database from 'better-sqlite3';
 import path from 'path';
 

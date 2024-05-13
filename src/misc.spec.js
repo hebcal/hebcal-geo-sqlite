@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import test from 'ava';
 import {GeoDb} from './geodb.js';
 import {munge} from './munge.js';
