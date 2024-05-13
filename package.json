@@ -45,7 +45,9 @@
     "transliteration": "^2.3.5"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build:rollup": "rollup -c",
+    "build:json2js": "for f in src/*.json; do echo 'export default' > $f.js && cat $f >> $f.js; done",
+    "build": "npm run build:json2js && npm run build:rollup",
     "prepublish": "npm run build",
     "readme": "npx jsdoc2md dist/index.js",
     "test": "ava"

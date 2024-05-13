@@ -5,8 +5,8 @@ import globals from 'globals';
 export default [
   {
     ignores: [
-      'unused/*.js',
-      'static/i/hebcal-app-*.min.js',
+      'src/*.json.js',
+      'dist',
     ],
   },
   js.configs.recommended,
