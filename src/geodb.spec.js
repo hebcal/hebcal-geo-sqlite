@@ -7,7 +7,7 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import pino from 'pino';
-import legacyCities from './legacy.json' assert {type: "json"};
+import legacyCities from './legacy.json' with {type: "json"};
 import {makeDummyZipsDb} from './makeDummyZipsDb.js';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
 import {munge} from './munge.js';
