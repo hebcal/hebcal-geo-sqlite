@@ -336,3 +336,4 @@
 11778039	Bat A'in	Bat A'in		31.65729	35.10334	P	STLMT	IL		06				0		752	Asia/Hebron	2017-12-04
 12156446	Beit Aryeh-Ofarim	Beit Aryeh-Ofarim	byt ʼryh,בית אריה	32.03869	35.04972	P	PPL	PS		WE				5139		254	Asia/Hebron	2020-04-22
 12156452	Beit Aryeh-Ofarim	Beit Aryeh-Ofarim		32.03742	35.05004	P	PPL	PS		WE				5139		186	Asia/Hebron	2020-04-22
+295530	Beer Sheva	Beer Sheva	x	31.25181	34.7913	P	PPLA	IL		01				186600		285	Asia/Jerusalem	3/15/19
