@@ -423,3 +423,25 @@ test('Tel Aviv alias', (t) => {
   t.is(alias.geoid, 293397);
   t.is(alias.getName(), 'Tel Aviv, Israel');
 });
+
+test('Chandler Arizona', (t) => {
+  const loc = t.context.db.lookupZip('85226');
+  const plainObj = Object.assign({}, loc);
+  const expected = {
+    locationName: 'Chandler, AZ 85226',
+    latitude: 33.266332,
+    longitude: -111.943009,
+    elevation: 1157,
+    timeZoneId: 'America/Phoenix',
+    il: false,
+    cc: 'US',
+    geoid: '85226',
+    state: 'AZ',
+    admin1: 'AZ',
+    stateName: 'Arizona',
+    geo: 'zip',
+    zip: '85226',
+    population: 40689,
+  };
+  t.deepEqual(plainObj, expected);
+});

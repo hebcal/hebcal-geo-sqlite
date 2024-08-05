@@ -202,7 +202,8 @@ export class GeoDb {
    */
   makeZipLocation(result) {
     const zip = result.ZipCode;
-    const tzid = Location.getUsaTzid(result.State, result.TimeZone, result.DayLightSaving);
+    const tz = result.TimeZone;
+    const tzid = Location.getUsaTzid(result.State, +tz, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const elevation = result?.Elevation > 0 ? result.Elevation : 0;
     const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr,
