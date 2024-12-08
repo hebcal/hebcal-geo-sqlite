@@ -9,7 +9,6 @@ module.exports = [
   {
     input: 'src/index.js',
     output: [
-      {file: pkg.main, format: 'cjs', name: pkg.name, banner},
       {file: pkg.module, format: 'es', name: pkg.name, banner},
     ],
     plugins: [
