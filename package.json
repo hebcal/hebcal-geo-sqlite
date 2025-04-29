@@ -35,10 +35,10 @@
     "geo-sqlite.d.ts"
   ],
   "dependencies": {
-    "@hebcal/cities": "^5.0.1",
-    "@hebcal/core": "^5.8.3",
-    "better-sqlite3": "^11.7.0",
-    "pino": "^9.5.0",
+    "@hebcal/cities": "^6.0.0",
+    "@hebcal/core": "^5.9.3",
+    "better-sqlite3": "^11.9.1",
+    "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "transliteration": "^2.3.5"
   },
@@ -52,17 +52,17 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@eslint/js": "^9.16.0",
-    "@rollup/plugin-commonjs": "^28.0.1",
+    "@eslint/js": "^9.25.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "ava": "^6.2.0",
-    "eslint": "^9.16.0",
+    "eslint": "^9.25.1",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-n": "^17.14.0",
-    "globals": "^15.13.0",
+    "eslint-plugin-n": "^17.17.0",
+    "globals": "^16.0.0",
     "jsdoc": "^4.0.4",
     "jsdoc-to-markdown": "^9.1.1",
-    "rollup": "^4.28.1"
+    "rollup": "^4.40.1"
   }
 }
