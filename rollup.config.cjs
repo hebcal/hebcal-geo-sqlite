@@ -1,5 +1,4 @@
 const {nodeResolve} = require('@rollup/plugin-node-resolve');
-const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
 const pkg = require('./package.json');
 
@@ -14,7 +13,6 @@ module.exports = [
     plugins: [
       json({compact: true, preferConst: true}),
       nodeResolve(),
-      commonjs(),
     ],
     external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline', 'events', '@hebcal/cities'],
   },
