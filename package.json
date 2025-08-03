@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -36,10 +36,10 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^6.0.0",
-    "@hebcal/core": "^5.9.9",
-    "better-sqlite3": "^11.10.0",
+    "@hebcal/core": "^5.10.1",
+    "better-sqlite3": "^12.2.0",
     "pino": "^9.7.0",
-    "pino-pretty": "^13.0.0",
+    "pino-pretty": "^13.1.1",
     "transliteration": "^2.3.5"
   },
   "scripts": {
@@ -52,16 +52,16 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.32.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "ava": "^6.4.0",
-    "eslint": "^9.29.0",
+    "ava": "^6.4.1",
+    "eslint": "^9.32.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-n": "^17.20.0",
-    "globals": "^16.2.0",
+    "eslint-plugin-n": "^17.21.3",
+    "globals": "^16.3.0",
     "jsdoc": "^4.0.4",
-    "jsdoc-to-markdown": "^9.1.1",
-    "rollup": "^4.44.0"
+    "jsdoc-to-markdown": "^9.1.2",
+    "rollup": "^4.46.2"
   }
 }
