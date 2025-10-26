@@ -1,15 +1,15 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
   ],
   "description": "Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "type": "module",
   "exports": {
-    "import": "./dist/index.mjs",
+    "import": "./dist/index.js",
     "types": "./geo-sqlite.d.ts"
   },
   "bin": {
@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^6.1.0",
-    "@hebcal/core": "^6.0.0",
+    "@hebcal/core": "^6.0.2",
     "better-sqlite3": "^12.4.1",
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",
@@ -44,8 +44,9 @@
   },
   "scripts": {
     "build:rollup": "rollup -c",
+    "build:version": "node ./version.cjs package.json src/pkgVersion.js",
     "build:json2js": "for f in src/*.json; do echo 'export default' > $f.js && cat $f >> $f.js; done",
-    "build": "npm run build:json2js && npm run build:rollup",
+    "build": "npm run build:version && npm run build:json2js && npm run build:rollup",
     "prepublish": "npm run build",
     "readme": "npx jsdoc2md dist/index.js",
     "test": "ava"

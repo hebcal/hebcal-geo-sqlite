@@ -445,3 +445,7 @@ test('Chandler Arizona', (t) => {
   };
   t.deepEqual(plainObj, expected);
 });
+
+test('version', (t) => {
+  t.is(GeoDb.version(), '5.4.0');
+});

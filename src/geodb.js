@@ -4,6 +4,7 @@ import '@hebcal/cities';
 import city2geonameid from './city2geonameid.json.js';
 import {transliterate} from 'transliteration';
 import {munge} from './munge.js';
+import {version} from './pkgVersion.js';
 
 const GEONAME_SQL = `SELECT
   g.name as name,
@@ -526,5 +527,9 @@ export class GeoDb {
     }
     const end = Date.now();
     if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} geonames in ${end - start}ms`);
+  }
+
+  static version() {
+    return version;
   }
 }
