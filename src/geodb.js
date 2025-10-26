@@ -529,6 +529,7 @@ export class GeoDb {
     if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} geonames in ${end - start}ms`);
   }
 
+  /** Returns the version of the GeoDb package */
   static version() {
     return version;
   }
