@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
 import '@hebcal/cities';
 import city2geonameid from './city2geonameid.json.js';
@@ -137,10 +138,10 @@ export class GeoDb {
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     /** @type {Map<string, Location>} */
-    this.zipCache = new Map();
+    this.zipCache = new QuickLRU({maxSize: 150});
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
     /** @type {Map<number, Location>} */
-    this.geonamesCache = new Map();
+    this.geonamesCache = new QuickLRU({maxSize: 750});
     /** @type {Map<string, number>} */
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
@@ -508,6 +509,7 @@ export class GeoDb {
     const start = Date.now();
     const stmt = this.zipsDb.prepare(ZIPCODE_ALL_SQL);
     const rows = stmt.all();
+    this.zipCache = new Map(); // replace QuickLRU
     for (const row of rows) {
       const location = this.makeZipLocation(row);
       this.zipCache.set(row.ZipCode, location);
@@ -521,6 +523,7 @@ export class GeoDb {
     const start = Date.now();
     const stmt = this.geonamesDb.prepare(GEONAME_ALL_SQL);
     const rows = stmt.all();
+    this.geonamesCache = new Map(); // replace QuickLRU
     for (const row of rows) {
       const location = this.makeGeonameLocation(row.geonameid, row);
       this.geonamesCache.set(row.geonameid, location);
