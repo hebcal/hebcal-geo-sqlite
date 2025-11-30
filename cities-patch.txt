@@ -337,3 +337,4 @@
 12156446	Beit Aryeh-Ofarim	Beit Aryeh-Ofarim	byt ʼryh,בית אריה	32.03869	35.04972	P	PPL	PS		WE				5139		254	Asia/Hebron	2020-04-22
 12156452	Beit Aryeh-Ofarim	Beit Aryeh-Ofarim		32.03742	35.05004	P	PPL	PS		WE				5139		186	Asia/Hebron	2020-04-22
 295530	Beer Sheva	Beer Sheva	x	31.25181	34.7913	P	PPLA	IL		01				186600		285	Asia/Jerusalem	3/15/19
+12042098	Salt Spring Island	Salt Spring Island	Salt Spring Island	48.81852	-123.49061	T	ISL	CA		02	5917			0		205	America/Vancouver	2025-06-09

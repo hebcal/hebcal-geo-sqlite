@@ -447,5 +447,5 @@ test('Chandler Arizona', (t) => {
 });
 
 test('version', (t) => {
-  t.is(GeoDb.version(), '5.5.0');
+  t.is(GeoDb.version(), '5.5.1');
 });
