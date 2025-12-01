@@ -1,6 +1,6 @@
 import test from 'ava';
-import {GeoDb} from './geodb.js';
-import {munge} from './munge.js';
+import {GeoDb} from '../src/geodb.js';
+import {munge} from '../src/munge.js';
 
 test('geonameCityDescr', (t) => {
   t.is(GeoDb.geonameCityDescr('Providence', 'Rhode Island', 'United States'), 'Providence, Rhode Island, USA');

@@ -14,6 +14,9 @@ module.exports = [
       json({compact: true, preferConst: true}),
       nodeResolve(),
     ],
-    external: ['@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline', 'events', '@hebcal/cities'],
+    external: [
+      '@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline',
+      'events', '@hebcal/cities', 'transliteration', 'quick-lru',
+    ],
   },
 ];

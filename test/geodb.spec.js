@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import test from 'ava';
 import {Location} from '@hebcal/core';
-import {GeoDb} from './geodb.js';
-import {buildGeonamesSqlite} from './build-geonames-sqlite.js';
+import {GeoDb} from '../src/geodb.js';
+import {buildGeonamesSqlite} from '../src/build-geonames-sqlite.js';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
@@ -10,7 +10,7 @@ import pino from 'pino';
 import legacyCities from './legacy.json.js';
 import {makeDummyZipsDb} from './makeDummyZipsDb.js';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
-import {munge} from './munge.js';
+import {munge} from '../src/munge.js';
 
 const logger = pino({level: 'error'});
 

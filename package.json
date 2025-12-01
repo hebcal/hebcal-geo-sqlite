@@ -46,11 +46,16 @@
   "scripts": {
     "build:rollup": "rollup -c",
     "build:version": "node ./version.cjs package.json src/pkgVersion.js",
-    "build:json2js": "for f in src/*.json; do echo 'export default' > $f.js && cat $f >> $f.js; done",
+    "build:json2js": "for f in src/*.json test/*.json; do echo 'export default' > $f.js && cat $f >> $f.js; done",
     "build": "npm run build:version && npm run build:json2js && npm run build:rollup",
     "prepublish": "npm run build",
     "readme": "npx jsdoc2md dist/index.js",
     "test": "ava"
+  },
+  "ava": {
+    "files": [
+      "test/**/*.spec.js"
+    ]
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
