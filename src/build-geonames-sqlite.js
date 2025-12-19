@@ -4,6 +4,17 @@ import fs from 'fs';
 import readline from 'readline';
 import {Locale} from '@hebcal/core';
 
+const fcodeKeep = {
+  PPL: true,   // populated place a city, town, village, or other agglomeration of
+  PPLA: true,  // seat of a first-order administrative division seat of a first-order administrative division (PPLC takes precedence over PPLA)
+  PPLA2: true, // seat of a second-order administrative division
+  PPLA3: true, // seat of a third-order administrative division
+  PPLC: true,  // capital of a political entity
+  PPLL: true,  // populated locality an area similar to a locality but with a small
+  PPLX: true,  // section of populated place
+  STLMT: true, // israeli settlement
+};
+
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
  * @param {any} opts
@@ -77,11 +88,27 @@ export async function buildGeonamesSqlite(opts) {
     a[3] = '';
     return true;
   };
-  await doFile(logger, db, cities5000txt, 'geoname', 19, truncateAlternateNames);
+  const minPopulation = opts.population;
+  const citiesFilter = (a) => {
+    const fcode = a[7];
+    console.log(a[0], a[1], fcode);
+    if (!fcodeKeep[fcode]) {
+      return false;
+    }
+    if (minPopulation) {
+      const population = a[14];
+      if (fcode === 'PPL' && population && population < minPopulation) {
+        return false;
+      }
+    }
+    a[3] = '';
+    return true;
+  };
+  await doFile(logger, db, cities5000txt, 'geoname', 19, citiesFilter);
   await doFile(logger, db, citiesPatch, 'geoname', 19, truncateAlternateNames);
   await doFile(logger, db, ILtxt, 'geoname', 19, (a) => {
     a[3] = '';
-    return a[6] == 'P' && (a[7] == 'PPL' || a[7] == 'STLMT');
+    return a[6] == 'P' && fcodeKeep[a[7]];
   });
 
   doSql(logger, db,

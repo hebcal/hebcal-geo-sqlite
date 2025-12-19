@@ -2,23 +2,33 @@
 
 import {buildGeonamesSqlite} from '@hebcal/geo-sqlite';
 import {pino} from 'pino';
+import minimist from 'minimist';
+
+const argv = minimist(process.argv.slice(2), {
+  boolean: ['help', 'quiet'],
+  string: ['population'],
+  alias: {h: 'help', q: 'quiet'},
+});
+
+if (argv.help) {
+  usage();
+  process.exit(0);
+}
 
 const logger = pino({
-  // level: argv.quiet ? 'warn' : 'info',
+  level: argv.quiet ? 'warn' : 'info',
   transport: {
     target: 'pino-pretty',
     options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
   },
 });
 
-const argv = process.argv.slice(2);
 if (argv.length !== 7) {
-  const infiles = 'countryInfo.txt cities5000.txt cities-patch.txt admin1CodesASCII.txt IL.txt IL-alternatenames.txt';
-  console.error(`Usage: build-geonames-sqlite geonames.sqlite3 ${infiles}`);
+  usage();
   process.exit(1);
 }
 
-const filenames = {
+const options = {
   dbFilename: argv[0],
   countryInfotxt: argv[1],
   cities5000txt: argv[2],
@@ -28,6 +38,14 @@ const filenames = {
   ILalternate: argv[6],
   logger: logger,
 };
-buildGeonamesSqlite(filenames).then(() => {
+if (argv.population) {
+  options.population = +argv.population;
+}
+buildGeonamesSqlite(options).then(() => {
   console.log('Done!');
 });
+
+function usage() {
+  const infiles = 'countryInfo.txt cities5000.txt cities-patch.txt admin1CodesASCII.txt IL.txt IL-alternatenames.txt';
+  console.log(`Usage: build-geonames-sqlite geonames.sqlite3 ${infiles}`);
+}
