@@ -91,7 +91,7 @@ export async function buildGeonamesSqlite(opts) {
   const minPopulation = opts.population;
   const citiesFilter = (a) => {
     const fcode = a[7];
-    console.log(a[0], a[1], fcode);
+    logger.debug(a[0], a[1], fcode);
     if (!fcodeKeep[fcode]) {
       return false;
     }

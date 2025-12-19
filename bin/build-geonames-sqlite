@@ -23,19 +23,20 @@ const logger = pino({
   },
 });
 
-if (argv.length !== 7) {
+const args = argv._;
+if (args.length !== 7) {
   usage();
   process.exit(1);
 }
 
 const options = {
-  dbFilename: argv[0],
-  countryInfotxt: argv[1],
-  cities5000txt: argv[2],
-  citiesPatch: argv[3],
-  admin1CodesASCIItxt: argv[4],
-  ILtxt: argv[5],
-  ILalternate: argv[6],
+  dbFilename: args[0],
+  countryInfotxt: args[1],
+  cities5000txt: args[2],
+  citiesPatch: args[3],
+  admin1CodesASCIItxt: args[4],
+  ILtxt: args[5],
+  ILalternate: args[6],
   logger: logger,
 };
 if (argv.population) {
