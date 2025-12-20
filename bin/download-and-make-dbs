@@ -5,9 +5,11 @@ set -x
 TMPDIR=`mktemp -d /tmp/geonames.XXXXXX`
 CURDIR=`pwd`
 
-# optionally specify a larger geonames export with POPULATION=500
-POPULATION=${POPULATION:-"1000"}
-CITIES="cities$POPULATION"
+# optionally specify minimum city population size with POPULATION=750
+POPULATION=${POPULATION:-"0"}
+
+# optionally specify a geonames export file such as cities500 or cities5000
+CITIES=${CITIES:-"cities1000"}
 
 curl -o $TMPDIR/countryInfo.txt http://download.geonames.org/export/dump/countryInfo.txt
 curl -o $TMPDIR/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
@@ -26,6 +28,7 @@ cd $CURDIR
 
 #npx --package '@hebcal/geo-sqlite' build-geonames-sqlite \
 $CURDIR/node_modules/.bin/build-geonames-sqlite \
+  --population=$POPULATION \
   $CURDIR/geonames.sqlite3 \
   $TMPDIR/countryInfo.txt \
   "$TMPDIR/$CITIES.txt" \
