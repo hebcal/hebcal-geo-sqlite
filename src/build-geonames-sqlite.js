@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces */
 import Database from 'better-sqlite3';
 import events from 'events';
 import fs from 'fs';
@@ -5,12 +6,15 @@ import readline from 'readline';
 import {Locale} from '@hebcal/core';
 
 const fcodeKeep = {
-  PPL: true,   // populated place a city, town, village, or other agglomeration of
-  PPLA: true,  // seat of a first-order administrative division seat of a first-order administrative division (PPLC takes precedence over PPLA)
+  PPL: true,   // populated place: a city, town, village, or other agglomeration of
+  PPLA: true,  // seat of a first-order administrative division (PPLC takes precedence over PPLA)
   PPLA2: true, // seat of a second-order administrative division
   PPLA3: true, // seat of a third-order administrative division
   PPLC: true,  // capital of a political entity
-  PPLL: true,  // populated locality an area similar to a locality but with a small
+  // an area similar to a locality but with a small group of dwellings or other buildings
+  PPLL: true,  // populated locality
+  // cities, towns, villages, or other agglomerations of buildings where people live and work
+  PPLS: true,  // populated places
   PPLX: true,  // section of populated place
   STLMT: true, // israeli settlement
 };
@@ -90,6 +94,9 @@ export async function buildGeonamesSqlite(opts) {
   };
   const minPopulation = opts.population;
   const citiesFilter = (a) => {
+    if (!a[17]) {
+      return false; // require a non-empty iana timezone id
+    }
     const fcode = a[7];
     logger.debug(a[0], a[1], fcode);
     if (!fcodeKeep[fcode]) {
