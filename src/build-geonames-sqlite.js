@@ -12,6 +12,7 @@ const fcodeKeep = {
   PPLA3: true, // seat of a third-order administrative division
   PPLC: true,  // capital of a political entity
   // an area similar to a locality but with a small group of dwellings or other buildings
+  PPLG: true,  // seat of government of a political entity
   PPLL: true,  // populated locality
   // cities, towns, villages, or other agglomerations of buildings where people live and work
   PPLS: true,  // populated places

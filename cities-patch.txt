@@ -338,3 +338,8 @@
 12156452	Beit Aryeh-Ofarim	Beit Aryeh-Ofarim		32.03742	35.05004	P	PPL	PS		WE				5139		186	Asia/Hebron	2020-04-22
 295530	Beer Sheva	Beer Sheva	x	31.25181	34.7913	P	PPLA	IL		01				186600		285	Asia/Jerusalem	3/15/19
 12042098	Salt Spring Island	Salt Spring Island	Salt Spring Island	48.81852	-123.49061	T	ISL	CA		02	5917			0		205	America/Vancouver	2025-06-09
+2803870	Zossen	Zossen	Cosen,Cossen,Sosny,Zossen,cuo sen,swzh,Цосен,Цоссен,Ցոսեն,سوزه,措森	52.216	13.44909	P	PPLA4	DE		11	00	12072	12072477	17138		41	Europe/Berlin	2024-11-15
+2814279	Wangen	Wangen	Vangen,Wangen bei Goeppingen,Wangen bei Göppingen,Ванген	48.72933	9.61175	P	PPLA4	DE		01	081	08117	08117055	3209		382	Europe/Berlin	2011-07-31
+2821164	Trier	Trier	Augusta Treverorum,Treier,Trevere,Treveri,Treveris,Treves,Trevir,Treviri,Treviro,Trevèri,Trevír,Trewir,Trier,Trir,Trire,Triri,Tryr,Tryras,Trèveris,Trèves,Tréier,Tréveris,Trīre,ZQF,te li er,teulieo,the riyr,toria,tryr,Τρηρ,Трир,Трыр,Трір,טריר,ترير,تری‌یر,ٹریر,เทรียร์,ტრირი,ትሪር,トリーア,特里尔,트리어	49.75565	6.63935	P	PPLA4	DE		08	00	07211	07211000	100129		141	Europe/Berlin	2024-08-26
+2850174	Ratingen	Ratingen	Ratingen,ZPJ,la ting gen,lating-en,ratlyngn,Ратинген,راتلینگن,拉廷根,라팅엔	51.29724	6.84929	P	PPLA4	DE		07	051	05158	05158028	91606		64	Europe/Berlin	2024-11-15
+2949186	Bielefeld	Bielefeld	BFE,Bielefeld,Bilefel'd,Bilefeld,Bilefelde,Bilifeld,Bilivelda,Builefeld,Bylefeldas,Bīlefelde,Bīlifeld,Mpilephelnt,bi lei fei er de,bilephelda,bilepildi,billepelteu,bireferuto,bylyfyld,Μπίλεφελντ,Билефелд,Билефельд,Білефельд,بيليفيلد,بیلفیلڈ,بیله‌فلد,बीलेफेल्ड,ბილეფილდი,ビーレフェルト,比勒费尔德,빌레펠트	52.03333	8.53333	P	PPLA4	DE		07	057	05711	05711000	331906		111	Europe/Berlin	2019-09-05
