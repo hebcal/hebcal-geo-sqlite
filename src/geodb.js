@@ -224,6 +224,7 @@ export class GeoDb {
    */
   lookupGeoname(geonameid) {
     geonameid = +geonameid;
+    if (!geonameid) return null;
     if (geonameid === 293396) {
       geonameid = 293397;
     }
