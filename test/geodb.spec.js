@@ -151,6 +151,13 @@ test('autoComplete', (t) => {
   t.deepEqual(result, expected);
 });
 
+test('autoCompleteBerlin', (t) => {
+  const result = t.context.db.autoComplete('BERL', true);
+  t.is(result.length > 0, true, 'Should find Berlin');
+  const berlin = result[0];
+  t.is(berlin.value, 'Berlin, Germany');
+});
+
 test('autoCompleteZip', (t) => {
   const expected = [
     {

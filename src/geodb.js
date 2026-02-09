@@ -263,7 +263,7 @@ export class GeoDb {
     if (countryName === 'United States') countryName = 'USA';
     if (countryName === 'United Kingdom') countryName = 'UK';
     let cityDescr = cityName;
-    if (countryName !== 'Israel' && admin1 && admin1.indexOf(cityName) !== 0) {
+    if (countryName !== 'Israel' && admin1 && admin1.indexOf(cityName) === -1) {
       const tlitCityName = transliterate(cityName);
       const tlitAdmin1 = transliterate(admin1);
       if (tlitAdmin1.indexOf(tlitCityName) != 0) {
@@ -428,7 +428,7 @@ export class GeoDb {
     const admin1 = res.admin || loc.admin1 || '';
     const obj = {
       id: res.geonameid,
-      value: res.longname,
+      value: loc.getName(),
       admin1,
       country,
       cc,

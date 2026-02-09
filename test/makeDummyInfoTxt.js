@@ -10,6 +10,7 @@ US\tUSA\t840\tUS\tUnited States\tWashington\t9629091\t327167434\tNA\t.us\tUSD\tD
 ZA\tZAF\t710\tSF\tSouth Africa\tPretoria\t1219912\t57779622\tAF\t.za\tZAR\tRand\t27\t####\t^(\\d{4})$\tzu,xh,af,nso,en-ZA,tn,st,ts,ss,ve,nr\t953987\tZW,SZ,MZ,BW,NA,LS\t
 AX\tALA\t248\t\tAland Islands\tMariehamn\t1580\t26711\tEU\t.ax\tEUR\tEuro\t+358-18\t#####\t^(?:FI)*(\\d{5})$\tsv-AX\t661882\t\tFI
 BS\tBHS\t044\tBF\tBahamas\tNassau\t13940\t385640\tNA\t.bs\tBSD\tDollar\t+1-242\t\t\ten-BS\t3572887\t\t
+DE\tDEU\t276\tGM\tGermany\tBerlin\t357021\t82927922\tEU\t.de\tEUR\tEuro\t49\t#####\t^(\d{5})$\tde\t2921044\tCH,PL,NL,DK,BE,CZ,LU,FR,AT\t
 `;
   logger.info(ciPath);
   fs.writeFileSync(ciPath, ciStr);
@@ -36,6 +37,7 @@ IL.04\tHaifa\tHaifa\t294800
 IL.03\tNorthern District\tNorthern District\t294824
 IL.02\tCentral District\tCentral District\t294904
 IL.01\tSouthern District\tSouthern District\t294952
+DE.16\tState of Berlin\tState of Berlin\t2950157
 `;
   logger.info(a1path);
   fs.writeFileSync(a1path, a1str);
@@ -64,6 +66,7 @@ IL.01\tSouthern District\tSouthern District\t294952
 5224151\tProvidence\tProvidence\tPVD,Provedensos,Providns,Providehns,Providence,Providenco,Providens,Providensa,Providensas,Providentia,Provintens,Provėdensos,brwfydns,peulobideonseu,phr x wi den s,piravitens,prabhidensa,pravidens,prawydns,probhidensa,provhidansa,prwbydns,prwwyڈns  rwڈ aylynڈ,pu luo wei deng si,pu luo wei dun si,purobidensu,purovuidensu,Πρόβιντενς,Провиденс,Провидънс,Провіденс,Провідэнс,Փրովիդենս,פראווידענס,פרובידנס,بروفيدنس,پراویدنس,پروویڈنس,پروویڈنس، روڈ آئلینڈ,प्रभिदेन्स,प्राविडेन्स्,प्रॉव्हिडन्स,प्रोभिडेन्स,பிராவிடென்ஸ்,พรอวิเดนซ์,プロビデンス,プロヴィデンス,普洛威頓斯,普罗维登斯,프로비던스\t41.82399\t-71.41283\tP\tPPLA\tUS\t\tRI\t007\t59000\t\t190934\t2\t-17\tAmerica/New_York\t2021-10-13
 5780020\tProvidence\tProvidence\tProvidence,Providens,Providuns,Spring Creek,brwfydans,prawydns  ywta,pu luo wei deng si,Провиденс,Провидънс,بروفيدانس,پراویدنس، یوتا,پروویڈنس، یوٹاہ,普罗维登斯\t41.70632\t-111.81717\tP\tPPL\tUS\t\tUT\t005\t\t\t7124\t1401\t1401\tAmerica/Denver\t2017-03-09
 7315379\tProvidence Village\tProvidence Village\tProvidence Village\t33.2334\t-96.96158\tP\tPPL\tUS\t\tTX\t121\t\t\t4786\t177\t180\tAmerica/Chicago\t2022-02-25
+2950159\tBerlin\tBerlin\tx\t52.52437\t13.41053\tP\tPPLC\tDE\t\t16\t00\t11000\t11000000\t3426354\t74\t43\tEurope/Berlin\t2025-07-22
 `;
   logger.info(c5path);
   fs.writeFileSync(c5path, c5str);
