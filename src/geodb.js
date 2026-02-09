@@ -263,10 +263,10 @@ export class GeoDb {
     if (countryName === 'United States') countryName = 'USA';
     if (countryName === 'United Kingdom') countryName = 'UK';
     let cityDescr = cityName;
-    if (countryName !== 'Israel' && admin1 && admin1.indexOf(cityName) === -1) {
+    if (countryName !== 'Israel' && admin1 && !admin1.includes(cityName)) {
       const tlitCityName = transliterate(cityName);
       const tlitAdmin1 = transliterate(admin1);
-      if (tlitAdmin1.indexOf(tlitCityName) != 0) {
+      if (!tlitAdmin1.includes(tlitCityName)) {
         cityDescr += ', ' + admin1;
       }
     }
@@ -290,7 +290,7 @@ export class GeoDb {
     const location = new Location(
         result.latitude,
         result.longitude,
-        result.cc == 'IL',
+        result.cc === 'IL',
         result.timezone,
         cityDescr,
         result.cc,
@@ -303,7 +303,7 @@ export class GeoDb {
     if (admin1) {
       location.admin1 = admin1;
     }
-    if (result.cc == 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
+    if (result.cc === 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
       location.jersualem = true;
     }
     if (result.population) {

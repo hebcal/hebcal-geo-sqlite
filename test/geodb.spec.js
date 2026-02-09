@@ -456,3 +456,10 @@ test('Chandler Arizona', (t) => {
 test('version', (t) => {
   t.is(GeoDb.version().startsWith('5.'), true);
 });
+
+test('geonameCityDescr', (t) => {
+  t.is(GeoDb.geonameCityDescr('Little Rock', 'Arkansas', 'United States'),
+    'Little Rock, Arkansas, USA');
+  t.is(GeoDb.geonameCityDescr('Berlin', 'State of Berlin', 'Germany'),
+    'Berlin, Germany');
+});
