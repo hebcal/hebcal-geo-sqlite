@@ -129,19 +129,22 @@ export class GeoDb {
    * @param {any} logger
    * @param {string} zipsFilename
    * @param {string} geonamesFilename
+   * @param {any} options
    */
-  constructor(logger, zipsFilename, geonamesFilename) {
+  constructor(logger, zipsFilename, geonamesFilename, options) {
     this.logger = logger;
     if (logger) logger.info(`GeoDb: opening ${zipsFilename}...`);
     this.zipsDb = new Database(zipsFilename, {fileMustExist: true});
     if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
+    const zipsCacheSize = options?.zipsCacheSize || 150;
     /** @type {Map<string, Location>} */
-    this.zipCache = new QuickLRU({maxSize: 150});
+    this.zipCache = new QuickLRU({maxSize: zipsCacheSize});
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
+    const geonamesCacheSize = options?.geonamesCacheSize || 750;
     /** @type {Map<number, Location>} */
-    this.geonamesCache = new QuickLRU({maxSize: 750});
+    this.geonamesCache = new QuickLRU({maxSize: geonamesCacheSize});
     /** @type {Map<string, number>} */
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
@@ -184,7 +187,7 @@ export class GeoDb {
   lookupZip(zip) {
     const zip5 = zip.trim().substring(0, 5);
     const found = this.zipCache.get(zip5);
-    if (typeof found !== 'undefined') return found;
+    if (found !== undefined) return found;
     const result = this.zipStmt.get(zip5);
     if (!result) {
       if (this.logger) this.logger.warn(`GeoDb: unknown zipcode=${zip5}`);
@@ -229,7 +232,7 @@ export class GeoDb {
       geonameid = 293397;
     }
     const found = this.geonamesCache.get(geonameid);
-    if (typeof found !== 'undefined') return found;
+    if (found !== undefined) return found;
     const result = this.geonamesStmt.get(geonameid);
     if (!result) {
       if (this.logger) this.logger.warn(`GeoDb: unknown geonameid=${geonameid}`);
@@ -378,7 +381,7 @@ export class GeoDb {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
-      qraw = qraw.replace(/"/g, '""');
+      qraw = qraw.replaceAll('"', '""');
       const geoRows0 = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
       const ids = new Set();
       const geoRows = [];

@@ -6,6 +6,7 @@ export default [
   {
     ignores: [
       'src/*.json.js',
+      'test',
       'dist',
     ],
   },

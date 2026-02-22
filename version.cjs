@@ -1,5 +1,4 @@
-/* eslint-disable require-jsdoc */
-const fs = require('fs');
+const fs = require('node:fs');
 
 const inpath = process.argv[2];
 const outpath = process.argv[3];
