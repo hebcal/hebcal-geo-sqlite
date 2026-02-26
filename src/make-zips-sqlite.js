@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import fs from 'fs';
+import fs from 'node:fs';
 
 /**
  * Builds `zips.sqlite3` from the bundled zips-dummy.sql schema file
@@ -9,6 +9,7 @@ import fs from 'fs';
 export function makeZipsSqlite(dbFilename, sqlFile) {
   const sql = fs.readFileSync(sqlFile, 'utf8');
   const db = new Database(dbFilename);
+  console.log(sql);
   db.exec(sql);
   db.close();
 }

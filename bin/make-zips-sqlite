@@ -1,20 +1,13 @@
 #!/usr/bin/env node
 
 import {makeZipsSqlite} from '@hebcal/geo-sqlite';
-import {createRequire} from 'module';
-import path from 'path';
-
-const require = createRequire(import.meta.url);
-const pkgPath = require.resolve('@hebcal/geo-sqlite/package.json');
-const defaultSqlFile = path.join(path.dirname(pkgPath), 'zips-dummy.sql');
 
 const args = process.argv.slice(2);
-if (args.length < 1 || args.length > 2) {
-  console.log('Usage: make-zips-sqlite zips.sqlite3 [zips-dummy.sql]');
+if (args.length !== 2) {
+  console.log('Usage: make-zips-sqlite zips.sqlite3 zips-dummy.sql');
   process.exit(1);
 }
 
 const dbFilename = args[0];
-const sqlFile = args[1] || defaultSqlFile;
+const sqlFile = args[1];
 makeZipsSqlite(dbFilename, sqlFile);
-console.log('Done!');
