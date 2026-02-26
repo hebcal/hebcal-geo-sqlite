@@ -14,7 +14,8 @@
   },
   "bin": {
     "build-geonames-sqlite": "bin/build-geonames-sqlite",
-    "download-and-make-dbs": "bin/download-and-make-dbs"
+    "download-and-make-dbs": "bin/download-and-make-dbs",
+    "make-zips-sqlite": "bin/make-zips-sqlite"
   },
   "repository": {
     "type": "git",

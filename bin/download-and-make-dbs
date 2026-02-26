@@ -39,6 +39,8 @@ $CURDIR/node_modules/.bin/build-geonames-sqlite \
 
 rm -rf $TMPDIR
 
-sqlite3 -echo zips.sqlite3 < "$CURDIR/node_modules/@hebcal/geo-sqlite/zips-dummy.sql"
+$CURDIR/node_modules/.bin/make-zips-sqlite \
+  $CURDIR/zips.sqlite3 \
+  "$CURDIR/node_modules/@hebcal/geo-sqlite/zips-dummy.sql"
 
 ls -lh geonames.sqlite3 zips.sqlite3
