@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.8.0",
+  "version": "5.9.0",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -65,7 +65,7 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "ava": "^6.4.1",
-    "eslint": "^10.0.1",
+    "eslint": "^10.0.2",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-n": "^17.24.0",
     "globals": "^17.3.0",
