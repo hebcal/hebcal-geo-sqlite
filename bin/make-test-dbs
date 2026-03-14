@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+
+// Builds geonames.sqlite3 and zips.sqlite3 for testing without downloading
+// from geonames.org. Uses cities-patch.txt as the main geonames data source
+// and minimal fixture files bundled in this repo.
+
+import {buildGeonamesSqlite} from '../src/build-geonames-sqlite.js';
+import {makeZipsSqlite} from '../src/make-zips-sqlite.js';
+import {pino} from 'pino';
+import {statSync} from 'fs';
+import {fileURLToPath} from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoDir = path.resolve(__dirname, '..');
+const outDir = process.cwd();
+
+const population = process.env.POPULATION ? +process.env.POPULATION : 0;
+
+const logger = pino({
+  level: 'info',
+  transport: {
+    target: 'pino-pretty',
+    options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
+  },
+});
+
+const geonamesDb = path.join(outDir, 'geonames.sqlite3');
+const zipsDb = path.join(outDir, 'zips.sqlite3');
+
+await buildGeonamesSqlite({
+  dbFilename: geonamesDb,
+  countryInfotxt: path.join(repoDir, 'test/fixtures/countryInfo.txt'),
+  cities5000txt: path.join(repoDir, 'cities-patch.txt'),
+  citiesPatch: '/dev/null',
+  admin1CodesASCIItxt: path.join(repoDir, 'test/fixtures/admin1CodesASCII.txt'),
+  ILtxt: path.join(repoDir, 'test/fixtures/IL.txt'),
+  ILalternate: path.join(repoDir, 'test/fixtures/IL-alt.txt'),
+  population,
+  logger,
+});
+
+makeZipsSqlite(
+    zipsDb,
+    path.join(repoDir, 'zips-dummy.sql'),
+);
+
+const geoStat = statSync(geonamesDb);
+const zipStat = statSync(zipsDb);
+logger.info(`${geonamesDb}: ${(geoStat.size / 1024 / 1024).toFixed(1)}M`);
+logger.info(`${zipsDb}: ${(zipStat.size / 1024 / 1024).toFixed(1)}M`);

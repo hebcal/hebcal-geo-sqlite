@@ -1,0 +1,61 @@
+#ISO	ISO3	IsoNumeric	fips	Country	Capital	Area	Population	Continent	tld	CurrencyCode	CurrencyName	Phone	PostalCodeFormat	PostalCodeRegex	Languages	geonameid	neighbours	EquivalentFipsCode
+AO	AOL	024	AO	Angola	Luanda	1246700	32866268	AF	.ao	AOA	Kwanza	244			pt-AO	3351879	CD,CG,ZM,NA	
+AR	ARG	032	AR	Argentina	Buenos Aires	2766890	45376763	SA	.ar	ARS	Peso	54	@####@	^[A-Z]\d{4}[A-Z]{3}$	es-AR	3865483	CL,BO,UY,BR,PY	
+AT	AUT	040	AU	Austria	Vienna	83858	9006398	EU	.at	EUR	Euro	43	####	^\d{4}$	de-AT,hr,hu,sl	2782113	DE,CZ,SK,HU,SI,IT,CH,LI	
+AU	AUS	036	AS	Australia	Canberra	7686850	25499884	OC	.au	AUD	Dollar	61	####	^\d{4}$	en-AU	2077456		
+BE	BEL	056	BE	Belgium	Brussels	30510	11589623	EU	.be	EUR	Euro	32	####	^\d{4}$	nl-BE,fr-BE,de-BE	2802361	NL,DE,LU,FR	
+BF	BFA	854	UV	Burkina Faso	Ouagadougou	274000	21510181	AF	.bf	XOF	Franc	226			fr-BF,mos	2361809	NE,BJ,TG,GH,CI,ML,SN	
+BO	BOL	068	BL	Bolivia	Sucre	1098580	11673029	SA	.bo	BOB	Boliviano	591	####	^\d{4}$	es-BO,qu,ay	3923057	PE,BR,PY,AR,CL	
+BY	BLR	112	BO	Belarus	Minsk	207600	9449323	EU	.by	BYR	Ruble	375	######	^\d{6}$	be,ru	630336	RU,LV,LT,PL,UA	
+CA	CAN	124	CA	Canada	Ottawa	9984670	37742154	NA	.ca	CAD	Dollar	1	@#@ #@#	^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ] \d[ABCEGHJKLMNPRSTVWXYZ]\d$	en-CA,fr-CA,iu	6251999	US	
+CF	CAF	140	CT	Central African Republic	Bangui	622984	4829767	AF	.cf	XAF	Franc	236			fr-CF,sg,ln,kg	239880	SD,TD,CM,CG,CD,UG,SS	
+CH	CHE	756	SZ	Switzerland	Bern	41290	8654622	EU	.ch	CHF	Franc	41	####	^\d{4}$	de-CH,fr-CH,it-CH,rm	2658434	DE,AT,LI,IT,FR	
+CL	CHL	152	CI	Chile	Santiago	756950	19116201	SA	.cl	CLP	Peso	56	#######	^\d{7}$	es-CL	3895114	PE,BO,AR	
+CM	CMR	120	CM	Cameroon	Yaounde	475440	26545863	AF	.cm	XAF	Franc	237			en-CM,fr-CM	2233387	NG,CF,GQ,GA,CG,TD	
+CN	CHN	156	CH	China	Beijing	9596960	1439323776	AS	.cn	CNY	Yuan Renminbi	86	######	^\d{6}$	zh-CN,yue,wuu	1814991	RU,MN,KZ,KG,TJ,AF,PK,IN,NP,BT,MM,LA,VN,KP	
+CZ	CZE	203	EZ	Czech Republic	Prague	78866	10708981	EU	.cz	CZK	Koruna	420	### ##	^\d{5}$	cs,sk	3077311	DE,PL,SK,AT	
+DE	DEU	276	GM	Germany	Berlin	357021	83783942	EU	.de	EUR	Euro	49	#####	^\d{5}$	de	2921044	DK,PL,CZ,AT,CH,FR,LU,BE,NL	
+DJ	DJI	262	DJ	Djibouti	Djibouti	23000	988000	AF	.dj	DJF	Franc	253			fr-DJ,ar,so-DJ,aa	223816	ET,ER,SO	
+DZ	DZA	012	AG	Algeria	Algiers	2381740	43851044	AF	.dz	DZD	Dinar	213	#####	^\d{5}$	ar-DZ	2589581	TN,LY,NE,EH,MR,ML,MA	
+EC	ECU	218	EC	Ecuador	Quito	283560	17643054	SA	.ec	USD	Dollar	593	######	^\d{6}$	es-EC	3658394	PE,CO	
+ES	ESP	724	SP	Spain	Madrid	504782	46754778	EU	.es	EUR	Euro	34	#####	^\d{5}$	es-ES,ca,gl,eu,oc	2510769	AD,PT,GI,MA,FR	
+ET	ETH	231	ET	Ethiopia	Addis Ababa	1127127	115000000	AF	.et	ETB	Birr	251	####	^\d{4}$	am,om-ET,ti-ET,so-ET	337996	ER,DJ,SO,KE,SD,SS	
+FR	FRA	250	FR	France	Paris	547030	67391582	EU	.fr	EUR	Euro	33	#####	^\d{5}$	fr-FR,frp,br,co,ca,eu,nl	3017382	AND,LU,MC,IT,CH,DE,BE,ES	
+GB	GBR	826	UK	United Kingdom	London	244820	67886011	EU	.gb	GBP	Pound	44	@# #@@|@## #@@|@@# #@@|@@## #@@|@#@ #@@|@@#@ #@@|GIR0AA	^(GIR|[A-Z]\d[A-Z\d]?|[A-Z]{2}\d[A-Z\d]?)[ ]??(\d[A-Z]{2})$	en-GB,cy-GB,gd	2635167	IE	
+GH	GHA	288	GH	Ghana	Accra	239460	31072940	AF	.gh	GHS	Cedi	233			en-GH,ak,ee,tw	2300660	CI,BF,TG	
+GN	GIN	324	GV	Guinea	Conakry	245857	13132795	AF	.gn	GNF	Franc	224			fr-GN	2420477	CI,LR,SL,GW,SN,ML	
+GR	GRC	300	GR	Greece	Athens	131940	10423054	EU	.gr	EUR	Euro	30	### ##	^\d{5}$	el-GR,en,fr	390903	AL,MK,BG,TR	
+HU	HUN	348	HU	Hungary	Budapest	93030	9660351	EU	.hu	HUF	Forint	36	####	^\d{4}$	hu-HU	719819	AT,SK,UA,RO,HR,YU,SI	
+ID	IDN	360	ID	Indonesia	Jakarta	1919440	273523615	AS	.id	IDR	Rupiah	62	#####	^\d{5}$	id,en,nl,jv	1643084	PG,TL,MY	
+IE	IRL	372	EI	Ireland	Dublin	70280	4937786	EU	.ie	EUR	Euro	353			en-IE,ga-IE	2963597	GB	
+IL	ISR	376	IS	Israel	Jerusalem	20770	8655535	AS	.il	ILS	Shekel	972	#######	^(\d{7}|\d{5})$	he,ar-IL,en-IL	294640	LB,SY,JO,EG,PS	
+IN	IND	356	IN	India	New Delhi	3287590	1380004385	AS	.in	INR	Rupee	91	######	^\d{6}$	en-IN,hi,bn,te,mr,ta,ur,gu,kn,ml,or,pa	1269750	CN,NP,MM,BD,BT,PK	
+IR	IRN	364	IR	Iran	Tehran	1648000	83992949	AS	.ir	IRR	Rial	98	##########	^\d{10}$	fa-IR,ku,lr,bal,ar	130758	AF,AM,AZ,IQ,KW,PK,TK,TR	
+IT	ITA	380	IT	Italy	Rome	301230	60461826	EU	.it	EUR	Euro	39	#####	^\d{5}$	it-IT,de-IT,fr-IT,sc,ca,co,sl	3175395	AT,FR,SM,SI,VA,CH	
+KM	COM	174	CN	Comoros	Moroni	2170	869601	AF	.km	KMF	Franc	269			ar,fr-KM	921929		
+KZ	KAZ	398	KZ	Kazakhstan	Nur-Sultan	2724900	18776707	AS	.kz	KZT	Tenge	7	######	^\d{6}$	kk,ru	1522867	RU,CN,KG,UZ,TM	
+LA	LAO	418	LA	Laos	Vientiane	236800	7275560	AS	.la	LAK	Kip	856	#####	^\d{5}$	lo,fr,en	1655842	CN,VN,KH,TH,MM	
+LK	LKA	144	CE	Sri Lanka	Colombo	65610	21413249	AS	.lk	LKR	Rupee	94	#####	^\d{5}$	si,ta,en	1227603	IN	
+MK	MKD	807	MK	North Macedonia	Skopje	25333	2083374	EU	.mk	MKD	Denar	389	####	^\d{4}$	mk,sq,tr,rmm,sr	718075	AL,BG,GR,YU	
+MM	MMR	104	BM	Myanmar	Rangoon	678500	54409800	AS	.mm	MMK	Kyat	95	#####	^\d{5}$	my	1327865	CN,LA,TH,BD,IN	
+MN	MNG	496	MG	Mongolia	Ulaanbaatar	1565000	3278290	AS	.mn	MNT	Tugrik	976	######	^\d{6}$	mn	2029969	RU,CN	
+MX	MEX	484	MX	Mexico	Mexico City	1972550	128932753	NA	.mx	MXN	Peso	52	#####	^\d{5}$	es-MX	3996063	US,BZ,GT	
+MZ	MOZ	508	MZ	Mozambique	Maputo	801590	31255435	AF	.mz	MZN	Metical	258	####	^\d{4}$	pt-MZ,vmw	1036973	ZW,ZM,MW,TZ,SZ,ZA	
+NZ	NZL	554	NZ	New Zealand	Wellington	268680	4822233	OC	.nz	NZD	Dollar	64	####	^\d{4}$	en-NZ,mi	2186224		
+PG	PNG	598	PP	Papua New Guinea	Port Moresby	462840	8947024	OC	.pg	PGK	Kina	675	###	^\d{3}$	en-PG,ho,motu	2088628	ID	
+PH	PHL	608	RP	Philippines	Manila	300000	109581078	AS	.ph	PHP	Peso	63	####	^\d{4}$	tl,en-PH,fil	1694008		
+PK	PAK	586	PK	Pakistan	Islamabad	803940	220892340	AS	.pk	PKR	Rupee	92	#####	^\d{5}$	ur-PK,en-PK,pa,sd,ps,bal,bra	1168579	IN,AF,IR,CN	
+PS	PSE	275	WE	Palestinian Territory	East Jerusalem	5970	4569087	AS	.ps	ILS	Shekel	970			ar-PS	6254930	IL,JO,EG	
+PT	PRT	620	PO	Portugal	Lisbon	92391	10196709	EU	.pt	EUR	Euro	351	####-###	^\d{4}([\-]\d{3})?$	pt-PT,mwl	2264397	ES	
+PW	PLW	585	PS	Palau	Ngerulmud	458	18094	OC	.pw	USD	Dollar	680	96940	^(96940)$	pau,sov,en-PW,tox,ja,fil,zh	1559582		
+RU	RUS	643	RS	Russia	Moscow	17100000	145934462	EU	.ru	RUB	Ruble	7	######	^\d{6}$	ru,tt,xal,cau,ady,kab,dar,che,ava,bak	2017370	GE,UA,BY,LV,EE,LT,PL,KZ,CN,MN,KP,AZ,FI,NO	
+SA	SAU	682	SA	Saudi Arabia	Riyadh	1960582	34813871	AS	.sa	SAR	Riyal	966	#####	^\d{5}$	ar-SA	102358	JO,IQ,KW,QA,AE,OM,YE	
+SE	SWE	752	SW	Sweden	Stockholm	449964	10099265	EU	.se	SEK	Krona	46	### ##	^\d{5}$	sv-SE,se,sma,fi-SE	2661886	FI,NO	
+SK	SVK	703	LO	Slovakia	Bratislava	48845	5459642	EU	.sk	EUR	Euro	421	### ##	^\d{5}$	sk,hu	3057568	PL,CZ,AT,HU,UA	
+SL	SLE	694	SL	Sierra Leone	Freetown	71740	7976983	AF	.sl	SLL	Leone	232			en-SL,men,tem	2403846	LR,GN	
+TL	TLS	626	TT	Timor-Leste	Dili	15007	1318445	AS	.tl	USD	Dollar	670			tet,pt-TL,id,en	1966436	ID	
+UA	UKR	804	UP	Ukraine	Kiev	603700	44134693	EU	.ua	UAH	Hryvnia	380	#####	^\d{5}$	uk,ru-UA,rom,pl,hu	690791	RU,BY,PL,SK,HU,RO,MD	
+UG	UGA	800	UG	Uganda	Kampala	236040	45741007	AF	.ug	UGX	Shilling	256			en-UG,lg,sw,ar	226074	KE,TZ,RW,SS,CD	
+US	USA	840	US	United States	Washington	9629091	331002651	NA	.us	USD	Dollar	1	#####-####	^\d{5}(-\d{4})?$	en-US,es-US,haw,fr	6252001	CA,MX,CU	
+VE	VEN	862	VE	Venezuela	Caracas	912050	28435943	SA	.ve	VES	Bolivar	58	####	^\d{4}$	es-VE	3625428	TT,GY,BR,CO	
+ZA	ZAF	710	SF	South Africa	Pretoria	1219912	59308690	AF	.za	ZAR	Rand	27	####	^\d{4}$	zu,xh,af,nso,en-ZA,tn,st,ts,ss,ve,nr	953987	ZW,SZ,MZ,BW,NA,LS	
