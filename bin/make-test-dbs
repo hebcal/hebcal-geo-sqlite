@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+
+// Builds geonames.sqlite3 and zips.sqlite3 for testing without downloading
+// from geonames.org. Uses cities-patch.txt as the main geonames data source
+// and minimal fixture files bundled in this repo.
+
+import {buildGeonamesSqlite, makeZipsSqlite} from '@hebcal/geo-sqlite';
+import {pino} from 'pino';
+import {statSync} from 'fs';
+import path from 'path';
+
+const outDir = process.cwd();
+const repoDir = path.join(outDir, 'node_modules/@hebcal/geo-sqlite');
+
+const population = process.env.POPULATION ? +process.env.POPULATION : 0;
+
+const logger = pino({
+  level: 'info',
+  transport: {
+    target: 'pino-pretty',
+    options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
+  },
+});
+
+const geonamesDb = path.join(outDir, 'geonames.sqlite3');
+const zipsDb = path.join(outDir, 'zips.sqlite3');
+
+await buildGeonamesSqlite({
+  dbFilename: geonamesDb,
+  countryInfotxt: path.join(repoDir, 'test/fixtures/countryInfo.txt'),
+  cities5000txt: path.join(repoDir, 'cities-patch.txt'),
+  citiesPatch: '/dev/null',
+  admin1CodesASCIItxt: path.join(repoDir, 'test/fixtures/admin1CodesASCII.txt'),
+  ILtxt: '/dev/null',
+  ILalternate: '/dev/null',
+  population,
+  logger,
+});
+
+makeZipsSqlite(
+    zipsDb,
+    path.join(repoDir, 'zips-dummy.sql'),
+);
+
+const geoStat = statSync(geonamesDb);
+const zipStat = statSync(zipsDb);
+logger.info(`${geonamesDb}: ${(geoStat.size / 1024).toFixed(1)}K`);
+logger.info(`${zipsDb}: ${(zipStat.size / 1024).toFixed(1)}K`);

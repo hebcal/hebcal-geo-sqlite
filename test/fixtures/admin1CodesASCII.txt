@@ -1,0 +1,141 @@
+AO.09	Uige Province	Uige Province	3347019
+AR.14	Mendoza Province	Mendoza Province	3844421
+AT.02	Carinthia	Carinthia	2774686
+AT.03	Lower Austria	Lower Austria	2771827
+AT.04	Upper Austria	Upper Austria	2762320
+AT.05	Salzburg	Salzburg	2766824
+AT.06	Styria	Styria	2763586
+AT.07	Tyrol	Tyrol	2763586
+AT.08	Vorarlberg	Vorarlberg	2762204
+AU.02	New South Wales	New South Wales	2155400
+AU.03	Queensland	Queensland	2152274
+AU.04	South Australia	South Australia	2061327
+AU.05	Tasmania	Tasmania	2147291
+AU.06	Victoria	Victoria	2145234
+AU.07	Western Australia	Western Australia	2058645
+AU.08	Northern Territory	Northern Territory	2064513
+BE.VLG	Flemish Region	Flemish Region	3337471
+BE.WAL	Walloon Region	Walloon Region	3337467
+BF.09	Houet Province	Houet Province	2361451
+BF.13	Kadiogo Province	Kadiogo Province	2360781
+BO.03	Cochabamba Department	Cochabamba Department	3919748
+BY.04	Grodno Region	Grodno Region	627904
+CA.01	Alberta	Alberta	5883102
+CA.02	British Columbia	British Columbia	5909050
+CA.04	Manitoba	Manitoba	6065171
+CA.08	Ontario	Ontario	6093943
+CA.10	Quebec	Quebec	6115047
+CF.08	Mbomou	Mbomou	239509
+CH.VD	Vaud	Vaud	2659094
+CL.14	Los Rios Region	Los Rios Region	3887105
+CM.09	Littoral	Littoral	2232421
+CN.04	Jiangsu Sheng	Jiangsu Sheng	1806660
+CZ.80	Olomoucky kraj	Olomoucky kraj	3069011
+CZ.89	South Moravian Region	South Moravian Region	3077466
+DE.01	Schleswig-Holstein	Schleswig-Holstein	2838632
+DE.05	North Rhine-Westphalia	North Rhine-Westphalia	2861876
+DE.07	Rhineland-Palatinate	Rhineland-Palatinate	2847618
+DE.08	Baden-Wurttemberg	Baden-Wurttemberg	2953481
+DE.10	Saarland	Saarland	2842635
+DE.11	Brandenburg	Brandenburg	2945356
+DE.16	Berlin	Berlin	2950157
+DJ.01	Ali Sabieh Region	Ali Sabieh Region	224231
+DZ.40	Tipaza	Tipaza	2475756
+EC.18	Pichincha	Pichincha	3654410
+ES.34	Pais Vasco	Pais Vasco	3336901
+ET.51	Oromia Region	Oromia Region	336135
+FR.53	Bretagne	Bretagne	3021472
+FR.84	Auvergne-Rhone-Alpes	Auvergne-Rhone-Alpes	11071622
+GB.ENG	England	England	6269131
+GH.05	Ashanti Region	Ashanti Region	2303611
+GN.B	Boke Region	Boke Region	2422465
+GR.ESYE43	Thessaly	Thessaly	734786
+HU.05	Komarom-Esztergom	Komarom-Esztergom	719828
+ID.31	Jakarta	Jakarta	1642911
+IE.L	Leinster	Leinster	7521314
+IE.M	Munster	Munster	7778955
+IL.01	Southern District	Southern District	294952
+IL.02	Central District	Central District	294904
+IL.03	Northern District	Northern District	294824
+IL.05	Tel Aviv District	Tel Aviv District	293396
+IL.06	Jerusalem District	Jerusalem District	293198
+IN.35	Andaman and Nicobar Islands	Andaman and Nicobar Islands	1278253
+IR.28	Tehran	Tehran	112931
+IT.03	Calabria	Calabria	2525839
+IT.09	Lombardy	Lombardy	3174618
+KZ.01	Almaty Region	Almaty Region	1526273
+KZ.14	East Kazakhstan Region	East Kazakhstan Region	1519422
+LA.26	Vientiane Prefecture	Vientiane Prefecture	1651944
+LK.36	Western Province	Western Province	1241986
+MK.19	Pelagonia Statistical Region	Pelagonia Statistical Region	792695
+MM.16	Sagaing Region	Sagaing Region	1307682
+MN.02	Bayan-Olgii Aimag	Bayan-Olgii Aimag	2032699
+MN.15	Omnogovi Aimag	Omnogovi Aimag	2029978
+MX.02	Baja California	Baja California	4015307
+MX.05	Coahuila de Zaragoza	Coahuila de Zaragoza	3529456
+MX.06	Colima	Colima	3530978
+MX.09	Guerrero	Guerrero	3529518
+MX.10	Hidalgo	Hidalgo	3525665
+MX.11	Jalisco	Jalisco	4004304
+MX.12	Mexico State	Mexico State	3523920
+MX.13	Michoacan de Ocampo	Michoacan de Ocampo	3522867
+MX.14	Morelos	Morelos	3523169
+MX.15	Nayarit	Nayarit	3522964
+MX.16	Nuevo Leon	Nuevo Leon	3512888
+MX.17	Oaxaca	Oaxaca	3523719
+MX.18	Puebla	Puebla	3521450
+MX.19	Queretaro de Arteaga	Queretaro de Arteaga	3521232
+MX.20	Quintana Roo	Quintana Roo	3699200
+MX.21	San Luis Potosi	San Luis Potosi	3984780
+MX.22	Sinaloa	Sinaloa	3983500
+MX.23	Sonora	Sonora	3983026
+MX.25	Tabasco	Tabasco	3981291
+MX.26	Tamaulipas	Tamaulipas	3980633
+MX.27	Tlaxcala	Tlaxcala	3979840
+MX.28	Veracruz-Llave	Veracruz-Llave	3809876
+MX.29	Yucatan	Yucatan	3827402
+MX.30	Zacatecas	Zacatecas	3820228
+MZ.02	Zambezia Province	Zambezia Province	1026015
+NZ.E7	Otago Region	Otago Region	2185791
+PG.22	East New Britain Province	East New Britain Province	2094021
+PH.40	Calabarzon	Calabarzon	7521311
+PK.01	Azad Kashmir	Azad Kashmir	1178794
+PS.WE	West Bank	West Bank	2347282
+PT.04	Beja District	Beja District	2742611
+PT.10	Leiria District	Leiria District	2267827
+PT.23	Setubal District	Setubal District	2262930
+PW.07	Koror State	Koror State	7671684
+RU.17	Republic of Dagestan	Republic of Dagestan	560114
+RU.27	Karachay-Cherkess Republic	Karachay-Cherkess Republic	578552
+RU.38	Krasnodar Krai	Krasnodar Krai	542415
+RU.47	Moscow Oblast	Moscow Oblast	524894
+RU.51	Nizhny Novgorod Oblast	Nizhny Novgorod Oblast	519545
+RU.69	Smolensk Oblast	Smolensk Oblast	499654
+RU.86	Voronezh Oblast	Voronezh Oblast	472755
+SA.08	Mecca Region	Mecca Region	108410
+SE.28	Vastra Gotaland County	Vastra Gotaland County	2666218
+SK.04	Kosice Region	Kosice Region	3057568
+SL.04	Southern Province	Southern Province	2403548
+TL.MF	Manufahi District	Manufahi District	7292838
+UA.06	Ivano-Frankivsk Oblast	Ivano-Frankivsk Oblast	710719
+UA.08	Kherson Oblast	Kherson Oblast	706483
+UA.10	Kirovohrad Oblast	Kirovohrad Oblast	704009
+UA.16	Mykolaiv Oblast	Mykolaiv Oblast	700548
+UA.17	Odessa Oblast	Odessa Oblast	698740
+UA.18	Poltava Oblast	Poltava Oblast	696643
+UA.23	Vinnytsia Oblast	Vinnytsia Oblast	689558
+UA.25	Zaporizhzhia Oblast	Zaporizhzhia Oblast	687700
+UG.C	Central Region	Central Region	229699
+US.CA	California	California	5332921
+US.FL	Florida	Florida	4155751
+US.MA	Massachusetts	Massachusetts	6254926
+US.MT	Montana	Montana	5667009
+US.NC	North Carolina	North Carolina	4482348
+US.NJ	New Jersey	New Jersey	5101760
+US.NY	New York	New York	5128638
+US.PA	Pennsylvania	Pennsylvania	6254927
+US.TX	Texas	Texas	4736286
+US.VA	Virginia	Virginia	6254928
+US.WA	Washington	Washington	5815135
+VE.15	Miranda State	Miranda State	3632873
+ZA.05	KwaZulu-Natal	KwaZulu-Natal	1085580
