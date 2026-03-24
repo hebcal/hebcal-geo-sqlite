@@ -51,7 +51,7 @@ FROM ZIPCodes_Primary`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary
-WHERE ZipCode LIKE ?
+WHERE ZipCode >= ? AND ZipCode < ?
 ORDER BY Population DESC
 LIMIT 10`;
 
@@ -372,11 +372,18 @@ export class GeoDb {
     }
     const firstCharCode = qraw.charCodeAt(0);
     if (firstCharCode >= 48 && firstCharCode <= 57) {
+      // special-case PK query instead of full-table scan
+      if (GeoDb.is5DigitZip(qraw)) {
+        const loc = this.lookupZip(qraw);
+        return loc ? [GeoDb.zipLocToAutocomplete(loc)] : [];
+      }
       if (!this.zipCompStmt) {
         this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
       }
-      const zip5 = qraw.substring(0, 5);
-      return this.zipCompStmt.all(zip5 + '%').map(GeoDb.zipResultToObj);
+      // this is a ZIP code prefix, a string with 1-4 digits
+      const zipA = qraw.substring(0, 5);
+      const zipB = String(+zipA + 1).padStart(zipA.length, '0');
+      return this.zipCompStmt.all([zipA, zipB]).map(GeoDb.zipResultToObj);
     } else {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
@@ -539,5 +546,25 @@ export class GeoDb {
   /** Returns the version of the GeoDb package */
   static version() {
     return version;
+  }
+
+  /**
+   * @param {string} str
+   * @return {boolean}
+   */
+  static is5DigitZip(str) {
+    if (typeof str !== 'string') {
+      return false;
+    }
+    const s = str.trim();
+    if (s.length < 5) {
+      return false;
+    }
+    for (let i = 0; i < 5; i++) {
+      if (s.charCodeAt(i) > 57 || s.charCodeAt(i) < 48) {
+        return false;
+      }
+    }
+    return true;
   }
 }
