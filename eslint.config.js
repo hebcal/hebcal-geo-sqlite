@@ -24,6 +24,9 @@ export default [
     },
     rules: {
       // 'jsdoc/require-description': 'warn',
+      'n/no-unsupported-features/node-builtins': ['error', {
+        ignores: ['sqlite'],
+      }],
       'semi': 'error',
       'no-cond-assign': 0, // eslint:recommended
       'no-irregular-whitespace': 2, // eslint:recommended
