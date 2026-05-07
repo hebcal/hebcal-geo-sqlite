@@ -15,7 +15,7 @@ module.exports = [
       nodeResolve(),
     ],
     external: [
-      '@hebcal/core', 'better-sqlite3', 'pino', 'fs', 'readline',
+      '@hebcal/core', 'node:sqlite', 'node:fs', 'pino', 'fs', 'readline',
       'events', '@hebcal/cities', 'transliteration', 'quick-lru',
     ],
   },

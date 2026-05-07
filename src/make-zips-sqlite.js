@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import {DatabaseSync} from 'node:sqlite';
 import fs from 'node:fs';
 
 /**
@@ -8,7 +8,7 @@ import fs from 'node:fs';
  */
 export function makeZipsSqlite(dbFilename, sqlFile) {
   const sql = fs.readFileSync(sqlFile, 'utf8');
-  const db = new Database(dbFilename);
+  const db = new DatabaseSync(dbFilename);
   console.log(sql);
   db.exec(sql);
   db.close();

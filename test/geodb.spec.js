@@ -382,7 +382,7 @@ test('legacy3', (t) => {
 test('alternatenames', (t) => {
   const sql = `SELECT * from alternatenames where geonameid = ?`;
   const stmt = t.context.db.geonamesDb.prepare(sql);
-  const results = stmt.all([293100]);
+  const results = stmt.all(293100);
   const actual = JSON.parse(JSON.stringify(results));
   const expected = [
     {'id': 204884, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Sfat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},

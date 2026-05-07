@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import Database from 'better-sqlite3';
+import {DatabaseSync} from 'node:sqlite';
 import path from 'path';
 
 /*
@@ -35,7 +35,7 @@ WHERE ZipCode IN (
 export function makeDummyZipsDb(logger, tmpDir) {
   const testZipsPath = path.join(tmpDir, 'zips.sqlite3');
   logger.info(testZipsPath);
-  const zipsDb = new Database(testZipsPath);
+  const zipsDb = new DatabaseSync(testZipsPath);
   const sqls = [`CREATE TABLE ZIPCodes_Primary (
     ZipCode char(5) NOT NULL PRIMARY KEY,
     CityMixedCase varchar(35) NULL,

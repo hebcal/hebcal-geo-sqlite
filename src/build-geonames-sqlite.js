@@ -1,5 +1,5 @@
 /* eslint-disable no-multi-spaces */
-import Database from 'better-sqlite3';
+import {DatabaseSync} from 'node:sqlite';
 import events from 'events';
 import fs from 'fs';
 import readline from 'readline';
@@ -34,8 +34,8 @@ export async function buildGeonamesSqlite(opts) {
   const ILalternate = opts.ILalternate;
   const logger = opts.logger;
   logger.info(`Opening ${dbFilename}`);
-  const db = new Database(dbFilename);
-  db.pragma('journal_mode = MEMORY');
+  const db = new DatabaseSync(dbFilename);
+  db.exec('PRAGMA journal_mode = MEMORY');
 
   doSql(logger, db,
       `DROP TABLE IF EXISTS country`,
@@ -373,7 +373,7 @@ async function doFile(logger, db, infile, tableName, expectedFields, callback) {
             return;
           }
         }
-        stmt.run(a);
+        stmt.run(...a);
         accepted++;
       });
 

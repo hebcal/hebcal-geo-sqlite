@@ -1,4 +1,5 @@
-import Database from 'better-sqlite3';
+import {DatabaseSync} from 'node:sqlite';
+import {existsSync} from 'node:fs';
 import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
 import '@hebcal/cities';
@@ -134,9 +135,15 @@ export class GeoDb {
   constructor(logger, zipsFilename, geonamesFilename, options) {
     this.logger = logger;
     if (logger) logger.info(`GeoDb: opening ${zipsFilename}...`);
-    this.zipsDb = new Database(zipsFilename, {fileMustExist: true});
+    if (!existsSync(zipsFilename)) {
+      throw new Error(`GeoDb: ${zipsFilename} does not exist`);
+    }
+    this.zipsDb = new DatabaseSync(zipsFilename);
     if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
-    this.geonamesDb = new Database(geonamesFilename, {fileMustExist: true});
+    if (!existsSync(geonamesFilename)) {
+      throw new Error(`GeoDb: ${geonamesFilename} does not exist`);
+    }
+    this.geonamesDb = new DatabaseSync(geonamesFilename);
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     const zipsCacheSize = options?.zipsCacheSize || 150;
     /** @type {Map<string, Location>} */
@@ -383,7 +390,7 @@ export class GeoDb {
       // this is a ZIP code prefix, a string with 1-4 digits
       const zipA = qraw.substring(0, 5);
       const zipB = String(+zipA + 1).padStart(zipA.length, '0');
-      return this.zipCompStmt.all([zipA, zipB]).map(GeoDb.zipResultToObj);
+      return this.zipCompStmt.all(zipA, zipB).map(GeoDb.zipResultToObj);
     } else {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
