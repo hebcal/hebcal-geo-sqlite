@@ -92,8 +92,11 @@ test('geoname', (t) => {
     asciiname: 'Little Rock',
     admin1: 'Arkansas',
     population: 197992,
+    jersualem: undefined, // misspelled in @hebcal/core
+    stateName: undefined,
+    zip: undefined,
   };
-  const plainObj = Object.assign({}, loc);
+  const plainObj = { ...loc};
   t.deepEqual(plainObj, expected);
 });
 
@@ -123,8 +126,10 @@ test('zip', (t) => {
     geo: 'zip',
     zip: '02912',
     population: 4739,
+    jersualem: undefined, // misspelled in @hebcal/core
+    asciiname: undefined,
   };
-  const plainObj = Object.assign({}, loc);
+  const plainObj = { ...loc};
   t.deepEqual(plainObj, expected);
 });
 
@@ -433,7 +438,7 @@ test('Tel Aviv alias', (t) => {
 
 test('Chandler Arizona', (t) => {
   const loc = t.context.db.lookupZip('85226');
-  const plainObj = Object.assign({}, loc);
+  const plainObj = { ...loc};
   const expected = {
     locationName: 'Chandler, AZ 85226',
     latitude: 33.266332,
@@ -449,6 +454,8 @@ test('Chandler Arizona', (t) => {
     geo: 'zip',
     zip: '85226',
     population: 40689,
+    jersualem: undefined, // misspelled in @hebcal/core
+    asciiname: undefined,
   };
   t.deepEqual(plainObj, expected);
 });
