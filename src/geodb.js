@@ -313,9 +313,6 @@ export class GeoDb {
     if (admin1) {
       location.admin1 = admin1;
     }
-    if (result.cc === 'IL' && admin1.startsWith('Jerusalem') && result.name.startsWith('Jerualem')) {
-      location.jersualem = true;
-    }
     if (result.population) {
       location.population = result.population;
     }

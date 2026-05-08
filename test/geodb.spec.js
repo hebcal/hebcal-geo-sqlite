@@ -92,7 +92,6 @@ test('geoname', (t) => {
     asciiname: 'Little Rock',
     admin1: 'Arkansas',
     population: 197992,
-    jersualem: undefined, // misspelled in @hebcal/core
     stateName: undefined,
     zip: undefined,
   };
@@ -126,7 +125,6 @@ test('zip', (t) => {
     geo: 'zip',
     zip: '02912',
     population: 4739,
-    jersualem: undefined, // misspelled in @hebcal/core
     asciiname: undefined,
   };
   const plainObj = { ...loc};
@@ -454,7 +452,6 @@ test('Chandler Arizona', (t) => {
     geo: 'zip',
     zip: '85226',
     population: 40689,
-    jersualem: undefined, // misspelled in @hebcal/core
     asciiname: undefined,
   };
   t.deepEqual(plainObj, expected);
