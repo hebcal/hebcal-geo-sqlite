@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "@hebcal/cities": "^6.1.0",
-    "@hebcal/core": "^6.4.1",
+    "@hebcal/core": "^6.5.0",
     "minimist": "^1.2.8",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
