@@ -194,6 +194,28 @@ test('autoCompleteZip', (t) => {
   t.deepEqual(result, expected);
 });
 
+test('autoCompleteZip-9', (t) => {
+  const expected = [
+    {
+      id: '90035',
+      value: 'Los Angeles, CA 90035',
+      admin1: 'CA',
+      asciiname: 'Los Angeles',
+      country: 'United States',
+      cc: 'US',
+      latitude: 34.052107,
+      longitude: -118.385271,
+      timezone: 'America/Los_Angeles',
+      population: 31080,
+      geo: 'zip',
+    },
+  ];
+  const result = t.context.db.autoComplete('90', true);
+  t.deepEqual(result, expected);
+  const result2 = t.context.db.autoComplete('9', true);
+  t.deepEqual(result2, expected);
+});
+
 test('autoCompleteZipPlus4', (t) => {
   const expected = [
     {

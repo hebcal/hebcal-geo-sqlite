@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {DatabaseSync} from 'node:sqlite';
-import path from 'path';
+import path from 'node:path';
 
 /*
 .mode insert ZIPCodes_Primary
@@ -71,6 +71,7 @@ INSERT INTO ZIPCodes_Primary VALUES('62704','Springfield','IL','Illinois',39.771
 INSERT INTO ZIPCodes_Primary VALUES('65807','Springfield','MO','Missouri',37.171007999999998716,-93.331856999999995849,1239,'6','Y',55168);
 INSERT INTO ZIPCodes_Primary VALUES('84332','Providence','UT','Utah',41.673151999999999972,-111.81449999999999445,4650,'7','Y',8238);
 INSERT INTO ZIPCodes_Primary VALUES('85226','Chandler','AZ','Arizona',33.266332,-111.943009,1157,'7','N',40689);
+INSERT INTO ZIPCodes_Primary VALUES('90035','Los Angeles','CA','California',34.05210699999999946,-118.385271000000003,140,'8','Y',31080);
 `,
   `CREATE VIRTUAL TABLE ZIPCodes_CityFullText
 USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);`,

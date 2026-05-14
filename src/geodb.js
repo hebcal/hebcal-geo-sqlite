@@ -386,7 +386,7 @@ export class GeoDb {
       }
       // this is a ZIP code prefix, a string with 1-4 digits
       const zipA = qraw.substring(0, 5);
-      const zipB = String(+zipA + 1).padStart(zipA.length, '0');
+      const zipB = zipA === '9' ? 'A' :String(+zipA + 1).padStart(zipA.length, '0');
       return this.zipCompStmt.all(zipA, zipB).map(GeoDb.zipResultToObj);
     } else {
       if (!this.geonamesCompStmt) {
