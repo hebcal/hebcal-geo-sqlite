@@ -73,12 +73,6 @@ INSERT INTO ZIPCodes_Primary VALUES('84332','Providence','UT','Utah',41.67315199
 INSERT INTO ZIPCodes_Primary VALUES('85226','Chandler','AZ','Arizona',33.266332,-111.943009,1157,'7','N',40689);
 INSERT INTO ZIPCodes_Primary VALUES('90035','Los Angeles','CA','California',34.05210699999999946,-118.385271000000003,140,'8','Y',31080);
 `,
-  `CREATE VIRTUAL TABLE ZIPCodes_CityFullText
-USING fts4(ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population);`,
-
-  `INSERT INTO ZIPCodes_CityFullText
-SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
-FROM ZIPCodes_Primary;`,
 
   `CREATE VIRTUAL TABLE ZIPCodes_CityFullText5
 USING fts5(ZipCode UNINDEXED,CityMixedCase,Population UNINDEXED,longname);`,
