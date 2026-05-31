@@ -25,6 +25,15 @@ const loc3 = db.lookupLegacyCity('IL-Netanya');
 db.close();
 ```
 
+## Data attribution
+
+Some location data is incorporated directly into this package, including the
+bundled fixtures used by `make-test-dbs` to build test databases (the ~60
+"classic" Hebcal cities, `cities-patch.txt`, and related country/admin1 data).
+This data is derived from [GeoNames.org](https://www.geonames.org/) and is used
+under the
+[Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/).
+
 ## Classes
 
 <dl>
