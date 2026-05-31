@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 // Builds geonames.sqlite3 and zips.sqlite3 for testing without downloading
-// from geonames.org. Uses cities-patch.txt as the main geonames data source
-// and minimal fixture files bundled in this repo.
+// from geonames.org. Uses the ~60 "classic" Hebcal cities (cities5000.txt) plus
+// cities-patch.txt as the geonames data source, along with minimal fixture files
+// bundled in this repo.
 
 import {buildGeonamesSqlite, makeZipsSqlite} from '@hebcal/geo-sqlite';
 import {pino} from 'pino';
@@ -28,11 +29,11 @@ const zipsDb = path.join(outDir, 'zips.sqlite3');
 await buildGeonamesSqlite({
   dbFilename: geonamesDb,
   countryInfotxt: path.join(repoDir, 'test/fixtures/countryInfo.txt'),
-  cities5000txt: path.join(repoDir, 'cities-patch.txt'),
-  citiesPatch: '/dev/null',
+  cities5000txt: path.join(repoDir, 'test/fixtures/cities5000.txt'),
+  citiesPatch: path.join(repoDir, 'cities-patch.txt'),
   admin1CodesASCIItxt: path.join(repoDir, 'test/fixtures/admin1CodesASCII.txt'),
   ILtxt: '/dev/null',
-  ILalternate: '/dev/null',
+  ILalternate: path.join(repoDir, 'test/fixtures/IL-alt.txt'),
   population,
   logger,
 });

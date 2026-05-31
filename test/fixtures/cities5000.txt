@@ -1,0 +1,65 @@
+295629	Ashdod	Ashdod		31.79213	34.64966	P	PPLA	IL		01				220174		27	Asia/Jerusalem	2024-01-01
+4180439	Atlanta	Atlanta		33.749	-84.38798	P	PPLA	US		GA				498044		336	America/New_York	2024-01-01
+4671654	Austin	Austin		30.26715	-97.74306	P	PPLA	US		TX				931830		165	America/Chicago	2024-01-01
+98182	Baghdad	Baghdad		33.34058	44.40088	P	PPLA	IQ		07				5672516		41	Asia/Baghdad	2024-01-01
+295530	Beer Sheva	Beer Sheva		31.25181	34.7913	P	PPLA	IL		01				186600		285	Asia/Jerusalem	2024-01-01
+2950159	Berlin	Berlin		52.52437	13.41053	P	PPLA	DE		16				3426354		43	Europe/Berlin	2024-01-01
+4347778	Baltimore	Baltimore		39.29038	-76.61219	P	PPLA	US		MD				593490		35	America/New_York	2024-01-01
+3688689	Bogota	Bogota		4.60971	-74.08175	P	PPLA	CO		34				7674366		2582	America/Bogota	2024-01-01
+4930956	Boston	Boston		42.35843	-71.05977	P	PPLA	US		MA				617594		38	America/New_York	2024-01-01
+3054643	Budapest	Budapest		47.49801	19.03991	P	PPLA	HU		05				1741041		104	Europe/Budapest	2024-01-01
+3435910	Buenos Aires	Buenos Aires		-34.61315	-58.37723	P	PPLA	AR		07				13076300		31	America/Argentina/Buenos_Aires	2024-01-01
+5110629	Buffalo	Buffalo		42.88645	-78.87837	P	PPLA	US		NY				278349		191	America/New_York	2024-01-01
+4887398	Chicago	Chicago		41.85003	-87.65005	P	PPLA	US		IL				2720546		180	America/Chicago	2024-01-01
+4508722	Cincinnati	Cincinnati		39.162	-84.45689	P	PPLA	US		OH				309317		267	America/New_York	2024-01-01
+5150529	Cleveland	Cleveland		41.4995	-81.69541	P	PPLA	US		OH				390113		204	America/New_York	2024-01-01
+4684888	Dallas	Dallas		32.78306	-96.80667	P	PPLA	US		TX				1300092		139	America/Chicago	2024-01-01
+5419384	Denver	Denver		39.73915	-104.9847	P	PPLA	US		CO				600158		1636	America/Denver	2024-01-01
+4990729	Detroit	Detroit		42.33143	-83.04575	P	PPLA	US		MI				713777		192	America/Detroit	2024-01-01
+295277	Eilat	Eilat		29.55805	34.94821	P	PPLA	IL		01				47359		63	Asia/Jerusalem	2024-01-01
+2411585	Gibraltar	Gibraltar		36.14474	-5.35257	P	PPLA	GI						26544		11	Europe/Gibraltar	2024-01-01
+294801	Haifa	Haifa		32.81841	34.9885	P	PPLA	IL		04				267300		40	Asia/Jerusalem	2024-01-01
+5856195	Hawaii	Hawaii		21.30694	-157.85833	P	PPLA	US		HI				371657		18	Pacific/Honolulu	2024-01-01
+658225	Helsinki	Helsinki		60.16952	24.93545	P	PPLA	FI		01				658864		26	Europe/Helsinki	2024-01-01
+4699066	Houston	Houston		29.76328	-95.36327	P	PPLA	US		TX				2296224		30	America/Chicago	2024-01-01
+281184	Jerusalem	Jerusalem		31.76904	35.21633	P	PPLA	IL		06				801000		786	Asia/Jerusalem	2024-01-01
+993800	Johannesburg	Johannesburg		-26.20227	28.04363	P	PPLA	ZA		06				2026469		1767	Africa/Johannesburg	2024-01-01
+703448	Kiev	Kiev		50.45466	30.5238	P	PPLA	UA		30				2797553		187	Europe/Kiev	2024-01-01
+3911925	La Paz	La Paz		-16.5	-68.15	P	PPLA	BO		04				812799		3782	America/La_Paz	2024-01-01
+5100572	Livingston	Livingston		40.79593	-74.31487	P	PPLA	US		NJ				29366		98	America/New_York	2024-01-01
+5506956	Las Vegas	Las Vegas		36.17497	-115.13722	P	PPLA	US		NV				583756		613	America/Los_Angeles	2024-01-01
+2643743	London	London		51.50853	-0.12574	P	PPLA	GB		ENG				7556900		25	Europe/London	2024-01-01
+5368361	Los Angeles	Los Angeles		34.05223	-118.24368	P	PPLA	US		CA				3971883		96	America/Los_Angeles	2024-01-01
+2995469	Marseilles	Marseilles		43.29695	5.38107	P	PPLA	FR		93				870731		28	Europe/Paris	2024-01-01
+4164138	Miami	Miami		25.77427	-80.19366	P	PPLA	US		FL				441003		25	America/New_York	2024-01-01
+5037649	Minneapolis	Minneapolis		44.97997	-93.26384	P	PPLA	US		MN				410939		262	America/Chicago	2024-01-01
+2158177	Melbourne	Melbourne		-37.814	144.96332	P	PPLA	AU		06				4917750		25	Australia/Melbourne	2024-01-01
+3530597	Mexico City	Mexico City		19.42847	-99.12766	P	PPLA	MX		07				12294193		2240	America/Mexico_City	2024-01-01
+6077243	Montreal	Montreal		45.50884	-73.58781	P	PPLA	CA		10				1600000		216	America/Toronto	2024-01-01
+524901	Moscow	Moscow		55.75222	37.61556	P	PPLA	RU		48				10381222		144	Europe/Moscow	2024-01-01
+5128581	New York	New York		40.71427	-74.00597	P	PPLA	US		NY				8175133		57	America/New_York	2024-01-01
+5074472	Omaha	Omaha		41.25861	-95.93779	P	PPLA	US		NE				408958		315	America/Chicago	2024-01-01
+6094817	Ottawa	Ottawa		45.41117	-75.69812	P	PPLA	CA		08				812129		71	America/Toronto	2024-01-01
+3703443	Panama City	Panama City		8.9936	-79.51973	P	PPLA	PA						408168		17	America/Panama	2024-01-01
+2988507	Paris	Paris		48.85341	2.3488	P	PPLA	FR		11				2138551		42	Europe/Paris	2024-01-01
+5224082	Pawtucket	Pawtucket		41.87871	-71.38256	P	PPLA	US		RI				71148		0	America/New_York	2024-01-01
+293918	Petach Tikvah	Petach Tikvah		32.08707	34.88747	P	PPLA	IL		02				236169		54	Asia/Jerusalem	2024-01-01
+4560349	Philadelphia	Philadelphia		39.95233	-75.16379	P	PPLA	US		PA				1567442		8	America/New_York	2024-01-01
+5308655	Phoenix	Phoenix		33.44838	-112.07404	P	PPLA	US		AZ				1660272		366	America/Phoenix	2024-01-01
+5206379	Pittsburgh	Pittsburgh		40.44062	-79.99589	P	PPLA	US		PA				302407		239	America/New_York	2024-01-01
+5224151	Providence	Providence		41.82399	-71.41283	P	PPLA	US		RI				190934		0	America/New_York	2024-01-01
+5746545	Portland	Portland		45.52345	-122.67621	P	PPLA	US		OR				632309		15	America/Los_Angeles	2024-01-01
+4407066	Saint Louis	Saint Louis		38.62727	-90.19789	P	PPLA	US		MO				319294		149	America/Chicago	2024-01-01
+498817	Saint Petersburg	Saint Petersburg		59.93863	30.31413	P	PPLA	RU		66				5028000		11	Europe/Moscow	2024-01-01
+5391811	San Diego	San Diego		32.71533	-117.15726	P	PPLA	US		CA				1394928		20	America/Los_Angeles	2024-01-01
+5391959	San Francisco	San Francisco		37.77493	-122.41942	P	PPLA	US		CA				864816		28	America/Los_Angeles	2024-01-01
+3448439	Sao Paulo	Sao Paulo		-23.5475	-46.63611	P	PPLA	BR		27				10021295		769	America/Sao_Paulo	2024-01-01
+5809844	Seattle	Seattle		47.60621	-122.33207	P	PPLA	US		WA				684451		56	America/Los_Angeles	2024-01-01
+2147714	Sydney	Sydney		-33.86785	151.20732	P	PPLA	AU		02				4627345		58	Australia/Sydney	2024-01-01
+293397	Tel Aviv	Tel Aviv		32.08088	34.78057	P	PPLA	IL		05				432892		15	Asia/Jerusalem	2024-01-01
+293322	Tiberias	Tiberias		32.79221	35.53124	P	PPLA	IL		03				43500		0	Asia/Jerusalem	2024-01-01
+6167865	Toronto	Toronto		43.70011	-79.4163	P	PPLA	CA		08				2731571		175	America/Toronto	2024-01-01
+6173331	Vancouver	Vancouver		49.24966	-123.11934	P	PPLA	CA		02				600000		70	America/Vancouver	2024-01-01
+5144336	White Plains	White Plains		41.03399	-73.76291	P	PPLA	US		NY				58241		82	America/New_York	2024-01-01
+4140963	Washington DC	Washington DC		38.89511	-77.03637	P	PPLA	US		DC				601723		6	America/New_York	2024-01-01
+4956184	Worcester	Worcester		42.26259	-71.80229	P	PPLA	US		MA				182544		164	America/New_York	2024-01-01

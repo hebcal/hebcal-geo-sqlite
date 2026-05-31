@@ -50,7 +50,7 @@ GB.ENG	England	England	6269131
 GH.05	Ashanti Region	Ashanti Region	2303611
 GN.B	Boke Region	Boke Region	2422465
 GR.ESYE43	Thessaly	Thessaly	734786
-HU.05	Komarom-Esztergom	Komarom-Esztergom	719828
+HU.05	Budapest	Budapest	3054643
 ID.31	Jakarta	Jakarta	1642911
 IE.L	Leinster	Leinster	7521314
 IE.M	Munster	Munster	7778955
@@ -139,3 +139,32 @@ US.VA	Virginia	Virginia	6254928
 US.WA	Washington	Washington	5815135
 VE.15	Miranda State	Miranda State	3632873
 ZA.05	KwaZulu-Natal	KwaZulu-Natal	1085580
+ZA.06	Gauteng	Gauteng	1085594
+US.GA	Georgia	Georgia	4197000
+US.MD	Maryland	Maryland	4361885
+US.OH	Ohio	Ohio	5165418
+US.CO	Colorado	Colorado	5417618
+US.MI	Michigan	Michigan	5001836
+US.HI	Hawaii	Hawaii	5855797
+US.NV	Nevada	Nevada	5509151
+US.IL	Illinois	Illinois	4896861
+US.MN	Minnesota	Minnesota	5037779
+US.NE	Nebraska	Nebraska	5073708
+US.RI	Rhode Island	Rhode Island	5224323
+US.AZ	Arizona	Arizona	5551752
+US.OR	Oregon	Oregon	5744337
+US.MO	Missouri	Missouri	4398678
+US.DC	Washington, D.C.	Washington, D.C.	4138106
+IL.04	Haifa District	Haifa District	294800
+IQ.07	Baghdad	Baghdad	98182
+CO.34	Bogota D.C.	Bogota D.C.	3688685
+AR.07	Buenos Aires	Buenos Aires	3433955
+FI.01	Uusimaa	Uusimaa	830673
+UA.30	Kyiv City	Kyiv City	703447
+BO.04	La Paz Department	La Paz Department	3911924
+FR.11	Ile-de-France	Ile-de-France	3012874
+FR.93	Provence-Alpes-Cote d'Azur	Provence-Alpes-Cote d'Azur	2985244
+MX.07	Mexico City	Mexico City	3530589
+RU.48	Moscow	Moscow	524894
+RU.66	Saint Petersburg	Saint Petersburg	536203
+BR.27	Sao Paulo	Sao Paulo	3448433

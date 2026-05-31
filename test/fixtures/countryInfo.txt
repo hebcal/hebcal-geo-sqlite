@@ -59,3 +59,9 @@ UG	UGA	800	UG	Uganda	Kampala	236040	45741007	AF	.ug	UGX	Shilling	256			en-UG,lg,
 US	USA	840	US	United States	Washington	9629091	331002651	NA	.us	USD	Dollar	1	#####-####	^\d{5}(-\d{4})?$	en-US,es-US,haw,fr	6252001	CA,MX,CU	
 VE	VEN	862	VE	Venezuela	Caracas	912050	28435943	SA	.ve	VES	Bolivar	58	####	^\d{4}$	es-VE	3625428	TT,GY,BR,CO	
 ZA	ZAF	710	SF	South Africa	Pretoria	1219912	59308690	AF	.za	ZAR	Rand	27	####	^\d{4}$	zu,xh,af,nso,en-ZA,tn,st,ts,ss,ve,nr	953987	ZW,SZ,MZ,BW,NA,LS	
+BR	BRA	076	BR	Brazil	Brasilia	8511965	209469333	SA	.br	BRL	Real	55	#####-###	^\d{5}-\d{3}$	pt-BR,es,en,fr	3469034	SR,PE,BO,UY,GY,PY,GF,VE,CO,AR	
+CO	COL	170	CO	Colombia	Bogota	1138910	49648685	SA	.co	COP	Peso	57			es-CO	3686110	EC,PE,PA,BR,VE	
+FI	FIN	246	FI	Finland	Helsinki	337030	5518050	EU	.fi	EUR	Euro	358	#####	^(?:FI)*(\d{5})$	fi-FI,sv-FI,smn	660013	NO,RU,SE	
+GI	GIB	292	GI	Gibraltar	Gibraltar	6	33718	EU	.gi	GIP	Pound	350			en-GI,es,it,pt	2411586		
+IQ	IRQ	368	IZ	Iraq	Baghdad	437072	38433600	AS	.iq	IQD	Dinar	964	#####	^(\d{5})$	ar-IQ,ku,hy	99237	SY,SA,IR,JO,TR,KW	
+PA	PAN	591	PM	Panama	Panama City	78200	4176873	NA	.pa	PAB	Balboa	507			es-PA,en	3703430	CR,CO	
