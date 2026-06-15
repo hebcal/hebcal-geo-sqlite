@@ -7,6 +7,7 @@
 
 import {buildGeonamesSqlite, makeZipsSqlite} from '@hebcal/geo-sqlite';
 import {pino} from 'pino';
+import pretty from 'pino-pretty';
 import {statSync} from 'fs';
 import path from 'path';
 
@@ -15,13 +16,14 @@ const repoDir = path.join(outDir, 'node_modules/@hebcal/geo-sqlite');
 
 const population = process.env.POPULATION ? +process.env.POPULATION : 0;
 
-const logger = pino({
-  level: 'info',
-  transport: {
-    target: 'pino-pretty',
-    options: {translateTime: 'SYS:standard', ignore: 'pid,hostname'},
-  },
-});
+// Run pino-pretty synchronously as the destination stream rather than via a
+// worker-thread transport. The worker thread (thread-stream) can keep the
+// process alive indefinitely on some platforms (e.g. GitHub Codespaces); a
+// synchronous stream lets the process exit naturally once the work is done.
+const logger = pino({level: 'info'}, pretty({
+  translateTime: 'SYS:standard',
+  ignore: 'pid,hostname',
+}));
 
 const geonamesDb = path.join(outDir, 'geonames.sqlite3');
 const zipsDb = path.join(outDir, 'zips.sqlite3');
