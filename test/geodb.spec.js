@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
-import test from 'ava';
+import {test, before, after} from 'node:test';
+import assert from 'node:assert';
 import {Location} from '@hebcal/core';
 import {GeoDb} from '../src/geodb.js';
 import {buildGeonamesSqlite} from '../src/build-geonames-sqlite.js';
@@ -14,7 +15,9 @@ import {munge} from '../src/munge.js';
 
 const logger = pino({level: 'error'});
 
-test.before(async (t) => {
+let db;
+
+before(async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
   const {ciPath, c5path, a1path, altNamePath} = makeDummyInfoTxt(logger, tmpDir);
   const testZipsPath = makeDummyZipsDb(logger, tmpDir);
@@ -31,17 +34,17 @@ test.before(async (t) => {
     logger: logger,
   };
   await buildGeonamesSqlite(filenames);
-  t.context.db = new GeoDb(logger, testZipsPath, testDbPath);
+  db = new GeoDb(logger, testZipsPath, testDbPath);
   logger.info('setup: complete');
 });
 
-test.after((t) => {
+after(() => {
   logger.info('Cleaning up');
-  t.context.db.close();
+  db.close();
   logger.info('Finished');
 });
 
-test('legacy', (t) => {
+test('legacy', () => {
   const expected = {
     'Be\'er Sheva': 295530,
     'Beer Sheva': 295530,
@@ -50,34 +53,34 @@ test('legacy', (t) => {
     'CN-Xian': 1790630,
   };
   for (const [key, val] of Object.entries(expected)) {
-    const loc = t.context.db.lookupLegacyCity(key);
-    t.is(loc == null, false);
-    t.is(typeof loc, 'object');
-    t.is(loc instanceof Location, true);
-    t.is(loc.getGeoId(), val);
+    const loc = db.lookupLegacyCity(key);
+    assert.strictEqual(loc == null, false);
+    assert.strictEqual(typeof loc, 'object');
+    assert.strictEqual(loc instanceof Location, true);
+    assert.strictEqual(loc.getGeoId(), val);
   }
-  t.is(t.context.db.lookupLegacyCity('*nonexistent*'), null);
+  assert.strictEqual(db.lookupLegacyCity('*nonexistent*'), null);
 });
 
-test('legacy2', (t) => {
+test('legacy2', () => {
   for (const key of legacyCities) {
     const name = munge(key);
-    const geonameid = t.context.db.legacyCities.get(name);
-    t.is(typeof geonameid, 'number', key);
+    const geonameid = db.legacyCities.get(name);
+    assert.strictEqual(typeof geonameid, 'number', key);
   }
 });
 
-test('geoname', (t) => {
-  t.is(t.context.db.lookupGeoname(0), null);
-  t.is(t.context.db.lookupGeoname('0'), null);
-  t.is(t.context.db.lookupGeoname(1234), null);
-  const loc = t.context.db.lookupGeoname(4119403);
-  t.is(loc == null, false);
-  t.is(typeof loc, 'object');
-  t.is(loc instanceof Location, true);
-  t.is(loc.getGeoId(), 4119403);
-  t.is(loc.getShortName(), 'Little Rock');
-  t.is(loc.getName(), 'Little Rock, Arkansas, USA');
+test('geoname', () => {
+  assert.strictEqual(db.lookupGeoname(0), null);
+  assert.strictEqual(db.lookupGeoname('0'), null);
+  assert.strictEqual(db.lookupGeoname(1234), null);
+  const loc = db.lookupGeoname(4119403);
+  assert.strictEqual(loc == null, false);
+  assert.strictEqual(typeof loc, 'object');
+  assert.strictEqual(loc instanceof Location, true);
+  assert.strictEqual(loc.getGeoId(), 4119403);
+  assert.strictEqual(loc.getShortName(), 'Little Rock');
+  assert.strictEqual(loc.getName(), 'Little Rock, Arkansas, USA');
   const expected = {
     locationName: 'Little Rock, Arkansas, USA',
     latitude: 34.74648,
@@ -96,20 +99,20 @@ test('geoname', (t) => {
     zip: undefined,
   };
   const plainObj = { ...loc};
-  t.deepEqual(plainObj, expected);
+  assert.deepStrictEqual(plainObj, expected);
 });
 
-test('zip', (t) => {
-  t.is(t.context.db.lookupZip('00000'), null);
-  t.is(t.context.db.lookupZip('00001'), null);
-  t.is(t.context.db.lookupZip('00000'), null);
-  const loc = t.context.db.lookupZip('02912');
-  t.is(loc == null, false);
-  t.is(typeof loc, 'object');
-  t.is(loc instanceof Location, true);
-  t.is(loc.getGeoId(), '02912');
-  t.is(loc.getShortName(), 'Providence');
-  t.is(loc.getName(), 'Providence, RI 02912');
+test('zip', () => {
+  assert.strictEqual(db.lookupZip('00000'), null);
+  assert.strictEqual(db.lookupZip('00001'), null);
+  assert.strictEqual(db.lookupZip('00000'), null);
+  const loc = db.lookupZip('02912');
+  assert.strictEqual(loc == null, false);
+  assert.strictEqual(typeof loc, 'object');
+  assert.strictEqual(loc instanceof Location, true);
+  assert.strictEqual(loc.getGeoId(), '02912');
+  assert.strictEqual(loc.getShortName(), 'Providence');
+  assert.strictEqual(loc.getName(), 'Providence, RI 02912');
   const expected = {
     locationName: 'Providence, RI 02912',
     latitude: 41.826254,
@@ -128,10 +131,10 @@ test('zip', (t) => {
     asciiname: undefined,
   };
   const plainObj = { ...loc};
-  t.deepEqual(plainObj, expected);
+  assert.deepStrictEqual(plainObj, expected);
 });
 
-test('autoComplete', (t) => {
+test('autoComplete', () => {
   const expected = [
     {
       id: 293397,
@@ -147,21 +150,21 @@ test('autoComplete', (t) => {
       geo: 'geoname',
     },
   ];
-  const result = t.context.db.autoComplete('tel', true);
+  const result = db.autoComplete('tel', true);
   for (const res of result) {
     delete res.rank;
   }
-  t.deepEqual(result, expected);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoCompleteBerlin', (t) => {
-  const result = t.context.db.autoComplete('BERL', true);
-  t.is(result.length > 0, true, 'Should find Berlin');
+test('autoCompleteBerlin', () => {
+  const result = db.autoComplete('BERL', true);
+  assert.strictEqual(result.length > 0, true, 'Should find Berlin');
   const berlin = result[0];
-  t.is(berlin.value, 'Berlin, Germany');
+  assert.strictEqual(berlin.value, 'Berlin, Germany');
 });
 
-test('autoCompleteZip', (t) => {
+test('autoCompleteZip', () => {
   const expected = [
     {
       id: '65807',
@@ -190,11 +193,11 @@ test('autoCompleteZip', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('6', true);
-  t.deepEqual(result, expected);
+  const result = db.autoComplete('6', true);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoCompleteZip-9', (t) => {
+test('autoCompleteZip-9', () => {
   const expected = [
     {
       id: '90035',
@@ -210,13 +213,13 @@ test('autoCompleteZip-9', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('90', true);
-  t.deepEqual(result, expected);
-  const result2 = t.context.db.autoComplete('9', true);
-  t.deepEqual(result2, expected);
+  const result = db.autoComplete('90', true);
+  assert.deepStrictEqual(result, expected);
+  const result2 = db.autoComplete('9', true);
+  assert.deepStrictEqual(result2, expected);
 });
 
-test('autoCompleteZipPlus4', (t) => {
+test('autoCompleteZipPlus4', () => {
   const expected = [
     {
       id: '62704',
@@ -232,11 +235,11 @@ test('autoCompleteZipPlus4', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('62704-1234', true);
-  t.deepEqual(result, expected);
+  const result = db.autoComplete('62704-1234', true);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoCompleteZipMerge', (t) => {
+test('autoCompleteZipMerge', () => {
   const expected = [
     {
       id: 5417598,
@@ -317,15 +320,15 @@ test('autoCompleteZipMerge', (t) => {
       geo: 'zip',
     },
   ];
-  const result = t.context.db.autoComplete('Spring', true).slice(0, 6);
+  const result = db.autoComplete('Spring', true).slice(0, 6);
   for (const res of result) {
     delete res.rank;
   }
-  t.deepEqual(result, expected);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoCompleteZipMerge2', (t) => {
-  const result = t.context.db.autoComplete('Providence', true)
+test('autoCompleteZipMerge2', () => {
+  const result = db.autoComplete('Providence', true)
       .map((res) => {
         return {
           i: res.id,
@@ -342,16 +345,16 @@ test('autoCompleteZipMerge2', (t) => {
     {i: 4305295, v: 'Providence, Kentucky, USA', p: 3065},
     {i: '27315', v: 'Providence, NC 27315', p: 1892},
   ];
-  t.deepEqual(result, expected);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoComplete-no-match', (t) => {
+test('autoComplete-no-match', () => {
   const expected = [];
-  const result = t.context.db.autoComplete('foobar', false);
-  t.deepEqual(result, expected);
+  const result = db.autoComplete('foobar', false);
+  assert.deepStrictEqual(result, expected);
 });
 
-test('autoComplete-nolatlong', (t) => {
+test('autoComplete-nolatlong', () => {
   const expected = [{
     id: 293807,
     value: 'Ra\'anana, Israel',
@@ -361,36 +364,34 @@ test('autoComplete-nolatlong', (t) => {
     cc: 'IL',
     geo: 'geoname',
   }];
-  const result = t.context.db.autoComplete('Ra\'a', false);
+  const result = db.autoComplete('Ra\'a', false);
   for (const res of result) {
     delete res.rank;
   }
-  t.deepEqual(result, expected);
+  assert.deepStrictEqual(result, expected);
 });
 
 
-test('cacheZips', (t) => {
-  t.context.db.cacheZips();
-  t.pass('OK');
+test('cacheZips', () => {
+  db.cacheZips();
 });
 
-test('cacheGeonames', (t) => {
-  t.context.db.cacheGeonames();
-  t.pass('OK');
+test('cacheGeonames', () => {
+  db.cacheGeonames();
 });
 
-test('countryNames', (t) => {
-  const m = t.context.db.countryNames;
-  t.is(typeof m, 'object');
-  t.is(m.get('ZA'), 'South Africa');
+test('countryNames', () => {
+  const m = db.countryNames;
+  assert.strictEqual(typeof m, 'object');
+  assert.strictEqual(m.get('ZA'), 'South Africa');
 });
 
-test('legacy3', (t) => {
+test('legacy3', () => {
   // fetch from @hebacal/cities because no trailing "h"
-  const loc = t.context.db.lookupLegacyCity('IL-Petah Tikva');
-  t.not(loc, null);
-  t.is(typeof loc, 'object');
-  t.is(loc instanceof Location, true);
+  const loc = db.lookupLegacyCity('IL-Petah Tikva');
+  assert.notStrictEqual(loc, null);
+  assert.strictEqual(typeof loc, 'object');
+  assert.strictEqual(loc instanceof Location, true);
   const expected = {
     locationName: 'Petah Tiqwa',
     latitude: 32.08707,
@@ -401,12 +402,12 @@ test('legacy3', (t) => {
     cc: 'IL',
   };
   const plainObj = JSON.parse(JSON.stringify(loc));
-  t.deepEqual(plainObj, expected);
+  assert.deepStrictEqual(plainObj, expected);
 });
 
-test('alternatenames', (t) => {
+test('alternatenames', () => {
   const sql = `SELECT * from alternatenames where geonameid = ?`;
-  const stmt = t.context.db.geonamesDb.prepare(sql);
+  const stmt = db.geonamesDb.prepare(sql);
   const results = stmt.all(293100);
   const actual = JSON.parse(JSON.stringify(results));
   const expected = [
@@ -416,12 +417,12 @@ test('alternatenames', (t) => {
     {'id': 7202955, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tzefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
     {'id': 7202956, 'geonameid': 293100, 'isolanguage': 'he', 'name': 'צפת', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
   ];
-  t.deepEqual(actual, expected);
+  assert.deepStrictEqual(actual, expected);
 });
 
-test('autoCompleteZipPartial', (t) => {
-  const result = t.context.db.autoComplete('Providence, RI 029', true);
-  t.is(result.length, 12);
+test('autoCompleteZipPartial', () => {
+  const result = db.autoComplete('Providence, RI 029', true);
+  assert.strictEqual(result.length, 12);
   const firstTwo = [{
     id: '02909',
     value: 'Providence, RI 02909',
@@ -447,17 +448,17 @@ test('autoCompleteZipPartial', (t) => {
     population: 38507,
     geo: 'zip',
   }];
-  t.deepEqual(result.slice(0, 2), firstTwo);
+  assert.deepStrictEqual(result.slice(0, 2), firstTwo);
 });
 
-test('Tel Aviv alias', (t) => {
-  const alias = t.context.db.lookupGeoname(293396);
-  t.is(alias.geoid, 293397);
-  t.is(alias.getName(), 'Tel Aviv, Israel');
+test('Tel Aviv alias', () => {
+  const alias = db.lookupGeoname(293396);
+  assert.strictEqual(alias.geoid, 293397);
+  assert.strictEqual(alias.getName(), 'Tel Aviv, Israel');
 });
 
-test('Chandler Arizona', (t) => {
-  const loc = t.context.db.lookupZip('85226');
+test('Chandler Arizona', () => {
+  const loc = db.lookupZip('85226');
   const plainObj = { ...loc};
   const expected = {
     locationName: 'Chandler, AZ 85226',
@@ -476,16 +477,16 @@ test('Chandler Arizona', (t) => {
     population: 40689,
     asciiname: undefined,
   };
-  t.deepEqual(plainObj, expected);
+  assert.deepStrictEqual(plainObj, expected);
 });
 
-test('version', (t) => {
-  t.is(GeoDb.version().startsWith('5.'), true);
+test('version', () => {
+  assert.strictEqual(GeoDb.version().startsWith('5.'), true);
 });
 
-test('geonameCityDescr', (t) => {
-  t.is(GeoDb.geonameCityDescr('Little Rock', 'Arkansas', 'United States'),
+test('geonameCityDescr', () => {
+  assert.strictEqual(GeoDb.geonameCityDescr('Little Rock', 'Arkansas', 'United States'),
     'Little Rock, Arkansas, USA');
-  t.is(GeoDb.geonameCityDescr('Berlin', 'State of Berlin', 'Germany'),
+  assert.strictEqual(GeoDb.geonameCityDescr('Berlin', 'State of Berlin', 'Germany'),
     'Berlin, Germany');
 });
