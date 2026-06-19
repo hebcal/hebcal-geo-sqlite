@@ -53,19 +53,13 @@
     "build": "npm run build:version && npm run build:json2js && npm run build:rollup",
     "prepublish": "npm run build",
     "readme": "npx jsdoc2md dist/index.js",
-    "test": "ava"
-  },
-  "ava": {
-    "files": [
-      "test/**/*.spec.js"
-    ]
+    "test": "node --test test/*.spec.js"
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
-    "ava": "^8.0.1",
     "eslint": "^10.4.1",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-n": "^18.0.1",
