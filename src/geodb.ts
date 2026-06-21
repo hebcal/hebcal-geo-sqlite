@@ -1,12 +1,84 @@
-import {DatabaseSync} from 'node:sqlite';
+import {DatabaseSync, StatementSync} from 'node:sqlite';
 import {existsSync} from 'node:fs';
 import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
-import '@hebcal/cities';
-import city2geonameid from './city2geonameid.json.js';
+import {stateNames} from '@hebcal/cities';
 import {transliterate} from 'transliteration';
+import type {Logger} from 'pino';
+import city2geonameid from './city2geonameid.json.js';
 import {munge} from './munge.js';
 import {version} from './pkgVersion.js';
+
+export type AutoComplete = {
+  id: number | string;
+  value: string;
+  geo: 'geoname' | 'zip';
+  name?: string;
+  asciiname?: string;
+  admin1?: string;
+  country?: string;
+  cc?: string;
+  population?: number;
+  latitude?: number;
+  longitude?: number;
+  timezone?: string;
+  elevation?: number;
+};
+
+/**
+ * Options for configuring the GeoDb constructor.
+ */
+export type GeoDbOptions = {
+  /** Maximum number of entries in the ZIP code LRU cache. Default is 150. */
+  zipsCacheSize?: number;
+  /** Maximum number of entries in the geonames LRU cache. Default is 750. */
+  geonamesCacheSize?: number;
+};
+
+/** Location with extra geo properties set by this package. */
+type GeoLocation = Location & {
+  state?: string;
+  geonameid?: number;
+};
+
+/** A row from the geonames `geoname` join query. */
+type GeonameRow = {
+  geonameid?: number;
+  name: string;
+  asciiname: string;
+  cc: string;
+  country: string | null;
+  admin1: string | null;
+  latitude: number;
+  longitude: number;
+  population: number | null;
+  elevation: number | null;
+  timezone: string;
+};
+
+/** A row from the USA ZIP code `ZIPCodes_Primary` table. */
+type ZipRow = {
+  ZipCode: string;
+  CityMixedCase: string;
+  State: string;
+  Latitude: number;
+  Longitude: number;
+  Elevation: number;
+  TimeZone: string;
+  DayLightSaving: string;
+  Population: number;
+};
+
+/** A row from the `geoname_fulltext` full-text search query. */
+type GeonameCompleteRow = {
+  geonameid: number;
+  longname: string;
+  city: string;
+  admin1: string;
+  country: string;
+};
+
+type GeoCache<K> = Map<K, Location | null> | QuickLRU<K, Location | null>;
 
 const GEONAME_SQL = `SELECT
   g.name as name,
@@ -56,83 +128,41 @@ WHERE ZipCode >= ? AND ZipCode < ?
 ORDER BY Population DESC
 LIMIT 10`;
 
-const ZIP_FULLTEXT_COMPLETE_SQL =
-`SELECT ZipCode
+const ZIP_FULLTEXT_COMPLETE_SQL = `SELECT ZipCode
 FROM ZIPCodes_CityFullText5
 WHERE ZIPCodes_CityFullText5 MATCH ?
 ORDER BY Population DESC
 LIMIT 20`;
 
-const GEONAME_COMPLETE_SQL =
-`SELECT geonameid, longname, city, admin1, country
+const GEONAME_COMPLETE_SQL = `SELECT geonameid, longname, city, admin1, country
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
 ORDER BY population DESC
 LIMIT 20`;
 
-const stateNames = {
-  'AK': 'Alaska',
-  'AL': 'Alabama',
-  'AR': 'Arkansas',
-  'AZ': 'Arizona',
-  'CA': 'California',
-  'CO': 'Colorado',
-  'CT': 'Connecticut',
-  'DC': 'Washington, D.C.',
-  'DE': 'Delaware',
-  'FL': 'Florida',
-  'GA': 'Georgia',
-  'HI': 'Hawaii',
-  'IA': 'Iowa',
-  'ID': 'Idaho',
-  'IL': 'Illinois',
-  'IN': 'Indiana',
-  'KS': 'Kansas',
-  'KY': 'Kentucky',
-  'LA': 'Louisiana',
-  'MA': 'Massachusetts',
-  'MD': 'Maryland',
-  'ME': 'Maine',
-  'MI': 'Michigan',
-  'MN': 'Minnesota',
-  'MO': 'Missouri',
-  'MS': 'Mississippi',
-  'MT': 'Montana',
-  'NC': 'North Carolina',
-  'ND': 'North Dakota',
-  'NE': 'Nebraska',
-  'NH': 'New Hampshire',
-  'NJ': 'New Jersey',
-  'NM': 'New Mexico',
-  'NV': 'Nevada',
-  'NY': 'New York',
-  'OH': 'Ohio',
-  'OK': 'Oklahoma',
-  'OR': 'Oregon',
-  'PA': 'Pennsylvania',
-  'RI': 'Rhode Island',
-  'SC': 'South Carolina',
-  'SD': 'South Dakota',
-  'TN': 'Tennessee',
-  'TX': 'Texas',
-  'UT': 'Utah',
-  'VA': 'Virginia',
-  'VT': 'Vermont',
-  'WA': 'Washington',
-  'WI': 'Wisconsin',
-  'WV': 'West Virginia',
-  'WY': 'Wyoming',
-};
-
 /** Wrapper around sqlite databases */
 export class GeoDb {
-  /**
-   * @param {any} logger
-   * @param {string} zipsFilename
-   * @param {string} geonamesFilename
-   * @param {any} options
-   */
-  constructor(logger, zipsFilename, geonamesFilename, options) {
+  logger: Logger | null;
+  zipsDb: DatabaseSync;
+  geonamesDb: DatabaseSync;
+  /** @internal */
+  zipCache: GeoCache<string>;
+  /** @internal */
+  geonamesCache: GeoCache<number>;
+  legacyCities: Map<string, number>;
+  countryNames: Map<string, string>;
+  private zipStmt: StatementSync;
+  private geonamesStmt: StatementSync;
+  private zipCompStmt?: StatementSync;
+  private geonamesCompStmt?: StatementSync;
+  private zipFulltextCompStmt?: StatementSync;
+
+  constructor(
+    logger: Logger | null,
+    zipsFilename: string,
+    geonamesFilename: string,
+    options?: GeoDbOptions,
+  ) {
     this.logger = logger;
     if (logger) logger.info(`GeoDb: opening ${zipsFilename}...`);
     if (!existsSync(zipsFilename)) {
@@ -146,56 +176,49 @@ export class GeoDb {
     this.geonamesDb = new DatabaseSync(geonamesFilename);
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     const zipsCacheSize = options?.zipsCacheSize || 150;
-    /** @type {Map<string, Location>} */
-    this.zipCache = new QuickLRU({maxSize: zipsCacheSize});
+    this.zipCache = new QuickLRU<string, Location | null>({
+      maxSize: zipsCacheSize,
+    });
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
     const geonamesCacheSize = options?.geonamesCacheSize || 750;
-    /** @type {Map<number, Location>} */
-    this.geonamesCache = new QuickLRU({maxSize: geonamesCacheSize});
-    /** @type {Map<string, number>} */
+    this.geonamesCache = new QuickLRU<number, Location | null>({
+      maxSize: geonamesCacheSize,
+    });
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
       this.legacyCities.set(munge(name), id);
     }
-    const stmt = this.geonamesDb.prepare(`SELECT ISO, Country FROM country WHERE Country <> ''`);
-    const rows = stmt.all();
-    const map = new Map();
+    const stmt = this.geonamesDb.prepare(
+      "SELECT ISO, Country FROM country WHERE Country <> ''",
+    );
+    const rows = stmt.all() as {ISO: string; Country: string}[];
+    const map = new Map<string, string>();
     for (const row of rows) {
       map.set(row.ISO, row.Country);
     }
-    /** @type {Map<string, string>} */
     this.countryNames = map;
-    if (logger) logger.info(`GeoDb: ${map.size} countries, ${this.legacyCities.size} legacy cities`);
+    if (logger)
+      logger.info(
+        `GeoDb: ${map.size} countries, ${this.legacyCities.size} legacy cities`,
+      );
   }
 
   /** Closes database handles */
-  close() {
-    this.zipStmt = undefined;
-    this.geonamesStmt = undefined;
+  close(): void {
     this.zipsDb.close();
-    this.zipsDb = undefined;
     this.geonamesDb.close();
-    this.geonamesDb = undefined;
   }
 
-  /**
-   * @private
-   * @param {string} s
-   * @return {string}
-   */
-  static munge(s) {
+  /** @private */
+  static munge(s: string): string {
     return munge(s);
   }
 
-  /**
-   * @param {string} zip
-   * @return {Location}
-   */
-  lookupZip(zip) {
+  lookupZip(zip: string): Location | null {
     const zip5 = zip.trim().substring(0, 5);
     const found = this.zipCache.get(zip5);
     if (found !== undefined) return found;
-    const result = this.zipStmt.get(zip5);
+    const result = this.zipStmt.get(zip5) as ZipRow | undefined;
     if (!result) {
       if (this.logger) this.logger.warn(`GeoDb: unknown zipcode=${zip5}`);
       this.zipCache.set(zip5, null);
@@ -207,19 +230,23 @@ export class GeoDb {
     return location;
   }
 
-  /**
-   * @private
-   * @param {any} result
-   * @return {Location}
-   */
-  makeZipLocation(result) {
+  /** @private */
+  private makeZipLocation(result: ZipRow): Location {
     const zip = result.ZipCode;
     const tz = result.TimeZone;
     const tzid = Location.getUsaTzid(result.State, +tz, result.DayLightSaving);
     const cityDescr = `${result.CityMixedCase}, ${result.State} ${zip}`;
     const elevation = result?.Elevation > 0 ? result.Elevation : 0;
-    const location = new Location(result.Latitude, result.Longitude, false, tzid, cityDescr,
-        'US', zip, elevation);
+    const location = new Location(
+      result.Latitude,
+      result.Longitude,
+      false,
+      tzid,
+      cityDescr,
+      'US',
+      zip,
+      elevation,
+    ) as GeoLocation;
     location.admin1 = location.state = result.State;
     location.stateName = stateNames[location.state];
     location.geo = 'zip';
@@ -228,11 +255,7 @@ export class GeoDb {
     return location;
   }
 
-  /**
-   * @param {number} geonameid
-   * @return {Location}
-   */
-  lookupGeoname(geonameid) {
+  lookupGeoname(geonameid: number): Location | null {
     geonameid = +geonameid;
     if (!geonameid) return null;
     if (geonameid === 293396) {
@@ -240,9 +263,10 @@ export class GeoDb {
     }
     const found = this.geonamesCache.get(geonameid);
     if (found !== undefined) return found;
-    const result = this.geonamesStmt.get(geonameid);
+    const result = this.geonamesStmt.get(geonameid) as GeonameRow | undefined;
     if (!result) {
-      if (this.logger) this.logger.warn(`GeoDb: unknown geonameid=${geonameid}`);
+      if (this.logger)
+        this.logger.warn(`GeoDb: unknown geonameid=${geonameid}`);
       this.geonamesCache.set(geonameid, null);
       return null;
     }
@@ -254,22 +278,25 @@ export class GeoDb {
   /**
    * Convenience wrapper of the `transliterate` function from `transliteration` npm package.
    * Transliterate the string `source` and return the result.
-   * @param {string} source
-   * @param {any} [options]
-   * @return {string}
    */
-  static transliterate(source, options) {
+  static transliterate(
+    source: string,
+    options?: Parameters<typeof transliterate>[1],
+  ): string {
     return transliterate(source, options);
   }
 
   /**
    * Builds a city description from geonameid string components
-   * @param {string} cityName e.g. 'Tel Aviv' or 'Chicago'
-   * @param {string} admin1 e.g. 'England' or 'Massachusetts'
-   * @param {string} countryName full country name, e.g. 'Israel' or 'United States'
-   * @return {string}
+   * @param cityName e.g. 'Tel Aviv' or 'Chicago'
+   * @param admin1 e.g. 'England' or 'Massachusetts'
+   * @param countryName full country name, e.g. 'Israel' or 'United States'
    */
-  static geonameCityDescr(cityName, admin1, countryName) {
+  static geonameCityDescr(
+    cityName: string,
+    admin1: string,
+    countryName: string,
+  ): string {
     if (countryName === 'United States') countryName = 'USA';
     if (countryName === 'United Kingdom') countryName = 'UK';
     let cityDescr = cityName;
@@ -286,27 +313,23 @@ export class GeoDb {
     return cityDescr;
   }
 
-  /**
-   * @private
-   * @param {number} geonameid
-   * @param {any} result
-   * @return {Location}
-   */
-  makeGeonameLocation(geonameid, result) {
+  /** @private */
+  private makeGeonameLocation(geonameid: number, result: GeonameRow): Location {
     const country = result.country || '';
     const admin1 = result.admin1 || '';
     const cityDescr = GeoDb.geonameCityDescr(result.name, admin1, country);
-    const elevation = result?.elevation > 0 ? result.elevation : 0;
+    const elevation =
+      result?.elevation && result.elevation > 0 ? result.elevation : 0;
     const location = new Location(
-        result.latitude,
-        result.longitude,
-        result.cc === 'IL',
-        result.timezone,
-        cityDescr,
-        result.cc,
-        geonameid,
-        elevation,
-    );
+      result.latitude,
+      result.longitude,
+      result.cc === 'IL',
+      result.timezone,
+      cityDescr,
+      result.cc,
+      geonameid,
+      elevation,
+    ) as GeoLocation;
     location.geo = 'geoname';
     location.geonameid = geonameid;
     location.asciiname = result.asciiname;
@@ -319,11 +342,7 @@ export class GeoDb {
     return location;
   }
 
-  /**
-   * @param {string} cityName
-   * @return {Location}
-   */
-  lookupLegacyCity(cityName) {
+  lookupLegacyCity(cityName: string): Location | null {
     const name = munge(cityName);
     const geonameid = this.legacyCities.get(name);
     if (geonameid) {
@@ -338,13 +357,9 @@ export class GeoDb {
     }
   }
 
-  /**
-   * @private
-   * @param {any[]} res
-   * @return {Object[]}
-   */
-  static zipResultToObj(res) {
-    const obj = {
+  /** @private */
+  private static zipResultToObj(res: ZipRow): AutoComplete {
+    const obj: AutoComplete = {
       id: String(res.ZipCode),
       value: `${res.CityMixedCase}, ${res.State} ${res.ZipCode}`,
       admin1: res.State,
@@ -353,7 +368,11 @@ export class GeoDb {
       cc: 'US',
       latitude: res.Latitude,
       longitude: res.Longitude,
-      timezone: Location.getUsaTzid(res.State, res.TimeZone, res.DayLightSaving),
+      timezone: Location.getUsaTzid(
+        res.State,
+        +res.TimeZone,
+        res.DayLightSaving,
+      ),
       population: res.Population,
       geo: 'zip',
     };
@@ -365,11 +384,8 @@ export class GeoDb {
 
   /**
    * Generates autocomplete results based on a query string
-   * @param {string} qraw
-   * @param {boolean} latlong
-   * @return {Object[]}
    */
-  autoComplete(qraw, latlong=false) {
+  autoComplete(qraw: string, latlong = false): AutoComplete[] {
     qraw = qraw.trim();
     if (qraw.length === 0) {
       return [];
@@ -386,16 +402,21 @@ export class GeoDb {
       }
       // this is a ZIP code prefix, a string with 1-4 digits
       const zipA = qraw.substring(0, 5);
-      const zipB = zipA === '9' ? 'A' :String(+zipA + 1).padStart(zipA.length, '0');
-      return this.zipCompStmt.all(zipA, zipB).map(GeoDb.zipResultToObj);
+      const zipB =
+        zipA === '9' ? 'A' : String(+zipA + 1).padStart(zipA.length, '0');
+      return (this.zipCompStmt.all(zipA, zipB) as ZipRow[]).map(
+        GeoDb.zipResultToObj,
+      );
     } else {
       if (!this.geonamesCompStmt) {
         this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       }
       qraw = qraw.replaceAll('"', '""');
-      const geoRows0 = this.geonamesCompStmt.all(`{longname} : "${qraw}" *`);
-      const ids = new Set();
-      const geoRows = [];
+      const geoRows0 = this.geonamesCompStmt.all(
+        `{longname} : "${qraw}" *`,
+      ) as GeonameCompleteRow[];
+      const ids = new Set<number>();
+      const geoRows: GeonameCompleteRow[] = [];
       for (const row of geoRows0) {
         const id = row.geonameid;
         if (!ids.has(id)) {
@@ -403,20 +424,24 @@ export class GeoDb {
           geoRows.push(row);
         }
       }
-      const geoMatches = geoRows.map((res) => {
-        const loc = this.lookupGeoname(res.geonameid);
+      const geoMatches = geoRows.map(res => {
+        const loc = this.lookupGeoname(res.geonameid)!;
         return this.geonameLocToAutocomplete(loc, res);
       });
       if (!this.zipFulltextCompStmt) {
-        this.zipFulltextCompStmt = this.zipsDb.prepare(ZIP_FULLTEXT_COMPLETE_SQL);
+        this.zipFulltextCompStmt = this.zipsDb.prepare(
+          ZIP_FULLTEXT_COMPLETE_SQL,
+        );
       }
-      const zipRows = this.zipFulltextCompStmt.all(`{longname} : "${qraw}" *`);
-      const zipMatches = zipRows.map((res) => {
-        const loc = this.lookupZip(res.ZipCode);
+      const zipRows = this.zipFulltextCompStmt.all(
+        `{longname} : "${qraw}" *`,
+      ) as {ZipCode: string}[];
+      const zipMatches = zipRows.map(res => {
+        const loc = this.lookupZip(res.ZipCode)!;
         return GeoDb.zipLocToAutocomplete(loc);
       });
       const values = this.mergeZipGeo(zipMatches, geoMatches);
-      values.sort((a, b) => b.population - a.population);
+      values.sort((a, b) => (b.population ?? 0) - (a.population ?? 0));
       const topN = values.slice(0, 12);
       if (!latlong) {
         for (const val of topN) {
@@ -430,19 +455,17 @@ export class GeoDb {
     }
   }
 
-  /**
-   * @private
-   * @param {Location} loc
-   * @param {any} res
-   * @return {any}
-   */
-  geonameLocToAutocomplete(loc, res) {
+  /** @private */
+  private geonameLocToAutocomplete(
+    loc: Location,
+    res: GeonameCompleteRow,
+  ): AutoComplete {
     const cc = loc.getCountryCode();
     const country = res.country || this.countryNames.get(cc) || '';
-    const admin1 = res.admin || loc.admin1 || '';
-    const obj = {
+    const admin1 = loc.admin1 || '';
+    const obj: AutoComplete = {
       id: res.geonameid,
-      value: loc.getName(),
+      value: loc.getName()!,
       admin1,
       country,
       cc,
@@ -469,17 +492,13 @@ export class GeoDb {
     return obj;
   }
 
-  /**
-   * @private
-   * @param {Location} loc
-   * @return {any}
-   */
-  static zipLocToAutocomplete(loc) {
+  /** @private */
+  private static zipLocToAutocomplete(loc: Location): AutoComplete {
     return {
-      id: loc.zip,
-      value: loc.getName(),
+      id: loc.zip!,
+      value: loc.getName()!,
       admin1: loc.admin1,
-      asciiname: loc.getShortName(),
+      asciiname: loc.getShortName()!,
       country: 'United States',
       cc: 'US',
       latitude: loc.latitude,
@@ -493,11 +512,11 @@ export class GeoDb {
   /**
    * GeoNames matches takes priority over USA ZIP code matches
    * @private
-   * @param {any[]} zipMatches
-   * @param {any[]} geoMatches
-   * @return {any[]}
    */
-  mergeZipGeo(zipMatches, geoMatches) {
+  private mergeZipGeo(
+    zipMatches: AutoComplete[],
+    geoMatches: AutoComplete[],
+  ): AutoComplete[] {
     const zlen = zipMatches.length;
     const glen = geoMatches.length;
     if (zlen && !glen) {
@@ -505,9 +524,11 @@ export class GeoDb {
     } else if (glen && !zlen) {
       return geoMatches;
     }
-    const map = new Map();
+    const map = new Map<string, AutoComplete>();
     for (const obj of zipMatches) {
-      const key = [obj.asciiname, stateNames[obj.admin1], obj.cc].join('|');
+      const key = [obj.asciiname, stateNames[obj.admin1 ?? ''], obj.cc].join(
+        '|',
+      );
       if (!map.has(key)) {
         map.set(key, obj);
       }
@@ -520,43 +541,45 @@ export class GeoDb {
   }
 
   /** Reads entire ZIP database and caches in-memory */
-  cacheZips() {
+  cacheZips(): void {
     const start = Date.now();
     const stmt = this.zipsDb.prepare(ZIPCODE_ALL_SQL);
-    const rows = stmt.all();
+    const rows = stmt.all() as ZipRow[];
     this.zipCache = new Map(); // replace QuickLRU
     for (const row of rows) {
       const location = this.makeZipLocation(row);
       this.zipCache.set(row.ZipCode, location);
     }
     const end = Date.now();
-    if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} ZIP codes in ${end - start}ms`);
+    if (this.logger)
+      this.logger.info(
+        `GeoDb: cached ${rows.length} ZIP codes in ${end - start}ms`,
+      );
   }
 
   /** Reads entire geonames database and caches in-memory */
-  cacheGeonames() {
+  cacheGeonames(): void {
     const start = Date.now();
     const stmt = this.geonamesDb.prepare(GEONAME_ALL_SQL);
-    const rows = stmt.all();
+    const rows = stmt.all() as Required<GeonameRow>[];
     this.geonamesCache = new Map(); // replace QuickLRU
     for (const row of rows) {
       const location = this.makeGeonameLocation(row.geonameid, row);
       this.geonamesCache.set(row.geonameid, location);
     }
     const end = Date.now();
-    if (this.logger) this.logger.info(`GeoDb: cached ${rows.length} geonames in ${end - start}ms`);
+    if (this.logger)
+      this.logger.info(
+        `GeoDb: cached ${rows.length} geonames in ${end - start}ms`,
+      );
   }
 
   /** Returns the version of the GeoDb package */
-  static version() {
+  static version(): string {
     return version;
   }
 
-  /**
-   * @param {string} str
-   * @return {boolean}
-   */
-  static is5DigitZip(str) {
+  static is5DigitZip(str: string): boolean {
     if (typeof str !== 'string') {
       return false;
     }

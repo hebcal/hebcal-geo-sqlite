@@ -1,6 +1,6 @@
-src/*.json.js
-test/*.json.js
-src/pkgVersion.js
+src/pkgVersion.ts
+src/*.json.ts
+docs/
 
 # Logs
 logs

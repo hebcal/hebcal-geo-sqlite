@@ -1,30 +1,55 @@
-/* eslint-disable no-multi-spaces */
 import {DatabaseSync} from 'node:sqlite';
 import events from 'node:events';
 import fs from 'node:fs';
 import readline from 'node:readline';
 import {Locale} from '@hebcal/core';
+import type {Logger} from 'pino';
 
-const fcodeKeep = {
-  PPL: true,   // populated place: a city, town, village, or other agglomeration of
-  PPLA: true,  // seat of a first-order administrative division (PPLC takes precedence over PPLA)
+/**
+ * Options for {@link buildGeonamesSqlite}.
+ */
+export type BuildGeonamesSqliteOptions = {
+  /** Path to the output SQLite database file. */
+  dbFilename: string;
+  /** Path to countryInfo.txt from geonames.org. */
+  countryInfotxt: string;
+  /** Path to cities5000.txt (or similar) from geonames.org. */
+  cities5000txt: string;
+  /** Path to a TSV patch file with additional city rows. */
+  citiesPatch: string;
+  /** Path to admin1CodesASCII.txt from geonames.org. */
+  admin1CodesASCIItxt: string;
+  /** Path to IL.txt (Israel geonames) from geonames.org. */
+  ILtxt: string;
+  /** Path to IL alternate names file from geonames.org. */
+  ILalternate: string;
+  /** Logger instance (e.g. pino). */
+  logger: Logger;
+  /** Minimum population filter for PPL feature codes. */
+  population?: number;
+};
+
+const fcodeKeep: Record<string, boolean> = {
+  PPL: true, // populated place: a city, town, village, or other agglomeration of
+  PPLA: true, // seat of a first-order administrative division (PPLC takes precedence over PPLA)
   PPLA2: true, // seat of a second-order administrative division
   PPLA3: true, // seat of a third-order administrative division
-  PPLC: true,  // capital of a political entity
+  PPLC: true, // capital of a political entity
   // an area similar to a locality but with a small group of dwellings or other buildings
-  PPLG: true,  // seat of government of a political entity
-  PPLL: true,  // populated locality
+  PPLG: true, // seat of government of a political entity
+  PPLL: true, // populated locality
   // cities, towns, villages, or other agglomerations of buildings where people live and work
-  PPLS: true,  // populated places
-  PPLX: true,  // section of populated place
+  PPLS: true, // populated places
+  PPLX: true, // section of populated place
   STLMT: true, // israeli settlement
 };
 
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
- * @param {any} opts
  */
-export async function buildGeonamesSqlite(opts) {
+export async function buildGeonamesSqlite(
+  opts: BuildGeonamesSqliteOptions,
+): Promise<boolean> {
   const dbFilename = opts.dbFilename;
   const countryInfotxt = opts.countryInfotxt;
   const cities5000txt = opts.cities5000txt;
@@ -37,10 +62,12 @@ export async function buildGeonamesSqlite(opts) {
   const db = new DatabaseSync(dbFilename);
   db.exec('PRAGMA journal_mode = MEMORY');
 
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS country`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS country',
 
-      `CREATE TABLE country (
+    `CREATE TABLE country (
       ISO TEXT PRIMARY KEY,
       ISO3 TEXT NOT NULL,
       IsoNumeric TEXT NOT NULL,
@@ -64,10 +91,12 @@ export async function buildGeonamesSqlite(opts) {
   );
   await doFile(logger, db, countryInfotxt, 'country', 19);
 
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS geoname`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS geoname',
 
-      `CREATE TABLE geoname (
+    `CREATE TABLE geoname (
       geonameid int PRIMARY KEY,
       name nvarchar(200),
       asciiname nvarchar(200),
@@ -89,22 +118,22 @@ export async function buildGeonamesSqlite(opts) {
       moddate date);`,
   );
 
-  const truncateAlternateNames = (a) => {
+  const truncateAlternateNames = (a: string[]): boolean => {
     a[3] = '';
     return true;
   };
   const minPopulation = opts.population;
-  const citiesFilter = (a) => {
+  const citiesFilter = (a: string[]): boolean => {
     if (!a[17]) {
       return false; // require a non-empty iana timezone id
     }
     const fcode = a[7];
-    logger.debug(a[0], a[1], fcode);
+    logger.debug(`${a[0]} ${a[1]} ${fcode}`);
     if (!fcodeKeep[fcode]) {
       return false;
     }
     if (minPopulation) {
-      const population = a[14];
+      const population = Number(a[14]);
       if (fcode === 'PPL' && population && population < minPopulation) {
         return false;
       }
@@ -114,15 +143,17 @@ export async function buildGeonamesSqlite(opts) {
   };
   await doFile(logger, db, cities5000txt, 'geoname', 19, citiesFilter);
   await doFile(logger, db, citiesPatch, 'geoname', 19, truncateAlternateNames);
-  await doFile(logger, db, ILtxt, 'geoname', 19, (a) => {
+  await doFile(logger, db, ILtxt, 'geoname', 19, a => {
     a[3] = '';
-    return a[6] == 'P' && fcodeKeep[a[7]];
+    return a[6] === 'P' && Boolean(fcodeKeep[a[7]]);
   });
 
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS admin1`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS admin1',
 
-      `CREATE TABLE admin1 (
+    `CREATE TABLE admin1 (
       key TEXT PRIMARY KEY,
       name nvarchar(200) NOT NULL,
       asciiname nvarchar(200) NOT NULL,
@@ -133,20 +164,24 @@ export async function buildGeonamesSqlite(opts) {
   await doFile(logger, db, admin1CodesASCIItxt, 'admin1', 4);
 
   // fix inconsistencies with the USA capitol
-  doSql(logger, db,
-      `UPDATE geoname
+  doSql(
+    logger,
+    db,
+    `UPDATE geoname
       SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
       WHERE geonameid = 4140963;`,
 
-      `UPDATE admin1
+    `UPDATE admin1
       SET name = 'Washington, D.C.', asciiname = 'Washington, D.C.'
       WHERE key = 'US.DC';`,
   );
 
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS alternatenames`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS alternatenames',
 
-      `CREATE TABLE alternatenames (
+    `CREATE TABLE alternatenames (
     id int PRIMARY KEY,
     geonameid int NOT NULL,
     isolanguage varchar(7),
@@ -160,20 +195,20 @@ export async function buildGeonamesSqlite(opts) {
     );`,
   );
 
-  await doFile(logger, db, ILalternate, 'alternatenames', 10, (a) => {
+  await doFile(logger, db, ILalternate, 'alternatenames', 10, a => {
     const firstchar = a[3][0];
-    if (a[2] === 'he' && (firstchar < '\u05D0' || firstchar > '\u05EA')) {
+    if (a[2] === 'he' && (firstchar < 'א' || firstchar > 'ת')) {
       a[2] = 'en';
     }
     if (a[2] === 'he' || a[2] === 'en') {
       if (a[2] === 'he') {
         a[3] = a[3].replaceAll('‘', '׳');
         a[3] = a[3].replaceAll('’', '׳');
-        a[3] = a[3].replaceAll('\'', '׳');
+        a[3] = a[3].replaceAll("'", '׳');
         a[3] = Locale.hebrewStripNikkud(a[3]);
       } else {
-        a[3] = a[3].replaceAll('‘', '\'');
-        a[3] = a[3].replaceAll('’', '\'');
+        a[3] = a[3].replaceAll('‘', "'");
+        a[3] = a[3].replaceAll('’', "'");
         a[3] = a[3].replaceAll('Ḥ', 'Ch');
         a[3] = a[3].replaceAll('H̱', 'Ch');
         a[3] = a[3].replaceAll('ẖ', 'ch');
@@ -188,37 +223,43 @@ export async function buildGeonamesSqlite(opts) {
   });
 
   // remove duplicates from alternatenames
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS altnames`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS altnames',
 
-      `CREATE TABLE altnames
+    `CREATE TABLE altnames
     AS SELECT geonameid, isolanguage, name
     FROM alternatenames
     GROUP BY 1, 2, 3
     `,
   );
 
-  doSql(logger, db,
-      // `update admin1 set name='',asciiname='' where key like 'PS.%';`,
-      // `update country set country = '' where iso = 'PS';`,
-      `delete from geoname where country = 'PS' and admin1 = 'GZ';`,
-      `delete from geoname where geonameid = 7303419;`,
-      `update geoname set country = 'IL' where country = 'PS' and admin1 = 'WE';`,
+  doSql(
+    logger,
+    db,
+    // `update admin1 set name='',asciiname='' where key like 'PS.%';`,
+    // `update country set country = '' where iso = 'PS';`,
+    "delete from geoname where country = 'PS' and admin1 = 'GZ';",
+    'delete from geoname where geonameid = 7303419;',
+    "update geoname set country = 'IL' where country = 'PS' and admin1 = 'WE';",
   );
 
-  doSql(logger, db,
-      `DROP TABLE IF EXISTS geoname_fulltext`,
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS geoname_fulltext',
 
-      `CREATE VIRTUAL TABLE geoname_fulltext
+    `CREATE VIRTUAL TABLE geoname_fulltext
       USING fts5(geonameid UNINDEXED, longname, population, city, admin1, country);
     `,
 
-      `DROP TABLE IF EXISTS geoname_non_ascii`,
+    'DROP TABLE IF EXISTS geoname_non_ascii',
 
-      `CREATE TABLE geoname_non_ascii AS
+    `CREATE TABLE geoname_non_ascii AS
       SELECT geonameid FROM geoname WHERE asciiname <> name`,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.asciiname||', '||a.asciiname||', '||c.Country,
       g.population,
@@ -231,7 +272,7 @@ export async function buildGeonamesSqlite(opts) {
       AND g.country||'.'||g.admin1 = a.key
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.asciiname||', '||a.asciiname||', USA',
       g.population,
@@ -241,7 +282,7 @@ export async function buildGeonamesSqlite(opts) {
       AND g.country||'.'||g.admin1 = a.key
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.asciiname||', '||a.asciiname||', UK',
       g.population,
@@ -251,7 +292,7 @@ export async function buildGeonamesSqlite(opts) {
       AND g.country||'.'||g.admin1 = a.key
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.asciiname||', Israel',
       g.population,
@@ -260,7 +301,7 @@ export async function buildGeonamesSqlite(opts) {
       WHERE g.country = 'IL'
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.asciiname||', '||c.Country,
       g.population,
@@ -270,7 +311,7 @@ export async function buildGeonamesSqlite(opts) {
       AND (g.admin1 = '' OR g.admin1 = '00')
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       g.name||', '||a.name||', '||c.Country,
       g.population,
@@ -281,7 +322,7 @@ export async function buildGeonamesSqlite(opts) {
       AND g.country||'.'||g.admin1 = a.key
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       alt.name||', ישראל',
       g.population,
@@ -292,7 +333,7 @@ export async function buildGeonamesSqlite(opts) {
       AND g.geonameid = alt.geonameid
       `,
 
-      `INSERT INTO geoname_fulltext
+    `INSERT INTO geoname_fulltext
       SELECT g.geonameid,
       alt.name||', Israel',
       g.population,
@@ -303,10 +344,10 @@ export async function buildGeonamesSqlite(opts) {
       AND g.geonameid = alt.geonameid
       `,
 
-      'VACUUM',
+    'VACUUM',
   );
 
-  return new Promise((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     try {
       logger.info(`Closing ${dbFilename}`);
       db.close();
@@ -319,27 +360,21 @@ export async function buildGeonamesSqlite(opts) {
   });
 }
 
-/**
- * @param {pino.Logger} logger
- * @param {Database} db
- * @param  {...string} sqls
- */
-function doSql(logger, db, ...sqls) {
+function doSql(logger: Logger, db: DatabaseSync, ...sqls: string[]): void {
   for (const sql of sqls) {
     logger.info(sql);
     db.exec(sql);
   }
 }
 
-/**
- * @param {pino.Logger} logger
- * @param {Database} db
- * @param {string} infile
- * @param {string} tableName
- * @param {number} expectedFields
- * @param {Function} callback
- */
-async function doFile(logger, db, infile, tableName, expectedFields, callback) {
+async function doFile(
+  logger: Logger,
+  db: DatabaseSync,
+  infile: string,
+  tableName: string,
+  expectedFields: number,
+  callback?: (a: string[]) => boolean,
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     logger.info(`${infile} => ${tableName}`);
     db.exec('BEGIN');
@@ -349,7 +384,7 @@ async function doFile(logger, db, infile, tableName, expectedFields, callback) {
     }
     sql += ')';
     logger.info(sql);
-    let stmt = db.prepare(sql);
+    const stmt = db.prepare(sql);
     try {
       const rl = readline.createInterface({
         input: fs.createReadStream(infile),
@@ -357,14 +392,16 @@ async function doFile(logger, db, infile, tableName, expectedFields, callback) {
       });
       let num = 0;
       let accepted = 0;
-      rl.on('line', (line) => {
+      rl.on('line', line => {
         num++;
-        if (line[0] == '#') {
+        if (line.startsWith('#')) {
           return;
         }
         const a = line.split('\t');
-        if (a.length != expectedFields) {
-          logger.warn(`${infile}:${num}: got ${a.length} fields (expected ${expectedFields})`);
+        if (a.length !== expectedFields) {
+          logger.warn(
+            `${infile}:${num}: got ${a.length} fields (expected ${expectedFields})`,
+          );
           return;
         }
         if (callback) {
@@ -378,8 +415,9 @@ async function doFile(logger, db, infile, tableName, expectedFields, callback) {
       });
 
       rl.on('close', () => {
-        logger.info(`Inserted ${accepted} / ${num} into ${tableName} from ${infile}`);
-        stmt = null;
+        logger.info(
+          `Inserted ${accepted} / ${num} into ${tableName} from ${infile}`,
+        );
         db.exec('COMMIT');
       });
 

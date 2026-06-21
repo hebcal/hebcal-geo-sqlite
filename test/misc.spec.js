@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert';
-import {GeoDb} from '../src/geodb.js';
-import {munge} from '../src/munge.js';
+import {GeoDb} from '../dist/geodb.js';
+import {munge} from '../dist/munge.js';
 
 test('geonameCityDescr', () => {
   assert.strictEqual(GeoDb.geonameCityDescr('Providence', 'Rhode Island', 'United States'), 'Providence, Rhode Island, USA');

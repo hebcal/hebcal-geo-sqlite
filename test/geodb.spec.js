@@ -2,16 +2,16 @@
 import {test, before, after} from 'node:test';
 import assert from 'node:assert';
 import {Location} from '@hebcal/core';
-import {GeoDb} from '../src/geodb.js';
-import {buildGeonamesSqlite} from '../src/build-geonames-sqlite.js';
+import {GeoDb} from '../dist/geodb.js';
+import {buildGeonamesSqlite} from '../dist/build-geonames-sqlite.js';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import pino from 'pino';
-import legacyCities from './legacy.json.js';
+import legacyCities from './legacy.json' with {type: 'json'};
 import {makeDummyZipsDb} from './makeDummyZipsDb.js';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
-import {munge} from '../src/munge.js';
+import {munge} from '../dist/munge.js';
 
 const logger = pino({level: 'error'});
 
