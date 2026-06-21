@@ -151,8 +151,8 @@ export class GeoDb {
   geonamesCache: GeoCache<number>;
   legacyCities: Map<string, number>;
   countryNames: Map<string, string>;
-  private zipStmt: StatementSync;
-  private geonamesStmt: StatementSync;
+  private readonly zipStmt: StatementSync;
+  private readonly geonamesStmt: StatementSync;
   private zipCompStmt?: StatementSync;
   private geonamesCompStmt?: StatementSync;
   private zipFulltextCompStmt?: StatementSync;
