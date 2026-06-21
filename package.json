@@ -53,6 +53,7 @@
     "build": "npm run build:version && npm run build:json2js && npm run build:rollup",
     "prepublish": "npm run build",
     "readme": "npx jsdoc2md dist/index.js",
+    "lint": "eslint src",
     "test": "node --test test/*.spec.js"
   },
   "license": "BSD-2-Clause",
@@ -61,7 +62,6 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "eslint": "^10.5.0",
-    "eslint-config-google": "^0.14.0",
     "eslint-plugin-n": "^18.1.0",
     "globals": "^17.6.0",
     "jsdoc": "^4.0.5",

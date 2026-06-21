@@ -1,8 +1,8 @@
 /* eslint-disable no-multi-spaces */
 import {DatabaseSync} from 'node:sqlite';
-import events from 'events';
-import fs from 'fs';
-import readline from 'readline';
+import events from 'node:events';
+import fs from 'node:fs';
+import readline from 'node:readline';
 import {Locale} from '@hebcal/core';
 
 const fcodeKeep = {
@@ -167,20 +167,20 @@ export async function buildGeonamesSqlite(opts) {
     }
     if (a[2] === 'he' || a[2] === 'en') {
       if (a[2] === 'he') {
-        a[3] = a[3].replace(/‘/g, '׳');
-        a[3] = a[3].replace(/’/g, '׳');
-        a[3] = a[3].replace(/'/g, '׳');
+        a[3] = a[3].replaceAll('‘', '׳');
+        a[3] = a[3].replaceAll('’', '׳');
+        a[3] = a[3].replaceAll('\'', '׳');
         a[3] = Locale.hebrewStripNikkud(a[3]);
       } else {
-        a[3] = a[3].replace(/‘/g, '\'');
-        a[3] = a[3].replace(/’/g, '\'');
-        a[3] = a[3].replace(/Ḥ/g, 'Ch');
-        a[3] = a[3].replace(/H̱/g, 'Ch');
-        a[3] = a[3].replace(/ẖ/g, 'ch');
-        a[3] = a[3].replace(/Ẕ/g, 'Tz');
-        a[3] = a[3].replace(/ẕ/g, 'tz');
-        a[3] = a[3].replace(/ā/g, 'a');
-        a[3] = a[3].replace(/é/g, 'e');
+        a[3] = a[3].replaceAll('‘', '\'');
+        a[3] = a[3].replaceAll('’', '\'');
+        a[3] = a[3].replaceAll('Ḥ', 'Ch');
+        a[3] = a[3].replaceAll('H̱', 'Ch');
+        a[3] = a[3].replaceAll('ẖ', 'ch');
+        a[3] = a[3].replaceAll('Ẕ', 'Tz');
+        a[3] = a[3].replaceAll('ẕ', 'tz');
+        a[3] = a[3].replaceAll('ā', 'a');
+        a[3] = a[3].replaceAll('é', 'e');
       }
       return true;
     }
@@ -325,9 +325,9 @@ export async function buildGeonamesSqlite(opts) {
  * @param  {...string} sqls
  */
 function doSql(logger, db, ...sqls) {
-  for (let i = 0; i < sqls.length; i++) {
-    logger.info(sqls[i]);
-    db.exec(sqls[i]);
+  for (const sql of sqls) {
+    logger.info(sql);
+    db.exec(sql);
   }
 }
 

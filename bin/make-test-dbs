@@ -8,7 +8,7 @@
 import {buildGeonamesSqlite, makeZipsSqlite} from '@hebcal/geo-sqlite';
 import {pino} from 'pino';
 import pretty from 'pino-pretty';
-import {statSync} from 'fs';
+import {statSync} from 'node:fs';
 import path from 'path';
 
 const outDir = process.cwd();

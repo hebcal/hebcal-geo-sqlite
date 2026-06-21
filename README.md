@@ -1,4 +1,4 @@
-# hebcal-geo-sqlite
+# @hebcal/geo-sqlite
 Hebcal ES6 interface to GeoNames and USA ZIP code SQLite databases
 
 This package is designed for the hebcal.com and may not be generally reusable.
@@ -52,6 +52,9 @@ under the
 <dd></dd>
 <dt><a href="#doFile">doFile(logger, db, infile, tableName, expectedFields, callback)</a></dt>
 <dd></dd>
+<dt><a href="#makeZipsSqlite">makeZipsSqlite(dbFilename, sqlFile)</a></dt>
+<dd><p>Builds <code>zips.sqlite3</code> from the bundled zips-dummy.sql schema file</p>
+</dd>
 </dl>
 
 <a name="GeoDb"></a>
@@ -62,7 +65,7 @@ Wrapper around sqlite databases
 **Kind**: global class
 
 * [GeoDb](#GeoDb)
-    * [new GeoDb(logger, zipsFilename, geonamesFilename)](#new_GeoDb_new)
+    * [new GeoDb(logger, zipsFilename, geonamesFilename, options)](#new_GeoDb_new)
     * _instance_
         * [.zipCache](#GeoDb+zipCache) : <code>Map.&lt;string, Location&gt;</code>
         * [.geonamesCache](#GeoDb+geonamesCache) : <code>Map.&lt;number, Location&gt;</code>
@@ -79,16 +82,18 @@ Wrapper around sqlite databases
         * [.transliterate(source, [options])](#GeoDb.transliterate) ⇒ <code>string</code>
         * [.geonameCityDescr(cityName, admin1, countryName)](#GeoDb.geonameCityDescr) ⇒ <code>string</code>
         * [.version()](#GeoDb.version)
+        * [.is5DigitZip(str)](#GeoDb.is5DigitZip) ⇒ <code>boolean</code>
 
 <a name="new_GeoDb_new"></a>
 
-### new GeoDb(logger, zipsFilename, geonamesFilename)
+### new GeoDb(logger, zipsFilename, geonamesFilename, options)
 
 | Param | Type |
 | --- | --- |
 | logger | <code>any</code> |
 | zipsFilename | <code>string</code> |
 | geonamesFilename | <code>string</code> |
+| options | <code>any</code> |
 
 <a name="GeoDb+zipCache"></a>
 
@@ -195,6 +200,15 @@ Builds a city description from geonameid string components
 Returns the version of the GeoDb package
 
 **Kind**: static method of [<code>GeoDb</code>](#GeoDb)
+<a name="GeoDb.is5DigitZip"></a>
+
+### GeoDb.is5DigitZip(str) ⇒ <code>boolean</code>
+**Kind**: static method of [<code>GeoDb</code>](#GeoDb)
+
+| Param | Type |
+| --- | --- |
+| str | <code>string</code> |
+
 <a name="buildGeonamesSqlite"></a>
 
 ## buildGeonamesSqlite(opts)
@@ -230,3 +244,15 @@ Builds `geonames.sqlite3` from files downloaded from geonames.org
 | tableName | <code>string</code> |
 | expectedFields | <code>number</code> |
 | callback | <code>function</code> |
+
+<a name="makeZipsSqlite"></a>
+
+## makeZipsSqlite(dbFilename, sqlFile)
+Builds `zips.sqlite3` from the bundled zips-dummy.sql schema file
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dbFilename | <code>string</code> | path to the output SQLite database file |
+| sqlFile | <code>string</code> | path to the SQL schema file |

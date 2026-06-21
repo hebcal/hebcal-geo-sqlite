@@ -1,6 +1,5 @@
 import js from '@eslint/js';
 import nodePlugin from 'eslint-plugin-n';
-import globals from 'globals';
 
 export default [
   {
@@ -16,21 +15,13 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
-      globals: {
-        ...globals.browser,
-      },
-    },
-    plugins: {
     },
     rules: {
-      // 'jsdoc/require-description': 'warn',
       'n/no-unsupported-features/node-builtins': ['error', {
         ignores: ['sqlite'],
       }],
       'semi': 'error',
-      'no-cond-assign': 0, // eslint:recommended
-      'no-irregular-whitespace': 2, // eslint:recommended
-      'no-unexpected-multiline': 2, // eslint:recommended
+      'no-cond-assign': 0, // override eslint:recommended (default: error)
       'guard-for-in': 2,
       'no-caller': 2,
       'no-extend-native': 2,
@@ -107,10 +98,7 @@ export default [
       'spaced-comment': [2, 'always'],
       'switch-colon-spacing': 2,
       'arrow-parens': [2, 'always'],
-      'constructor-super': 2, // eslint:recommended
       'generator-star-spacing': [2, 'after'],
-      'no-new-symbol': 2, // eslint:recommended
-      'no-this-before-super': 2, // eslint:recommended
       'no-var': 2,
       'prefer-const': [2, {destructuring: 'all'}],
       'prefer-rest-params': 2,
