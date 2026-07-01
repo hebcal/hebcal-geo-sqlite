@@ -168,12 +168,12 @@ export class GeoDb {
     if (!existsSync(zipsFilename)) {
       throw new Error(`GeoDb: ${zipsFilename} does not exist`);
     }
-    this.zipsDb = new DatabaseSync(zipsFilename);
+    this.zipsDb = new DatabaseSync(zipsFilename, {readOnly: true});
     if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     if (!existsSync(geonamesFilename)) {
       throw new Error(`GeoDb: ${geonamesFilename} does not exist`);
     }
-    this.geonamesDb = new DatabaseSync(geonamesFilename);
+    this.geonamesDb = new DatabaseSync(geonamesFilename, {readOnly: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     const zipsCacheSize = options?.zipsCacheSize || 150;
     this.zipCache = new QuickLRU<string, Location | null>({
