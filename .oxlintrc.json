@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-arrow-callback": "error"
+  },
+  "ignorePatterns": [
+    "dist",
+    "docs",
+    "bin",
+    "test",
+    "src/pkgVersion.ts",
+    "src/*.json.ts"
+  ]
+}
