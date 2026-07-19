@@ -23,6 +23,12 @@ export type AutoComplete = {
   longitude?: number;
   timezone?: string;
   elevation?: number;
+  /**
+   * Combined bm25 relevance + population ranking score. Used internally to
+   * order results and stripped from the returned objects.
+   * @internal
+   */
+  score?: number;
 };
 
 /**
@@ -76,6 +82,7 @@ type GeonameCompleteRow = {
   city: string;
   admin1: string;
   country: string;
+  score: number;
 };
 
 type GeoCache<K> = Map<K, Location | null> | QuickLRU<K, Location | null>;
@@ -126,19 +133,62 @@ const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,
 FROM ZIPCodes_Primary
 WHERE ZipCode >= ? AND ZipCode < ?
 ORDER BY Population DESC
-LIMIT 10`;
+LIMIT 20`;
 
-const ZIP_FULLTEXT_COMPLETE_SQL = `SELECT ZipCode
+/**
+ * FTS5 bm25 column weights used to rank autocomplete matches. A match on the
+ * city name is weighted most heavily so that, for example, the city
+ * "Washington, D.C." outranks Seattle (whose admin1 is "Washington"). The
+ * country name gets a modest weight and admin1 the lowest, so region-name
+ * matches don't float to the top. The combined `longname` column keeps
+ * multi-word queries (e.g. "san fr") working across the city/admin1/country
+ * boundary.
+ */
+const FTS_WEIGHT_CITY = 8.0;
+const FTS_WEIGHT_COUNTRY = 2.0;
+const FTS_WEIGHT_ADMIN1 = 1.0;
+const FTS_WEIGHT_LONGNAME = 1.0;
+
+/**
+ * Weight of the population term (natural log of population) added to the bm25
+ * relevance score. Larger values make population matter more relative to how
+ * well the name matched.
+ */
+const POPULATION_WEIGHT = 1.5;
+
+/**
+ * FTS5 column filter that scores a match on the separate city/admin1/country
+ * columns (so bm25 can weight them differently) while still matching against
+ * the combined `longname` column so multi-word queries keep working. Callers
+ * substitute the (quote-escaped) query for `%s`.
+ */
+const GEONAME_MATCH_EXPR =
+  '({city admin1 country} : "%s" * OR {longname} : "%s" *)';
+
+/** FTS5 match expression for the USA ZIP code fulltext table. */
+const ZIP_MATCH_EXPR = '{longname} : "%s" *';
+
+// ZIP code matches are always plain city-name matches (no admin1/country
+// ambiguity), so they are ranked by population alone. bm25 is deliberately not
+// used here: its scores are corpus-relative and therefore not comparable to the
+// geonames bm25 scores when the two result sets are merged. Keeping ZIPs on a
+// population-only score preserves the "geonames take priority" behavior.
+const ZIP_FULLTEXT_COMPLETE_SQL = `SELECT ZipCode,
+  ${POPULATION_WEIGHT} * ln(CAST(Population AS REAL) + 10) AS score
 FROM ZIPCodes_CityFullText5
 WHERE ZIPCodes_CityFullText5 MATCH ?
-ORDER BY Population DESC
+ORDER BY score DESC
 LIMIT 20`;
 
-const GEONAME_COMPLETE_SQL = `SELECT geonameid, longname, city, admin1, country
+// geoname_fulltext columns, in order, for bm25():
+//   geonameid(0), longname(1), population(2), city(3), admin1(4), country(5)
+const GEONAME_COMPLETE_SQL = `SELECT geonameid, longname, city, admin1, country,
+  -bm25(geoname_fulltext, 0.0, ${FTS_WEIGHT_LONGNAME}, 0.0, ${FTS_WEIGHT_CITY}, ${FTS_WEIGHT_ADMIN1}, ${FTS_WEIGHT_COUNTRY})
+    + ${POPULATION_WEIGHT} * ln(CAST(population AS REAL) + 10) AS score
 FROM geoname_fulltext
 WHERE geoname_fulltext MATCH ?
-ORDER BY population DESC
-LIMIT 20`;
+ORDER BY score DESC
+LIMIT 150`;
 
 /** Wrapper around sqlite databases */
 export class GeoDb {
@@ -413,7 +463,7 @@ export class GeoDb {
       }
       qraw = qraw.replaceAll('"', '""');
       const geoRows0 = this.geonamesCompStmt.all(
-        `{longname} : "${qraw}" *`,
+        GEONAME_MATCH_EXPR.replaceAll('%s', qraw),
       ) as GeonameCompleteRow[];
       const ids = new Set<number>();
       const geoRows: GeonameCompleteRow[] = [];
@@ -434,17 +484,20 @@ export class GeoDb {
         );
       }
       const zipRows = this.zipFulltextCompStmt.all(
-        `{longname} : "${qraw}" *`,
-      ) as {ZipCode: string}[];
+        ZIP_MATCH_EXPR.replaceAll('%s', qraw),
+      ) as {ZipCode: string; score: number}[];
       const zipMatches = zipRows.map(res => {
         const loc = this.lookupZip(res.ZipCode)!;
-        return GeoDb.zipLocToAutocomplete(loc);
+        const obj = GeoDb.zipLocToAutocomplete(loc);
+        obj.score = res.score;
+        return obj;
       });
       const values = this.mergeZipGeo(zipMatches, geoMatches);
-      values.sort((a, b) => (b.population ?? 0) - (a.population ?? 0));
+      values.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
       const topN = values.slice(0, 12);
-      if (!latlong) {
-        for (const val of topN) {
+      for (const val of topN) {
+        delete val.score;
+        if (!latlong) {
           delete val.latitude;
           delete val.longitude;
           delete val.timezone;
@@ -473,6 +526,7 @@ export class GeoDb {
       longitude: loc.longitude,
       timezone: loc.getTzid(),
       geo: 'geoname',
+      score: res.score,
     };
     if (loc.population) {
       obj.population = loc.population;

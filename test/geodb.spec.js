@@ -337,8 +337,8 @@ test('autoCompleteZipMerge2', () => {
         };
       });
   const expected = [
-    {i: 3571824, v: 'Nassau, New Providence, Bahamas', p: 227940},
     {i: 5224151, v: 'Providence, Rhode Island, USA', p: 190934},
+    {i: 3571824, v: 'Nassau, New Providence, Bahamas', p: 227940},
     {i: 5221931, v: 'East Providence, Rhode Island, USA', p: 47408},
     {i: 5223681, v: 'North Providence, Rhode Island, USA', p: 33835},
     {i: 5780020, v: 'Providence, Utah, USA', p: 7124},
@@ -346,6 +346,25 @@ test('autoCompleteZipMerge2', () => {
     {i: '27315', v: 'Providence, NC 27315', p: 1892},
   ];
   assert.deepStrictEqual(result, expected);
+});
+
+test('autoCompleteCrossBoundary', () => {
+  // Queries whose tokens span the city/admin1 boundary (e.g. a city name
+  // followed by the start of its admin1 name) can only match via the combined
+  // `longname` FTS column, not any single city/admin1/country column. These
+  // guard against the match expression dropping the `longname` term.
+  assert.strictEqual(
+    db.autoComplete('springfield mass', false)[0]?.value,
+    'Springfield, Massachusetts, USA',
+  );
+  assert.strictEqual(
+    db.autoComplete('colorado springs colo', false)[0]?.value,
+    'Colorado Springs, Colorado, USA',
+  );
+  assert.strictEqual(
+    db.autoComplete('providence rhode', false)[0]?.value,
+    'Providence, Rhode Island, USA',
+  );
 });
 
 test('autoComplete-no-match', () => {
