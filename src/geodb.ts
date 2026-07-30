@@ -514,7 +514,8 @@ export class GeoDb {
     res: GeonameCompleteRow,
   ): AutoComplete {
     const cc = loc.getCountryCode();
-    const country = res.country || this.countryNames.get(cc) || '';
+    const country =
+      res.country || (cc ? this.countryNames.get(cc) : undefined) || '';
     const admin1 = loc.admin1 || '';
     const obj: AutoComplete = {
       id: res.geonameid,
@@ -522,8 +523,8 @@ export class GeoDb {
       admin1,
       country,
       cc,
-      latitude: loc.latitude,
-      longitude: loc.longitude,
+      latitude: loc.getLatitude(),
+      longitude: loc.getLongitude(),
       timezone: loc.getTzid(),
       geo: 'geoname',
       score: res.score,
@@ -555,8 +556,8 @@ export class GeoDb {
       asciiname: loc.getShortName()!,
       country: 'United States',
       cc: 'US',
-      latitude: loc.latitude,
-      longitude: loc.longitude,
+      latitude: loc.getLatitude(),
+      longitude: loc.getLongitude(),
       timezone: loc.getTzid(),
       population: loc.population,
       geo: 'zip',
