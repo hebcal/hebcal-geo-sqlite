@@ -11,8 +11,8 @@ POPULATION=${POPULATION:-"0"}
 # optionally specify a geonames export file such as cities500 or cities5000
 CITIES=${CITIES:-"cities1000"}
 
-curl -o $TMPDIR/countryInfo.txt http://download.geonames.org/export/dump/countryInfo.txt
-curl -o $TMPDIR/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
+curl --compressed -o $TMPDIR/countryInfo.txt http://download.geonames.org/export/dump/countryInfo.txt
+curl --compressed -o $TMPDIR/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
 curl -o $TMPDIR/$CITIES.zip http://download.geonames.org/export/dump/$CITIES.zip
 curl -o $TMPDIR/IL.zip http://download.geonames.org/export/dump/IL.zip
 curl -o $TMPDIR/alt-IL.zip http://download.geonames.org/export/dump/alternatenames/IL.zip
