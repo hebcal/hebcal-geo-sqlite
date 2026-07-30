@@ -6,6 +6,14 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "strict": true,
+    // Load-bearing: quick-lru and thread-stream ship .d.ts files that fail to
+    // typecheck (quick-lru's Map overrides; thread-stream referencing a
+    // worker_threads export that @types/node doesn't have). Both upstream bugs,
+    // both already on the latest version. Without this, the build fails on errors
+    // we cannot fix. Prefer removing it if that is ever resolved — it is what
+    // hides unresolvable imports in dependency .d.ts files, which silently
+    // degrade their types to `any`. Note this also currently masks the fact that
+    // `lib` omits esnext.temporal, which @hebcal/core's declarations need.
     "skipLibCheck": true,
     "declaration": true,
     "rootDir": "./src",
