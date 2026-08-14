@@ -3,12 +3,16 @@
 import {buildGeonamesSqlite} from '@hebcal/geo-sqlite';
 import {pino} from 'pino';
 import pretty from 'pino-pretty';
-import minimist from 'minimist';
+import {parseArgs} from 'node:util';
 
-const argv = minimist(process.argv.slice(2), {
-  boolean: ['help', 'quiet'],
-  string: ['population'],
-  alias: {h: 'help', q: 'quiet'},
+const {values: argv, positionals: args} = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    help: {type: 'boolean', short: 'h'},
+    quiet: {type: 'boolean', short: 'q'},
+    population: {type: 'string'},
+  },
+  allowPositionals: true,
 });
 
 if (argv.help) {
@@ -24,8 +28,6 @@ const logger = pino({level: argv.quiet ? 'warn' : 'info'}, pretty({
   translateTime: 'SYS:standard',
   ignore: 'pid,hostname',
 }));
-
-const args = argv._;
 if (args.length !== 7) {
   usage();
   process.exit(1);
