@@ -1,6 +1,6 @@
 {
   "name": "@hebcal/geo-sqlite",
-  "version": "5.12.2",
+  "version": "5.12.3",
   "author": "Michael J. Radwin (https://github.com/mjradwin)",
   "keywords": [
     "hebcal"
@@ -38,8 +38,8 @@
     "zips-dummy.sql"
   ],
   "dependencies": {
-    "@hebcal/cities": "^6.2.1",
-    "@hebcal/core": "^6.13.0",
+    "@hebcal/cities": "^6.2.2",
+    "@hebcal/core": "^6.14.2",
     "pino": "^10.4.0",
     "pino-pretty": "^13.2.0",
     "quick-lru": "^7.3.0",
@@ -61,9 +61,9 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@types/node": "^26.6.4",
-    "oxlint": "^1.86.0",
-    "prettier": "^3.9.9",
+    "@types/node": "^26.6.5",
+    "oxlint": "^1.87.0",
+    "prettier": "^3.9.10",
     "typescript": "^7.0.2"
   }
 }
