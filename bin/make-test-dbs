@@ -5,14 +5,18 @@
 // cities-patch.txt as the geonames data source, along with minimal fixture files
 // bundled in this repo.
 
-import {buildGeonamesSqlite, makeZipsSqlite} from '@hebcal/geo-sqlite';
+import {buildGeonamesSqlite, makeZipsSqlite} from '../dist/index.js';
 import {pino} from 'pino';
 import pretty from 'pino-pretty';
 import {statSync} from 'node:fs';
-import path from 'path';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
+// Output databases are written to the current working directory; input
+// fixtures are located relative to this script so it works regardless of
+// where it is invoked from (node_modules/.bin, npx, or the repo itself).
 const outDir = process.cwd();
-const repoDir = path.join(outDir, 'node_modules/@hebcal/geo-sqlite');
+const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const population = process.env.POPULATION ? +process.env.POPULATION : 0;
 

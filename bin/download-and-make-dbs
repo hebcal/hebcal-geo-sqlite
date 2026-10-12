@@ -1,9 +1,26 @@
 #!/bin/sh
 
+set -e
 set -x
 
-TMPDIR=`mktemp -d /tmp/geonames.XXXXXX`
+# Resolve the real location of this script (node_modules/.bin entries and
+# npx installs are symlinks) so we can find the package's own files no matter
+# which directory we are invoked from.
+SELF="$0"
+while [ -L "$SELF" ]; do
+  LINK=`readlink "$SELF"`
+  case "$LINK" in
+    /*) SELF="$LINK" ;;
+    *) SELF="`dirname "$SELF"`/$LINK" ;;
+  esac
+done
+PKGDIR=`cd "\`dirname "$SELF"\`/.." && pwd -P`
+
+# output databases are written to the current working directory
 CURDIR=`pwd`
+
+WORKDIR=`mktemp -d "${TMPDIR:-/tmp}/geonames.XXXXXX"`
+trap 'rm -rf "$WORKDIR"' EXIT
 
 # optionally specify minimum city population size with POPULATION=750
 POPULATION=${POPULATION:-"0"}
@@ -11,36 +28,33 @@ POPULATION=${POPULATION:-"0"}
 # optionally specify a geonames export file such as cities500 or cities5000
 CITIES=${CITIES:-"cities1000"}
 
-curl --compressed -o $TMPDIR/countryInfo.txt http://download.geonames.org/export/dump/countryInfo.txt
-curl --compressed -o $TMPDIR/admin1CodesASCII.txt http://download.geonames.org/export/dump/admin1CodesASCII.txt
-curl -o $TMPDIR/$CITIES.zip http://download.geonames.org/export/dump/$CITIES.zip
-curl -o $TMPDIR/IL.zip http://download.geonames.org/export/dump/IL.zip
-curl -o $TMPDIR/alt-IL.zip http://download.geonames.org/export/dump/alternatenames/IL.zip
+curl -f --compressed -o "$WORKDIR/countryInfo.txt" http://download.geonames.org/export/dump/countryInfo.txt
+curl -f --compressed -o "$WORKDIR/admin1CodesASCII.txt" http://download.geonames.org/export/dump/admin1CodesASCII.txt
+curl -f -o "$WORKDIR/$CITIES.zip" "http://download.geonames.org/export/dump/$CITIES.zip"
+curl -f -o "$WORKDIR/IL.zip" http://download.geonames.org/export/dump/IL.zip
+curl -f -o "$WORKDIR/alt-IL.zip" http://download.geonames.org/export/dump/alternatenames/IL.zip
 
-cd $TMPDIR
-unzip $CITIES.zip
+cd "$WORKDIR"
+unzip "$CITIES.zip"
 unzip alt-IL.zip
 mv IL.txt alt-IL.txt
-rm readme.txt
+rm -f readme.txt
 unzip IL.zip
 
-cd $CURDIR
+cd "$CURDIR"
 
-#npx --package '@hebcal/geo-sqlite' build-geonames-sqlite \
-$CURDIR/node_modules/.bin/build-geonames-sqlite \
-  --population=$POPULATION \
-  $CURDIR/geonames.sqlite3 \
-  $TMPDIR/countryInfo.txt \
-  "$TMPDIR/$CITIES.txt" \
-  "$CURDIR/node_modules/@hebcal/geo-sqlite/cities-patch.txt" \
-  $TMPDIR/admin1CodesASCII.txt \
-  $TMPDIR/IL.txt \
-  $TMPDIR/alt-IL.txt
+node "$PKGDIR/bin/build-geonames-sqlite" \
+  --population="$POPULATION" \
+  "$CURDIR/geonames.sqlite3" \
+  "$WORKDIR/countryInfo.txt" \
+  "$WORKDIR/$CITIES.txt" \
+  "$PKGDIR/cities-patch.txt" \
+  "$WORKDIR/admin1CodesASCII.txt" \
+  "$WORKDIR/IL.txt" \
+  "$WORKDIR/alt-IL.txt"
 
-rm -rf $TMPDIR
+node "$PKGDIR/bin/make-zips-sqlite" \
+  "$CURDIR/zips.sqlite3" \
+  "$PKGDIR/zips-dummy.sql"
 
-$CURDIR/node_modules/.bin/make-zips-sqlite \
-  $CURDIR/zips.sqlite3 \
-  "$CURDIR/node_modules/@hebcal/geo-sqlite/zips-dummy.sql"
-
-ls -lh geonames.sqlite3 zips.sqlite3
+ls -lh "$CURDIR/geonames.sqlite3" "$CURDIR/zips.sqlite3"
