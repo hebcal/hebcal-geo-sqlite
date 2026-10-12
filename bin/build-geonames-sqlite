@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {buildGeonamesSqlite} from '@hebcal/geo-sqlite';
+import {buildGeonamesSqlite} from '../dist/index.js';
 import {pino} from 'pino';
 import pretty from 'pino-pretty';
 import {parseArgs} from 'node:util';

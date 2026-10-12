@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {makeZipsSqlite} from '@hebcal/geo-sqlite';
+import {makeZipsSqlite} from '../dist/index.js';
 
 const args = process.argv.slice(2);
 if (args.length !== 2) {
