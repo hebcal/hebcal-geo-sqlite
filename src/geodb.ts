@@ -1,5 +1,5 @@
 import {DatabaseSync, StatementSync} from 'node:sqlite';
-import {existsSync} from 'node:fs';
+import {existsSync, statSync} from 'node:fs';
 import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
 import {stateNames} from '@hebcal/cities';
@@ -39,7 +39,16 @@ export type GeoDbOptions = {
   zipsCacheSize?: number;
   /** Maximum number of entries in the geonames LRU cache. Default is 750. */
   geonamesCacheSize?: number;
+  /**
+   * How often (in milliseconds) to check whether the geonames database file
+   * has been replaced on disk. If its mtime has changed, the geonames
+   * database is closed and reopened. Default is 600000 (10 minutes).
+   * Set to 0 to disable polling.
+   */
+  geonamesPollInterval?: number;
 };
+
+const DEFAULT_GEONAMES_POLL_INTERVAL = 10 * 60 * 1000;
 
 /** Location with extra geo properties set by this package. */
 type GeoLocation = Location & {
@@ -202,7 +211,11 @@ export class GeoDb {
   legacyCities: Map<string, number>;
   countryNames: Map<string, string>;
   private readonly zipStmt: StatementSync;
-  private readonly geonamesStmt: StatementSync;
+  private geonamesStmt: StatementSync;
+  private readonly geonamesFilename: string;
+  private readonly geonamesCacheSize: number;
+  private geonamesMtimeMs: number;
+  private geonamesPollTimer?: NodeJS.Timeout;
   private zipCompStmt?: StatementSync;
   private geonamesCompStmt?: StatementSync;
   private zipFulltextCompStmt?: StatementSync;
@@ -223,6 +236,8 @@ export class GeoDb {
     if (!existsSync(geonamesFilename)) {
       throw new Error(`GeoDb: ${geonamesFilename} does not exist`);
     }
+    this.geonamesFilename = geonamesFilename;
+    this.geonamesMtimeMs = statSync(geonamesFilename).mtimeMs;
     this.geonamesDb = new DatabaseSync(geonamesFilename, {readOnly: true});
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     const zipsCacheSize = options?.zipsCacheSize || 150;
@@ -230,15 +245,33 @@ export class GeoDb {
       maxSize: zipsCacheSize,
     });
     this.geonamesStmt = this.geonamesDb.prepare(GEONAME_SQL);
-    const geonamesCacheSize = options?.geonamesCacheSize || 750;
+    this.geonamesCacheSize = options?.geonamesCacheSize || 750;
     this.geonamesCache = new QuickLRU<number, Location | null>({
-      maxSize: geonamesCacheSize,
+      maxSize: this.geonamesCacheSize,
     });
     this.legacyCities = new Map();
     for (const [name, id] of Object.entries(city2geonameid)) {
       this.legacyCities.set(munge(name), id);
     }
-    const stmt = this.geonamesDb.prepare(
+    this.countryNames = GeoDb.readCountryNames(this.geonamesDb);
+    if (logger)
+      logger.info(
+        `GeoDb: ${this.countryNames.size} countries, ${this.legacyCities.size} legacy cities`,
+      );
+    const pollInterval =
+      options?.geonamesPollInterval ?? DEFAULT_GEONAMES_POLL_INTERVAL;
+    if (pollInterval > 0) {
+      this.geonamesPollTimer = setInterval(
+        () => this.checkGeonamesChanged(),
+        pollInterval,
+      );
+      this.geonamesPollTimer.unref();
+    }
+  }
+
+  /** @private */
+  private static readCountryNames(db: DatabaseSync): Map<string, string> {
+    const stmt = db.prepare(
       "SELECT ISO, Country FROM country WHERE Country <> ''",
     );
     const rows = stmt.all() as {ISO: string; Country: string}[];
@@ -246,15 +279,81 @@ export class GeoDb {
     for (const row of rows) {
       map.set(row.ISO, row.Country);
     }
-    this.countryNames = map;
-    if (logger)
-      logger.info(
-        `GeoDb: ${map.size} countries, ${this.legacyCities.size} legacy cities`,
+    return map;
+  }
+
+  /**
+   * Checks whether the geonames database file has been modified on disk
+   * (by comparing its mtime) and, if so, closes and reopens it.
+   * Called periodically when `geonamesPollInterval` is enabled.
+   * @returns `true` if the database was reopened
+   */
+  checkGeonamesChanged(): boolean {
+    const filename = this.geonamesFilename;
+    let mtimeMs: number;
+    try {
+      mtimeMs = statSync(filename).mtimeMs;
+    } catch (err) {
+      if (this.logger)
+        this.logger.warn(err, `GeoDb: unable to stat ${filename}`);
+      return false;
+    }
+    if (mtimeMs === this.geonamesMtimeMs) {
+      return false;
+    }
+    if (this.logger)
+      this.logger.info(`GeoDb: ${filename} changed, reopening...`);
+    try {
+      this.reopenGeonames();
+    } catch (err) {
+      // keep using the old database; retry on the next poll
+      if (this.logger)
+        this.logger.error(err, `GeoDb: unable to reopen ${filename}`);
+      return false;
+    }
+    this.geonamesMtimeMs = mtimeMs;
+    return true;
+  }
+
+  /** @private */
+  private reopenGeonames(): void {
+    const filename = this.geonamesFilename;
+    const newDb = new DatabaseSync(filename, {readOnly: true});
+    let geonamesStmt: StatementSync;
+    let countryNames: Map<string, string>;
+    try {
+      geonamesStmt = newDb.prepare(GEONAME_SQL);
+      countryNames = GeoDb.readCountryNames(newDb);
+    } catch (err) {
+      newDb.close();
+      throw err;
+    }
+    const oldDb = this.geonamesDb;
+    const wasFullyCached = this.geonamesCache instanceof Map;
+    this.geonamesDb = newDb;
+    this.geonamesStmt = geonamesStmt;
+    this.geonamesCompStmt = undefined;
+    this.countryNames = countryNames;
+    if (wasFullyCached) {
+      this.cacheGeonames();
+    } else {
+      this.geonamesCache = new QuickLRU<number, Location | null>({
+        maxSize: this.geonamesCacheSize,
+      });
+    }
+    oldDb.close();
+    if (this.logger)
+      this.logger.info(
+        `GeoDb: reopened ${filename}, ${countryNames.size} countries`,
       );
   }
 
   /** Closes database handles */
   close(): void {
+    if (this.geonamesPollTimer) {
+      clearInterval(this.geonamesPollTimer);
+      this.geonamesPollTimer = undefined;
+    }
     this.zipsDb.close();
     this.geonamesDb.close();
   }
