@@ -8,6 +8,7 @@ import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import pino from 'pino';
+import {DatabaseSync} from 'node:sqlite';
 import legacyCities from './legacy.json' with {type: 'json'};
 import {makeDummyZipsDb} from './makeDummyZipsDb.js';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
@@ -16,12 +17,14 @@ import {munge} from '../dist/munge.js';
 const logger = pino({level: 'error'});
 
 let db;
+let testZipsPath;
+let testDbPath;
 
 before(async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
   const {ciPath, c5path, a1path, altNamePath} = makeDummyInfoTxt(logger, tmpDir);
-  const testZipsPath = makeDummyZipsDb(logger, tmpDir);
-  const testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
+  testZipsPath = makeDummyZipsDb(logger, tmpDir);
+  testDbPath = path.join(tmpDir, 'test-geonames.sqlite3');
   logger.info(testDbPath);
   const filenames = {
     dbFilename: testDbPath,
@@ -508,4 +511,33 @@ test('geonameCityDescr', () => {
     'Little Rock, Arkansas, USA');
   assert.strictEqual(GeoDb.geonameCityDescr('Berlin', 'State of Berlin', 'Germany'),
     'Berlin, Germany');
+});
+
+test('checkGeonamesChanged reopens after atomic rename', () => {
+  const dir = path.dirname(testDbPath);
+  const geoPath = path.join(dir, 'reopen-geonames.sqlite3');
+  fs.copyFileSync(testDbPath, geoPath);
+  const db2 = new GeoDb(logger, testZipsPath, geoPath, {geonamesPollInterval: 0});
+  try {
+    assert.notStrictEqual(db2.lookupGeoname(293397), null);
+    assert.strictEqual(db2.checkGeonamesChanged(), false);
+    // build replacement file without Tel Aviv, then atomically rename it into place
+    const tmpPath = geoPath + '.tmp';
+    fs.copyFileSync(testDbPath, tmpPath);
+    const rw = new DatabaseSync(tmpPath);
+    rw.exec('DELETE FROM geoname WHERE geonameid = 293397');
+    rw.close();
+    const future = new Date(Date.now() + 60000);
+    fs.utimesSync(tmpPath, future, future);
+    fs.renameSync(tmpPath, geoPath);
+    // cached lookup still returns the stale entry until reopen
+    assert.notStrictEqual(db2.lookupGeoname(293397), null);
+    assert.strictEqual(db2.checkGeonamesChanged(), true);
+    assert.strictEqual(db2.lookupGeoname(293397), null);
+    assert.strictEqual(db2.countryNames.get('ZA'), 'South Africa');
+    assert.ok(db2.autoComplete('BERL').length > 0);
+    assert.strictEqual(db2.checkGeonamesChanged(), false);
+  } finally {
+    db2.close();
+  }
 });
