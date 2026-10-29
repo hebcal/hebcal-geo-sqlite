@@ -34,6 +34,7 @@ const fcodeKeep: Record<string, boolean> = {
   PPLA: true, // seat of a first-order administrative division (PPLC takes precedence over PPLA)
   PPLA2: true, // seat of a second-order administrative division
   PPLA3: true, // seat of a third-order administrative division
+  PPLA4: true, // seat of a fourth-order administrative division (population >= minPopulation or 1)
   PPLC: true, // capital of a political entity
   // an area similar to a locality but with a small group of dwellings or other buildings
   PPLG: true, // seat of government of a political entity
@@ -132,8 +133,11 @@ export async function buildGeonamesSqlite(
     if (!fcodeKeep[fcode]) {
       return false;
     }
+    const population = Number(a[14]);
+    if (fcode === 'PPLA4' && population < (minPopulation || 1)) {
+      return false; // also skips thousands of PPLA4 townships/villages with no population data
+    }
     if (minPopulation) {
-      const population = Number(a[14]);
       if (fcode === 'PPL' && population && population < minPopulation) {
         return false;
       }
