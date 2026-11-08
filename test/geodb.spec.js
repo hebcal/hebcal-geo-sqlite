@@ -427,19 +427,56 @@ test('legacy3', () => {
   assert.deepStrictEqual(plainObj, expected);
 });
 
-test('alternatenames', () => {
-  const sql = `SELECT * from alternatenames where geonameid = ?`;
+test('alternatenames are loaded into geoname_fulltext', () => {
+  // the alternatenames table itself is dropped after the build; check that
+  // the (munged, de-duplicated) en/he names made it into the fulltext index
+  const sql = `SELECT longname FROM geoname_fulltext
+    WHERE geonameid = ? ORDER BY rowid`;
   const stmt = db.geonamesDb.prepare(sql);
-  const results = stmt.all(293100);
-  const actual = JSON.parse(JSON.stringify(results));
+  const actual = stmt.all(293807).map(r => r.longname);
   const expected = [
-    {'id': 204884, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Sfat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
-    {'id': 204885, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Safed', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
-    {'id': 204886, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tsefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
-    {'id': 7202955, 'geonameid': 293100, 'isolanguage': 'en', 'name': 'Tzefat', 'isPreferredName': '', 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
-    {'id': 7202956, 'geonameid': 293100, 'isolanguage': 'he', 'name': 'צפת', 'isPreferredName': 1, 'isShortName': '', 'isColloquial': '', 'isHistoric': '', 'periodFrom': '', 'periodTo': ''},
+    `Ra'anana, Israel`, // from cities5000.txt
+    'רעננה, ישראל',
+    `Ra'anana, Israel`, // Ra‘anana
+    `Ra'ananah, Israel`, // Ra‘ananah
+    `Ra'ananna, Israel`, // Ra‘ananna
+    'Raanana, Israel',
   ];
   assert.deepStrictEqual(actual, expected);
+});
+
+test('scratch tables are dropped and only used columns are kept', () => {
+  const tables = db.geonamesDb
+    .prepare(`SELECT name FROM sqlite_schema
+      WHERE type = 'table' AND name NOT LIKE 'geoname_fulltext_%'
+      ORDER BY name`)
+    .all()
+    .map(r => r.name);
+  assert.deepStrictEqual(tables, [
+    'admin1',
+    'country',
+    'geoname',
+    'geoname_fulltext',
+  ]);
+  const columns = table =>
+    db.geonamesDb
+      .prepare('SELECT name FROM pragma_table_info(?) ORDER BY cid')
+      .all(table)
+      .map(r => r.name);
+  assert.deepStrictEqual(columns('geoname'), [
+    'geonameid',
+    'name',
+    'asciiname',
+    'latitude',
+    'longitude',
+    'country',
+    'admin1',
+    'population',
+    'gtopo30',
+    'timezone',
+  ]);
+  assert.deepStrictEqual(columns('country'), ['ISO', 'Country', 'Continent']);
+  assert.deepStrictEqual(columns('admin1'), ['key', 'name', 'asciiname']);
 });
 
 test('autoCompleteZipPartial', () => {

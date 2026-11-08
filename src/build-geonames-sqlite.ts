@@ -68,61 +68,44 @@ export async function buildGeonamesSqlite(
     db,
     'DROP TABLE IF EXISTS country',
 
+    // Only the columns read by consumers are kept (GeoDb, hebcal-api-go,
+    // hebcal-web shabbat-browse.js). countryInfo.txt has 19 fields:
+    // 0 ISO, 4 Country, 8 Continent.
     `CREATE TABLE country (
       ISO TEXT PRIMARY KEY,
-      ISO3 TEXT NOT NULL,
-      IsoNumeric TEXT NOT NULL,
-      fips TEXT NOT NULL,
       Country TEXT NOT NULL,
-      Capital TEXT NOT NULL,
-      Area INT NOT NULL,
-      Population INT NOT NULL,
-      Continent TEXT NOT NULL,
-      tld TEXT NOT NULL,
-      CurrencyCode TEXT NOT NULL,
-      CurrencyName TEXT NOT NULL,
-      Phone TEXT NOT NULL,
-      PostalCodeFormat TEXT,
-      PostalCodeRegex TEXT,
-      Languages TEXT NOT NULL,
-      geonameid INT NOT NULL,
-      neighbours TEXT NOT NULL,
-      EquivalentFipsCode TEXT NOT NULL
+      Continent TEXT NOT NULL
     );`,
   );
-  await doFile(logger, db, countryInfotxt, 'country', 19);
+  await doFile(logger, db, countryInfotxt, 'country', 19, undefined, [0, 4, 8]);
 
   doSql(
     logger,
     db,
     'DROP TABLE IF EXISTS geoname',
 
+    // Only the columns read by consumers are kept (GeoDb, hebcal-api-go,
+    // hebcal-web nearestCity.js and shabbat-browse.js). geonameid is an
+    // INTEGER PRIMARY KEY so it aliases the rowid instead of needing a
+    // separate unique index. Note that `gtopo30` (not the sparsely populated
+    // `elevation` field) is what consumers read as the elevation.
     `CREATE TABLE geoname (
-      geonameid int PRIMARY KEY,
+      geonameid INTEGER PRIMARY KEY,
       name nvarchar(200),
       asciiname nvarchar(200),
-      alternatenames nvarchar(4000),
       latitude decimal(18,15),
       longitude decimal(18,15),
-      fclass nchar(1),
-      fcode nvarchar(10),
       country nvarchar(2),
-      cc2 nvarchar(60),
       admin1 nvarchar(20),
-      admin2 nvarchar(80),
-      admin3 nvarchar(20),
-      admin4 nvarchar(20),
       population int,
-      elevation int,
       gtopo30 int,
-      timezone nvarchar(40),
-      moddate date);`,
+      timezone nvarchar(40));`,
   );
 
-  const truncateAlternateNames = (a: string[]): boolean => {
-    a[3] = '';
-    return true;
-  };
+  // Field indices (of 19) in geonames.org "geoname" dump files for the
+  // columns above: geonameid, name, asciiname, latitude, longitude,
+  // country code, admin1 code, population, dem (gtopo30), timezone.
+  const geonameColumns = [0, 1, 2, 4, 5, 8, 10, 14, 16, 17];
   const minPopulation = opts.population;
   const citiesFilter = (a: string[]): boolean => {
     if (!a[17]) {
@@ -142,30 +125,58 @@ export async function buildGeonamesSqlite(
         return false;
       }
     }
-    a[3] = '';
     return true;
   };
-  await doFile(logger, db, cities5000txt, 'geoname', 19, citiesFilter);
-  await doFile(logger, db, citiesPatch, 'geoname', 19, truncateAlternateNames);
-  await doFile(logger, db, ILtxt, 'geoname', 19, a => {
-    a[3] = '';
-    return a[6] === 'P' && Boolean(fcodeKeep[a[7]]);
-  });
+  await doFile(
+    logger,
+    db,
+    cities5000txt,
+    'geoname',
+    19,
+    citiesFilter,
+    geonameColumns,
+  );
+  await doFile(
+    logger,
+    db,
+    citiesPatch,
+    'geoname',
+    19,
+    undefined,
+    geonameColumns,
+  );
+  await doFile(
+    logger,
+    db,
+    ILtxt,
+    'geoname',
+    19,
+    a => a[6] === 'P' && Boolean(fcodeKeep[a[7]]),
+    geonameColumns,
+  );
 
   doSql(
     logger,
     db,
     'DROP TABLE IF EXISTS admin1',
 
+    // admin1CodesASCII.txt has 4 fields; the 4th (geonameid) is unused.
     `CREATE TABLE admin1 (
       key TEXT PRIMARY KEY,
       name nvarchar(200) NOT NULL,
-      asciiname nvarchar(200) NOT NULL,
-      geonameid int NOT NULL
+      asciiname nvarchar(200) NOT NULL
       );`,
   );
 
-  await doFile(logger, db, admin1CodesASCIItxt, 'admin1', 4);
+  await doFile(
+    logger,
+    db,
+    admin1CodesASCIItxt,
+    'admin1',
+    4,
+    undefined,
+    [0, 1, 2],
+  );
 
   // fix inconsistencies with the USA capitol
   doSql(
@@ -257,6 +268,9 @@ export async function buildGeonamesSqlite(
     `CREATE VIRTUAL TABLE geoname_fulltext
       USING fts5(geonameid UNINDEXED, longname, population, city, admin1, country);
     `,
+    // NOTE: population is never matched against, but don't make it UNINDEXED:
+    // FTS5's bm25() normalizes by the total token count across all indexed
+    // columns, so doing so changes autocomplete ranking.
 
     'DROP TABLE IF EXISTS geoname_non_ascii',
 
@@ -348,6 +362,13 @@ export async function buildGeonamesSqlite(
       AND g.geonameid = alt.geonameid
       `,
 
+    "INSERT INTO geoname_fulltext(geoname_fulltext) VALUES('optimize')",
+
+    // scratch tables used only to build geoname_fulltext
+    'DROP TABLE alternatenames',
+    'DROP TABLE altnames',
+    'DROP TABLE geoname_non_ascii',
+
     'VACUUM',
   );
 
@@ -378,15 +399,13 @@ async function doFile(
   tableName: string,
   expectedFields: number,
   callback?: (a: string[]) => boolean,
+  columns?: number[],
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     logger.info(`${infile} => ${tableName}`);
     db.exec('BEGIN');
-    let sql = `INSERT OR IGNORE INTO ${tableName} VALUES (?`;
-    for (let i = 0; i < expectedFields - 1; i++) {
-      sql += ',?';
-    }
-    sql += ')';
+    const numParams = columns ? columns.length : expectedFields;
+    const sql = `INSERT OR IGNORE INTO ${tableName} VALUES (${Array(numParams).fill('?').join(',')})`;
     logger.info(sql);
     const stmt = db.prepare(sql);
     try {
@@ -414,7 +433,7 @@ async function doFile(
             return;
           }
         }
-        stmt.run(...a);
+        stmt.run(...(columns ? columns.map(i => a[i]) : a));
         accepted++;
       });
 
