@@ -369,6 +369,12 @@ export async function buildGeonamesSqlite(
     'DROP TABLE altnames',
     'DROP TABLE geoname_non_ascii',
 
+    // hebcal-web shabbat-browse.js lists cities by `country = ?` and by
+    // `country = ? AND admin1 = ?`; without this they scan every row.
+    // No ANALYZE: the planner picks this index for those equality lookups
+    // without statistics, and sqlite_stat1 could change other consumers' plans.
+    'CREATE INDEX geoname_country_admin1 ON geoname(country, admin1)',
+
     'VACUUM',
   );
 
