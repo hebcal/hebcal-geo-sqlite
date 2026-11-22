@@ -6,19 +6,64 @@ It requires two separate databases, one made from GeoNames.org data (available
 via a Creative Commons license) and a USA ZIP code database (commercial license).
 
 ## Installation
+
+Build the databases with one of the two `npx` alternatives below. Both write
+`geonames.sqlite3` and `zips.sqlite3` to the current working directory. The
+`--package` flag is needed because the command names differ from the package
+name; `-y` skips npx's install confirmation prompt.
+
+### Option 1: full databases (downloads from geonames.org)
+
 ```bash
-$ npm install @hebcal/geo-sqlite
-$ ./node_modules/.bin/download-and-make-dbs
+npx -y --package=@hebcal/geo-sqlite download-and-make-dbs
 ```
+
+Downloads `countryInfo.txt`, `admin1CodesASCII.txt`, a cities export, and the
+Israel (`IL`) data from [GeoNames.org](https://www.geonames.org/) (requires
+network access), then builds the complete `geonames.sqlite3`. The `zips.sqlite3`
+file is created from the bundled `zips-dummy.sql` schema and contains no real
+ZIP code data (the USA ZIP code database is commercially licensed).
+
+Behavior can be tuned with environment variables:
+
+| Variable     | Default       | Description |
+| ------------ | ------------- | ----------- |
+| `CITIES`     | `cities1000`  | GeoNames export to download and use as the source of places: `cities500`, `cities1000`, `cities5000`, or `cities15000`. A lower number includes smaller places and produces a larger database. |
+| `POPULATION` | `0`           | Minimum population for a place to be included (e.g. `POPULATION=750`). `0` applies no extra filter beyond what `CITIES` already provides. |
+
+For example:
+
+```bash
+CITIES=cities500 POPULATION=850 \
+ npx -y --package=@hebcal/geo-sqlite download-and-make-dbs
+```
+
+### Option 2: test databases (no network access)
+
+```bash
+npx -y --package=@hebcal/geo-sqlite make-test-dbs
+```
+
+Builds small databases using only fixture data bundled in the package (the ~60
+"classic" Hebcal cities, `cities-patch.txt`, and minimal country/admin1 data),
+so there are no external network dependencies. Ideal for unit tests and CI.
+The `POPULATION` environment variable is honored here too; `CITIES` is not used.
 
 ## Synopsis
 ```js
-import {Location} from '@hebcal/core';
 import {GeoDb} from '@hebcal/geo-sqlite';
 import pino from 'pino';
 const logger = pino();
 
-const db = new GeoDb(logger, 'zips.sqlite3', 'geonames.sqlite3');
+// The fourth argument is optional; the values shown are the defaults.
+const db = new GeoDb(logger, 'zips.sqlite3', 'geonames.sqlite3', {
+  // max entries in the ZIP code LRU cache
+  zipsCacheSize: 150,
+  // max entries in the geonames LRU cache
+  geonamesCacheSize: 750,
+  // ms between checks for a replaced geonames file; 0 disables
+  geonamesPollInterval: 600000,
+});
 const loc1 = db.lookupZip('90210'); // Beverly Hills, California
 const loc2 = db.lookupGeoname(293397); // Tel Aviv
 const loc3 = db.lookupLegacyCity('IL-Netanya');
@@ -33,226 +78,3 @@ bundled fixtures used by `make-test-dbs` to build test databases (the ~60
 This data is derived from [GeoNames.org](https://www.geonames.org/) and is used
 under the
 [Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/).
-
-## Classes
-
-<dl>
-<dt><a href="#GeoDb">GeoDb</a></dt>
-<dd><p>Wrapper around sqlite databases</p>
-</dd>
-</dl>
-
-## Functions
-
-<dl>
-<dt><a href="#buildGeonamesSqlite">buildGeonamesSqlite(opts)</a></dt>
-<dd><p>Builds <code>geonames.sqlite3</code> from files downloaded from geonames.org</p>
-</dd>
-<dt><a href="#doSql">doSql(logger, db, ...sqls)</a></dt>
-<dd></dd>
-<dt><a href="#doFile">doFile(logger, db, infile, tableName, expectedFields, callback)</a></dt>
-<dd></dd>
-<dt><a href="#makeZipsSqlite">makeZipsSqlite(dbFilename, sqlFile)</a></dt>
-<dd><p>Builds <code>zips.sqlite3</code> from the bundled zips-dummy.sql schema file</p>
-</dd>
-</dl>
-
-<a name="GeoDb"></a>
-
-## GeoDb
-Wrapper around sqlite databases
-
-**Kind**: global class
-
-* [GeoDb](#GeoDb)
-    * [new GeoDb(logger, zipsFilename, geonamesFilename, options)](#new_GeoDb_new)
-    * _instance_
-        * [.zipCache](#GeoDb+zipCache) : <code>Map.&lt;string, Location&gt;</code>
-        * [.geonamesCache](#GeoDb+geonamesCache) : <code>Map.&lt;number, Location&gt;</code>
-        * [.legacyCities](#GeoDb+legacyCities) : <code>Map.&lt;string, number&gt;</code>
-        * [.countryNames](#GeoDb+countryNames) : <code>Map.&lt;string, string&gt;</code>
-        * [.close()](#GeoDb+close)
-        * [.lookupZip(zip)](#GeoDb+lookupZip) ⇒ <code>Location</code>
-        * [.lookupGeoname(geonameid)](#GeoDb+lookupGeoname) ⇒ <code>Location</code>
-        * [.lookupLegacyCity(cityName)](#GeoDb+lookupLegacyCity) ⇒ <code>Location</code>
-        * [.autoComplete(qraw, latlong)](#GeoDb+autoComplete) ⇒ <code>Array.&lt;Object&gt;</code>
-        * [.cacheZips()](#GeoDb+cacheZips)
-        * [.cacheGeonames()](#GeoDb+cacheGeonames)
-    * _static_
-        * [.transliterate(source, [options])](#GeoDb.transliterate) ⇒ <code>string</code>
-        * [.geonameCityDescr(cityName, admin1, countryName)](#GeoDb.geonameCityDescr) ⇒ <code>string</code>
-        * [.version()](#GeoDb.version)
-        * [.is5DigitZip(str)](#GeoDb.is5DigitZip) ⇒ <code>boolean</code>
-
-<a name="new_GeoDb_new"></a>
-
-### new GeoDb(logger, zipsFilename, geonamesFilename, options)
-
-| Param | Type |
-| --- | --- |
-| logger | <code>any</code> |
-| zipsFilename | <code>string</code> |
-| geonamesFilename | <code>string</code> |
-| options | <code>any</code> |
-
-<a name="GeoDb+zipCache"></a>
-
-### geoDb.zipCache : <code>Map.&lt;string, Location&gt;</code>
-**Kind**: instance property of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+geonamesCache"></a>
-
-### geoDb.geonamesCache : <code>Map.&lt;number, Location&gt;</code>
-**Kind**: instance property of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+legacyCities"></a>
-
-### geoDb.legacyCities : <code>Map.&lt;string, number&gt;</code>
-**Kind**: instance property of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+countryNames"></a>
-
-### geoDb.countryNames : <code>Map.&lt;string, string&gt;</code>
-**Kind**: instance property of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+close"></a>
-
-### geoDb.close()
-Closes database handles
-
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+lookupZip"></a>
-
-### geoDb.lookupZip(zip) ⇒ <code>Location</code>
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type |
-| --- | --- |
-| zip | <code>string</code> |
-
-<a name="GeoDb+lookupGeoname"></a>
-
-### geoDb.lookupGeoname(geonameid) ⇒ <code>Location</code>
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type |
-| --- | --- |
-| geonameid | <code>number</code> |
-
-<a name="GeoDb+lookupLegacyCity"></a>
-
-### geoDb.lookupLegacyCity(cityName) ⇒ <code>Location</code>
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type |
-| --- | --- |
-| cityName | <code>string</code> |
-
-<a name="GeoDb+autoComplete"></a>
-
-### geoDb.autoComplete(qraw, latlong) ⇒ <code>Array.&lt;Object&gt;</code>
-Generates autocomplete results based on a query string
-
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type | Default |
-| --- | --- | --- |
-| qraw | <code>string</code> |  |
-| latlong | <code>boolean</code> | <code>false</code> |
-
-<a name="GeoDb+cacheZips"></a>
-
-### geoDb.cacheZips()
-Reads entire ZIP database and caches in-memory
-
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb+cacheGeonames"></a>
-
-### geoDb.cacheGeonames()
-Reads entire geonames database and caches in-memory
-
-**Kind**: instance method of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb.transliterate"></a>
-
-### GeoDb.transliterate(source, [options]) ⇒ <code>string</code>
-Convenience wrapper of the `transliterate` function from `transliteration` npm package.
-Transliterate the string `source` and return the result.
-
-**Kind**: static method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type |
-| --- | --- |
-| source | <code>string</code> |
-| [options] | <code>any</code> |
-
-<a name="GeoDb.geonameCityDescr"></a>
-
-### GeoDb.geonameCityDescr(cityName, admin1, countryName) ⇒ <code>string</code>
-Builds a city description from geonameid string components
-
-**Kind**: static method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type | Description |
-| --- | --- | --- |
-| cityName | <code>string</code> | e.g. 'Tel Aviv' or 'Chicago' |
-| admin1 | <code>string</code> | e.g. 'England' or 'Massachusetts' |
-| countryName | <code>string</code> | full country name, e.g. 'Israel' or 'United States' |
-
-<a name="GeoDb.version"></a>
-
-### GeoDb.version()
-Returns the version of the GeoDb package
-
-**Kind**: static method of [<code>GeoDb</code>](#GeoDb)
-<a name="GeoDb.is5DigitZip"></a>
-
-### GeoDb.is5DigitZip(str) ⇒ <code>boolean</code>
-**Kind**: static method of [<code>GeoDb</code>](#GeoDb)
-
-| Param | Type |
-| --- | --- |
-| str | <code>string</code> |
-
-<a name="buildGeonamesSqlite"></a>
-
-## buildGeonamesSqlite(opts)
-Builds `geonames.sqlite3` from files downloaded from geonames.org
-
-**Kind**: global function
-
-| Param | Type |
-| --- | --- |
-| opts | <code>any</code> |
-
-<a name="doSql"></a>
-
-## doSql(logger, db, ...sqls)
-**Kind**: global function
-
-| Param | Type |
-| --- | --- |
-| logger | <code>pino.Logger</code> |
-| db | <code>Database</code> |
-| ...sqls | <code>string</code> |
-
-<a name="doFile"></a>
-
-## doFile(logger, db, infile, tableName, expectedFields, callback)
-**Kind**: global function
-
-| Param | Type |
-| --- | --- |
-| logger | <code>pino.Logger</code> |
-| db | <code>Database</code> |
-| infile | <code>string</code> |
-| tableName | <code>string</code> |
-| expectedFields | <code>number</code> |
-| callback | <code>function</code> |
-
-<a name="makeZipsSqlite"></a>
-
-## makeZipsSqlite(dbFilename, sqlFile)
-Builds `zips.sqlite3` from the bundled zips-dummy.sql schema file
-
-**Kind**: global function
-
-| Param | Type | Description |
-| --- | --- | --- |
-| dbFilename | <code>string</code> | path to the output SQLite database file |
-| sqlFile | <code>string</code> | path to the SQL schema file |

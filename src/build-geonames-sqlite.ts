@@ -47,6 +47,19 @@ const fcodeKeep: Record<string, boolean> = {
 
 /**
  * Builds `geonames.sqlite3` from files downloaded from geonames.org
+ * @param opts input file paths and output database filename
+ * @returns a promise resolving to `true` on success
+ * @example
+ * await buildGeonamesSqlite({
+ *   dbFilename: 'geonames.sqlite3',
+ *   countryInfotxt: 'countryInfo.txt',
+ *   cities5000txt: 'cities5000.txt',
+ *   citiesPatch: 'cities-patch.txt',
+ *   admin1CodesASCIItxt: 'admin1CodesASCII.txt',
+ *   ILtxt: 'IL.txt',
+ *   ILalternate: 'IL-alternate-names.txt',
+ *   logger: pino(),
+ * });
  */
 export async function buildGeonamesSqlite(
   opts: BuildGeonamesSqliteOptions,
@@ -371,9 +384,15 @@ export async function buildGeonamesSqlite(
 
     // hebcal-web shabbat-browse.js lists cities by `country = ?` and by
     // `country = ? AND admin1 = ?`; without this they scan every row.
+    // population makes it covering for the per-country minimum-population
+    // filter and the startup `GROUP BY country, admin1` count, so neither
+    // has to fetch table rows to test population.
     // No ANALYZE: the planner picks this index for those equality lookups
     // without statistics, and sqlite_stat1 could change other consumers' plans.
-    'CREATE INDEX geoname_country_admin1 ON geoname(country, admin1)',
+    'CREATE INDEX geoname_country_admin1 ON geoname(country, admin1, population)',
+    // hebcal-web nearestCity.js selects `WHERE timezone = ?` when a GeoIP
+    // result has coordinates but no usable geonameid.
+    'CREATE INDEX geoname_timezone ON geoname(timezone)',
 
     'VACUUM',
   );

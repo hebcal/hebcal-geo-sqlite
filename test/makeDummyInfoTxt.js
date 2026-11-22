@@ -15,7 +15,8 @@ DE\tDEU\t276\tGM\tGermany\tBerlin\t357021\t82927922\tEU\t.de\tEUR\tEuro\t49\t###
   logger.info(ciPath);
   fs.writeFileSync(ciPath, ciStr);
   const a1path = path.join(tmpDir, 'test-admin1CodesASCII.txt');
-  const a1str = `US.AR\tArkansas\tArkansas\t4099753
+  const a1str = `US.AZ\tArizona\tArizona\t5551752
+US.AR\tArkansas\tArkansas\t4099753
 US.CO\tColorado\tColorado\t5417618
 US.DC\tWashington, D.C.\tWashington, D.C.\t4138106
 US.DE\tDelaware\tDelaware\t4142224

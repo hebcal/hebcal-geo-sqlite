@@ -1,5 +1,6 @@
 import {DatabaseSync, StatementSync} from 'node:sqlite';
 import {existsSync, statSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
 import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
 import {stateNames} from '@hebcal/cities';
@@ -94,8 +95,6 @@ type GeonameCompleteRow = {
   score: number;
 };
 
-type GeoCache<K> = Map<K, Location | null> | QuickLRU<K, Location | null>;
-
 const GEONAME_SQL = `SELECT
   g.name as name,
   g.asciiname as asciiname,
@@ -113,30 +112,9 @@ LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
 WHERE g.geonameid = ?
 `;
 
-const GEONAME_ALL_SQL = `SELECT
-  g.geonameid as geonameid,
-  g.name as name,
-  g.asciiname as asciiname,
-  g.country as cc,
-  c.country as country,
-  a.asciiname as admin1,
-  g.latitude as latitude,
-  g.longitude as longitude,
-  g.population as population,
-  g.gtopo30 as elevation,
-  g.timezone as timezone
-FROM geoname g
-LEFT JOIN country c on g.country = c.iso
-LEFT JOIN admin1 a on g.country||'.'||g.admin1 = a.key
-`;
-
 const ZIPCODE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,Elevation,
 TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary WHERE ZipCode = ?`;
-
-const ZIPCODE_ALL_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,Elevation,
-TimeZone,DayLightSaving,Population
-FROM ZIPCodes_Primary`;
 
 const ZIP_COMPLETE_SQL = `SELECT ZipCode,CityMixedCase,State,Latitude,Longitude,TimeZone,DayLightSaving,Population
 FROM ZIPCodes_Primary
@@ -199,17 +177,33 @@ WHERE geoname_fulltext MATCH ?
 ORDER BY score DESC
 LIMIT 150`;
 
-/** Wrapper around sqlite databases */
+/**
+ * Opens a database read-only with `immutable=1`, which tells SQLite the file
+ * never changes while open, so it skips the per-query file lock and
+ * change-counter check (roughly halves the cost of a by-id lookup).
+ * Safe because new database files are deployed by rename (`mv`), never
+ * rewritten in place; checkGeonamesChanged() opens the new file.
+ * @param filename path to a sqlite3 database
+ */
+function openImmutable(filename: string): DatabaseSync {
+  const uri = pathToFileURL(filename).href + '?mode=ro&immutable=1';
+  return new DatabaseSync(uri, {readOnly: true});
+}
+
+/**
+ * Wrapper around the ZIP code and GeoNames sqlite databases, providing
+ * lookups by ZIP, geonameid, or legacy city name, plus autocomplete.
+ */
 export class GeoDb {
-  logger: Logger | null;
+  private readonly logger: Logger | null;
   zipsDb: DatabaseSync;
   geonamesDb: DatabaseSync;
   /** @internal */
-  zipCache: GeoCache<string>;
+  zipCache: QuickLRU<string, Location | null>;
   /** @internal */
-  geonamesCache: GeoCache<number>;
+  geonamesCache: QuickLRU<number, Location | null>;
   legacyCities: Map<string, number>;
-  countryNames: Map<string, string>;
+  private countryNames: Map<string, string>;
   private readonly zipStmt: StatementSync;
   private geonamesStmt: StatementSync;
   private readonly geonamesFilename: string;
@@ -220,6 +214,18 @@ export class GeoDb {
   private geonamesCompStmt?: StatementSync;
   private zipFulltextCompStmt?: StatementSync;
 
+  /**
+   * Opens the ZIP code and GeoNames databases (read-only, immutable).
+   * @param logger optional logger, or `null` to disable logging
+   * @param zipsFilename path to `zips.sqlite3`
+   * @param geonamesFilename path to `geonames.sqlite3`
+   * @param options optional cache-size and polling settings
+   * @throws if either database file does not exist
+   * @example
+   * const db = new GeoDb(null, 'zips.sqlite3', 'geonames.sqlite3', {
+   *   zipsCacheSize: 300,
+   * });
+   */
   constructor(
     logger: Logger | null,
     zipsFilename: string,
@@ -231,14 +237,14 @@ export class GeoDb {
     if (!existsSync(zipsFilename)) {
       throw new Error(`GeoDb: ${zipsFilename} does not exist`);
     }
-    this.zipsDb = new DatabaseSync(zipsFilename, {readOnly: true});
+    this.zipsDb = openImmutable(zipsFilename);
     if (logger) logger.info(`GeoDb: opening ${geonamesFilename}...`);
     if (!existsSync(geonamesFilename)) {
       throw new Error(`GeoDb: ${geonamesFilename} does not exist`);
     }
     this.geonamesFilename = geonamesFilename;
     this.geonamesMtimeMs = statSync(geonamesFilename).mtimeMs;
-    this.geonamesDb = new DatabaseSync(geonamesFilename, {readOnly: true});
+    this.geonamesDb = openImmutable(geonamesFilename);
     this.zipStmt = this.zipsDb.prepare(ZIPCODE_SQL);
     const zipsCacheSize = options?.zipsCacheSize || 150;
     this.zipCache = new QuickLRU<string, Location | null>({
@@ -287,6 +293,7 @@ export class GeoDb {
    * (by comparing its mtime) and, if so, closes and reopens it.
    * Called periodically when `geonamesPollInterval` is enabled.
    * @returns `true` if the database was reopened
+   * @internal
    */
   checkGeonamesChanged(): boolean {
     const filename = this.geonamesFilename;
@@ -318,7 +325,7 @@ export class GeoDb {
   /** @private */
   private reopenGeonames(): void {
     const filename = this.geonamesFilename;
-    const newDb = new DatabaseSync(filename, {readOnly: true});
+    const newDb = openImmutable(filename);
     let geonamesStmt: StatementSync;
     let countryNames: Map<string, string>;
     try {
@@ -329,18 +336,13 @@ export class GeoDb {
       throw err;
     }
     const oldDb = this.geonamesDb;
-    const wasFullyCached = this.geonamesCache instanceof Map;
     this.geonamesDb = newDb;
     this.geonamesStmt = geonamesStmt;
     this.geonamesCompStmt = undefined;
     this.countryNames = countryNames;
-    if (wasFullyCached) {
-      this.cacheGeonames();
-    } else {
-      this.geonamesCache = new QuickLRU<number, Location | null>({
-        maxSize: this.geonamesCacheSize,
-      });
-    }
+    this.geonamesCache = new QuickLRU<number, Location | null>({
+      maxSize: this.geonamesCacheSize,
+    });
     oldDb.close();
     if (this.logger)
       this.logger.info(
@@ -348,7 +350,9 @@ export class GeoDb {
       );
   }
 
-  /** Closes database handles */
+  /**
+   * Closes database handles
+   */
   close(): void {
     if (this.geonamesPollTimer) {
       clearInterval(this.geonamesPollTimer);
@@ -363,6 +367,15 @@ export class GeoDb {
     return munge(s);
   }
 
+  /**
+   * Looks up a US ZIP code. Only the first 5 characters (after trimming)
+   * are used. Results, including misses, are cached.
+   * @param zip 5-digit US ZIP code
+   * @returns the matching Location, or `null` if unknown
+   * @example
+   * const loc = db.lookupZip('02912');
+   * loc?.getName(); // 'Providence, RI 02912'
+   */
   lookupZip(zip: string): Location | null {
     const zip5 = zip.trim().substring(0, 5);
     const found = this.zipCache.get(zip5);
@@ -404,6 +417,15 @@ export class GeoDb {
     return location;
   }
 
+  /**
+   * Looks up a place by its GeoNames numeric identifier.
+   * Results, including misses, are cached.
+   * @param geonameid numeric GeoNames ID (a numeric string is coerced)
+   * @returns the matching Location, or `null` if unknown or falsy
+   * @example
+   * const loc = db.lookupGeoname(4119403);
+   * loc?.getName(); // 'Little Rock, Arkansas, USA'
+   */
   lookupGeoname(geonameid: number): Location | null {
     geonameid = +geonameid;
     if (!geonameid) return null;
@@ -425,21 +447,14 @@ export class GeoDb {
   }
 
   /**
-   * Convenience wrapper of the `transliterate` function from `transliteration` npm package.
-   * Transliterate the string `source` and return the result.
-   */
-  static transliterate(
-    source: string,
-    options?: Parameters<typeof transliterate>[1],
-  ): string {
-    return transliterate(source, options);
-  }
-
-  /**
    * Builds a city description from geonameid string components
    * @param cityName e.g. 'Tel Aviv' or 'Chicago'
    * @param admin1 e.g. 'England' or 'Massachusetts'
    * @param countryName full country name, e.g. 'Israel' or 'United States'
+   * @example
+   * GeoDb.geonameCityDescr('Chicago', 'Illinois', 'United States');
+   * // 'Chicago, Illinois, USA'
+   * GeoDb.geonameCityDescr('Tel Aviv', 'Tel Aviv', 'Israel'); // 'Tel Aviv, Israel'
    */
   static geonameCityDescr(
     cityName: string,
@@ -491,6 +506,18 @@ export class GeoDb {
     return location;
   }
 
+  /**
+   * Importing @hebcal/cities calls `Location.addLocation()` for ~400
+   * legacy cities and their aliases (e.g. `'IL-Petah Tikva'`).
+   * This function falls back to `Location.lookup()` for
+   * names missing from `city2geonameid.json`
+   *
+   * @param cityName legacy city name, e.g. 'Tel Aviv' or 'IL-Petah Tikva'
+   * @returns the matching Location, or `null` if unknown
+   * @example
+   * db.lookupLegacyCity("Be'er Sheva")?.getGeoId(); // 295530
+   * db.lookupLegacyCity('*nonexistent*'); // null
+   */
   lookupLegacyCity(cityName: string): Location | null {
     const name = munge(cityName);
     const geonameid = this.legacyCities.get(name);
@@ -533,22 +560,27 @@ export class GeoDb {
 
   /**
    * Generates autocomplete results based on a query string
+   * @param qraw the user's query, e.g. a city name or ZIP code prefix
+   * @param latlong if `true`, include latitude/longitude in each result
+   * @returns matching places, best matches first
+   * @example
+   * const results = db.autoComplete('tel', true);
+   * results[0].value; // display text of the best match
+   * db.autoComplete('90210'); // ZIP code prefix search
    */
   autoComplete(qraw: string, latlong = false): AutoComplete[] {
     qraw = qraw.trim();
     if (qraw.length === 0) {
       return [];
     }
-    const firstCharCode = qraw.charCodeAt(0);
+    const firstCharCode = qraw.codePointAt(0)!;
     if (firstCharCode >= 48 && firstCharCode <= 57) {
       // special-case PK query instead of full-table scan
       if (GeoDb.is5DigitZip(qraw)) {
         const loc = this.lookupZip(qraw);
         return loc ? [GeoDb.zipLocToAutocomplete(loc)] : [];
       }
-      if (!this.zipCompStmt) {
-        this.zipCompStmt = this.zipsDb.prepare(ZIP_COMPLETE_SQL);
-      }
+      this.zipCompStmt ??= this.zipsDb.prepare(ZIP_COMPLETE_SQL);
       // this is a ZIP code prefix, a string with 1-4 digits
       const zipA = qraw.substring(0, 5);
       const zipB =
@@ -557,9 +589,7 @@ export class GeoDb {
         GeoDb.zipResultToObj,
       );
     } else {
-      if (!this.geonamesCompStmt) {
-        this.geonamesCompStmt = this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
-      }
+      this.geonamesCompStmt ??= this.geonamesDb.prepare(GEONAME_COMPLETE_SQL);
       qraw = qraw.replaceAll('"', '""');
       const geoRows0 = this.geonamesCompStmt.all(
         GEONAME_MATCH_EXPR.replaceAll('%s', qraw),
@@ -577,11 +607,9 @@ export class GeoDb {
         const loc = this.lookupGeoname(res.geonameid)!;
         return this.geonameLocToAutocomplete(loc, res);
       });
-      if (!this.zipFulltextCompStmt) {
-        this.zipFulltextCompStmt = this.zipsDb.prepare(
-          ZIP_FULLTEXT_COMPLETE_SQL,
-        );
-      }
+      this.zipFulltextCompStmt ??= this.zipsDb.prepare(
+        ZIP_FULLTEXT_COMPLETE_SQL,
+      );
       const zipRows = this.zipFulltextCompStmt.all(
         ZIP_MATCH_EXPR.replaceAll('%s', qraw),
       ) as {ZipCode: string; score: number}[];
@@ -694,45 +722,24 @@ export class GeoDb {
     return Array.from(map.values());
   }
 
-  /** Reads entire ZIP database and caches in-memory */
-  cacheZips(): void {
-    const start = Date.now();
-    const stmt = this.zipsDb.prepare(ZIPCODE_ALL_SQL);
-    const rows = stmt.all() as ZipRow[];
-    this.zipCache = new Map(); // replace QuickLRU
-    for (const row of rows) {
-      const location = this.makeZipLocation(row);
-      this.zipCache.set(row.ZipCode, location);
-    }
-    const end = Date.now();
-    if (this.logger)
-      this.logger.info(
-        `GeoDb: cached ${rows.length} ZIP codes in ${end - start}ms`,
-      );
-  }
-
-  /** Reads entire geonames database and caches in-memory */
-  cacheGeonames(): void {
-    const start = Date.now();
-    const stmt = this.geonamesDb.prepare(GEONAME_ALL_SQL);
-    const rows = stmt.all() as Required<GeonameRow>[];
-    this.geonamesCache = new Map(); // replace QuickLRU
-    for (const row of rows) {
-      const location = this.makeGeonameLocation(row.geonameid, row);
-      this.geonamesCache.set(row.geonameid, location);
-    }
-    const end = Date.now();
-    if (this.logger)
-      this.logger.info(
-        `GeoDb: cached ${rows.length} geonames in ${end - start}ms`,
-      );
-  }
-
-  /** Returns the version of the GeoDb package */
+  /**
+   * Returns the version of the GeoDb package
+   * @example
+   * GeoDb.version(); // e.g. '6.0.0'
+   */
   static version(): string {
     return version;
   }
 
+  /**
+   * Returns `true` if the string begins with five ASCII digits
+   * (after trimming). Non-strings return `false`.
+   * @param str string to test
+   * @example
+   * GeoDb.is5DigitZip('02912'); // true
+   * GeoDb.is5DigitZip('62704-1234'); // true
+   * GeoDb.is5DigitZip('1234'); // false
+   */
   static is5DigitZip(str: string): boolean {
     if (typeof str !== 'string') {
       return false;

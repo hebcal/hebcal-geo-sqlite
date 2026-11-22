@@ -394,14 +394,6 @@ test('autoComplete-nolatlong', () => {
 });
 
 
-test('cacheZips', () => {
-  db.cacheZips();
-});
-
-test('cacheGeonames', () => {
-  db.cacheGeonames();
-});
-
 test('countryNames', () => {
   const m = db.countryNames;
   assert.strictEqual(typeof m, 'object');
@@ -540,7 +532,8 @@ test('Chandler Arizona', () => {
 });
 
 test('version', () => {
-  assert.strictEqual(GeoDb.version().startsWith('5.'), true);
+  const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.strictEqual(GeoDb.version(), pkg.version);
 });
 
 test('geonameCityDescr', () => {
