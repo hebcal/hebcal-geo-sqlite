@@ -11,6 +11,7 @@ const {values: argv, positionals: args} = parseArgs({
     help: {type: 'boolean', short: 'h'},
     quiet: {type: 'boolean', short: 'q'},
     population: {type: 'string'},
+    'strict-legacy-cities': {type: 'boolean'},
   },
   allowPositionals: true,
 });
@@ -46,11 +47,14 @@ const options = {
 if (argv.population) {
   options.population = +argv.population;
 }
+if (argv['strict-legacy-cities']) {
+  options.strictLegacyCities = true;
+}
 buildGeonamesSqlite(options).then(() => {
   console.log('Done!');
 });
 
 function usage() {
   const infiles = 'countryInfo.txt cities5000.txt cities-patch.txt admin1CodesASCII.txt IL.txt IL-alternatenames.txt';
-  console.log(`Usage: build-geonames-sqlite geonames.sqlite3 ${infiles}`);
+  console.log(`Usage: build-geonames-sqlite [--population=N] [--strict-legacy-cities] geonames.sqlite3 ${infiles}`);
 }

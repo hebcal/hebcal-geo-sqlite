@@ -45,6 +45,7 @@ cd "$CURDIR"
 
 node "$PKGDIR/bin/build-geonames-sqlite" \
   --population="$POPULATION" \
+  --strict-legacy-cities \
   "$CURDIR/geonames.sqlite3" \
   "$WORKDIR/countryInfo.txt" \
   "$WORKDIR/$CITIES.txt" \

@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import readline from 'node:readline';
 import {Locale} from '@hebcal/core';
 import type {Logger} from 'pino';
+import city2geonameid from './city2geonameid.json.js';
+import {munge} from './munge.js';
 
 /**
  * Options for {@link buildGeonamesSqlite}.
@@ -27,6 +29,12 @@ export type BuildGeonamesSqliteOptions = {
   logger: Logger;
   /** Minimum population filter for PPL feature codes. */
   population?: number;
+  /**
+   * Fail when a `legacy_city` row names a geonameid missing from the
+   * `geoname` table. Off by default, for test databases built from a
+   * handful of cities; set for a production build.
+   */
+  strictLegacyCities?: boolean;
 };
 
 const fcodeKeep: Record<string, boolean> = {
@@ -395,9 +403,11 @@ export async function buildGeonamesSqlite(
     // hebcal-web nearestCity.js selects `WHERE timezone = ?` when a GeoIP
     // result has coordinates but no usable geonameid.
     'CREATE INDEX geoname_timezone ON geoname(timezone)',
-
-    'VACUUM',
   );
+
+  buildLegacyCityTable(logger, db, Boolean(opts.strictLegacyCities));
+
+  doSql(logger, db, 'VACUUM');
 
   return new Promise<boolean>((resolve, reject) => {
     try {
@@ -410,6 +420,77 @@ export async function buildGeonamesSqlite(
       reject(err);
     }
   });
+}
+
+/**
+ * Builds `legacy_city`, which maps the `city=` names of old Hebcal URLs to
+ * geonameids. The key is the name as {@link munge} normalizes it (lowercase,
+ * no spaces, apostrophes or `+`), so a reader normalizes its input the same
+ * way and looks it up by primary key.
+ *
+ * Throws when two names in `city2geonameid.json` normalize to the same key
+ * but name different places. A geonameid missing from `geoname` is logged,
+ * or thrown when `strict` is set.
+ * @private
+ */
+function buildLegacyCityTable(
+  logger: Logger,
+  db: DatabaseSync,
+  strict: boolean,
+): void {
+  doSql(
+    logger,
+    db,
+    'DROP TABLE IF EXISTS legacy_city',
+    `CREATE TABLE legacy_city (
+      key TEXT PRIMARY KEY,
+      geonameid INTEGER NOT NULL
+    ) WITHOUT ROWID`,
+  );
+  const byKey = new Map<string, {name: string; geonameid: number}>();
+  const collisions: string[] = [];
+  for (const [name, geonameid] of Object.entries(city2geonameid)) {
+    const key = munge(name);
+    const prev = byKey.get(key);
+    if (!prev) {
+      byKey.set(key, {name, geonameid});
+    } else if (prev.geonameid !== geonameid) {
+      collisions.push(
+        `"${prev.name}" (${prev.geonameid}) and "${name}" (${geonameid})`,
+      );
+    }
+  }
+  if (collisions.length) {
+    throw new Error(
+      `city2geonameid.json: names normalize to the same key but differ: ${collisions.join('; ')}`,
+    );
+  }
+  const insert = db.prepare(
+    'INSERT INTO legacy_city (key, geonameid) VALUES (?, ?)',
+  );
+  db.exec('BEGIN');
+  for (const [key, {geonameid}] of byKey) {
+    insert.run(key, geonameid);
+  }
+  db.exec('COMMIT');
+  logger.info(`legacy_city: ${byKey.size} rows`);
+
+  const missing = db
+    .prepare(
+      `SELECT l.key, l.geonameid FROM legacy_city l
+      LEFT JOIN geoname g ON l.geonameid = g.geonameid
+      WHERE g.geonameid IS NULL
+      ORDER BY l.key`,
+    )
+    .all() as {key: string; geonameid: number}[];
+  if (missing.length) {
+    const list = missing.map(m => `${m.key}=${m.geonameid}`).join(', ');
+    const msg = `legacy_city: ${missing.length} of ${byKey.size} geonameids not in geoname: ${list}`;
+    if (strict) {
+      throw new Error(msg);
+    }
+    logger.warn(msg);
+  }
 }
 
 function doSql(logger: Logger, db: DatabaseSync, ...sqls: string[]): void {

@@ -3,10 +3,8 @@ import {existsSync, statSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import QuickLRU from 'quick-lru';
 import {Location} from '@hebcal/core';
-import {stateNames} from '@hebcal/cities';
 import {transliterate} from 'transliteration';
 import type {Logger} from 'pino';
-import city2geonameid from './city2geonameid.json.js';
 import {munge} from './munge.js';
 import {version} from './pkgVersion.js';
 
@@ -94,6 +92,8 @@ type GeonameCompleteRow = {
   country: string;
   score: number;
 };
+
+const LEGACY_CITY_SQL = 'SELECT geonameid FROM legacy_city WHERE key = ?';
 
 const GEONAME_SQL = `SELECT
   g.name as name,
@@ -202,10 +202,11 @@ export class GeoDb {
   zipCache: QuickLRU<string, Location | null>;
   /** @internal */
   geonamesCache: QuickLRU<number, Location | null>;
-  legacyCities: Map<string, number>;
   private countryNames: Map<string, string>;
+  private stateNames: Map<string, string>;
   private readonly zipStmt: StatementSync;
   private geonamesStmt: StatementSync;
+  private legacyCityStmt: StatementSync;
   private readonly geonamesFilename: string;
   private readonly geonamesCacheSize: number;
   private geonamesMtimeMs: number;
@@ -255,15 +256,10 @@ export class GeoDb {
     this.geonamesCache = new QuickLRU<number, Location | null>({
       maxSize: this.geonamesCacheSize,
     });
-    this.legacyCities = new Map();
-    for (const [name, id] of Object.entries(city2geonameid)) {
-      this.legacyCities.set(munge(name), id);
-    }
+    this.legacyCityStmt = GeoDb.prepareLegacyCity(this.geonamesDb);
     this.countryNames = GeoDb.readCountryNames(this.geonamesDb);
-    if (logger)
-      logger.info(
-        `GeoDb: ${this.countryNames.size} countries, ${this.legacyCities.size} legacy cities`,
-      );
+    this.stateNames = GeoDb.readStateNames(this.geonamesDb);
+    if (logger) logger.info(`GeoDb: ${this.countryNames.size} countries`);
     const pollInterval =
       options?.geonamesPollInterval ?? DEFAULT_GEONAMES_POLL_INTERVAL;
     if (pollInterval > 0) {
@@ -284,6 +280,39 @@ export class GeoDb {
     const map = new Map<string, string>();
     for (const row of rows) {
       map.set(row.ISO, row.Country);
+    }
+    return map;
+  }
+
+  /**
+   * Prepares the `legacy_city` lookup, with an error that names the cause
+   * when the database predates the table.
+   * @private
+   */
+  private static prepareLegacyCity(db: DatabaseSync): StatementSync {
+    try {
+      return db.prepare(LEGACY_CITY_SQL);
+    } catch (err) {
+      throw new Error(
+        'GeoDb: geonames database has no legacy_city table; rebuild it with a current build-geonames-sqlite',
+        {cause: err},
+      );
+    }
+  }
+
+  /**
+   * Maps each US state code (`'CA'`) to its name (`'California'`), from the
+   * `US.*` rows of the admin1 table: the 50 states and Washington, D.C.
+   * @private
+   */
+  private static readStateNames(db: DatabaseSync): Map<string, string> {
+    const stmt = db.prepare(
+      "SELECT key, name FROM admin1 WHERE key LIKE 'US.%'",
+    );
+    const rows = stmt.all() as {key: string; name: string}[];
+    const map = new Map<string, string>();
+    for (const row of rows) {
+      map.set(row.key.substring(3), row.name);
     }
     return map;
   }
@@ -327,10 +356,14 @@ export class GeoDb {
     const filename = this.geonamesFilename;
     const newDb = openImmutable(filename);
     let geonamesStmt: StatementSync;
+    let legacyCityStmt: StatementSync;
     let countryNames: Map<string, string>;
+    let stateNames: Map<string, string>;
     try {
       geonamesStmt = newDb.prepare(GEONAME_SQL);
+      legacyCityStmt = GeoDb.prepareLegacyCity(newDb);
       countryNames = GeoDb.readCountryNames(newDb);
+      stateNames = GeoDb.readStateNames(newDb);
     } catch (err) {
       newDb.close();
       throw err;
@@ -338,8 +371,10 @@ export class GeoDb {
     const oldDb = this.geonamesDb;
     this.geonamesDb = newDb;
     this.geonamesStmt = geonamesStmt;
+    this.legacyCityStmt = legacyCityStmt;
     this.geonamesCompStmt = undefined;
     this.countryNames = countryNames;
+    this.stateNames = stateNames;
     this.geonamesCache = new QuickLRU<number, Location | null>({
       maxSize: this.geonamesCacheSize,
     });
@@ -410,7 +445,7 @@ export class GeoDb {
       elevation,
     ) as GeoLocation;
     location.admin1 = location.state = result.State;
-    location.stateName = stateNames[location.state];
+    location.stateName = this.stateNames.get(location.state);
     location.geo = 'zip';
     location.zip = zip;
     location.population = result.Population;
@@ -507,10 +542,11 @@ export class GeoDb {
   }
 
   /**
-   * Importing @hebcal/cities calls `Location.addLocation()` for ~400
-   * legacy cities and their aliases (e.g. `'IL-Petah Tikva'`).
-   * This function falls back to `Location.lookup()` for
-   * names missing from `city2geonameid.json`
+   * Looks up a legacy city name (the `city=` parameter of old Hebcal URLs)
+   * in the database's `legacy_city` table, ignoring case, spaces,
+   * apostrophes and `+`.
+   * A name missing from it falls back to `Location.lookup()`, which knows
+   * whatever the application registered with `Location.addLocation()`.
    *
    * @param cityName legacy city name, e.g. 'Tel Aviv' or 'IL-Petah Tikva'
    * @returns the matching Location, or `null` if unknown
@@ -520,17 +556,18 @@ export class GeoDb {
    */
   lookupLegacyCity(cityName: string): Location | null {
     const name = munge(cityName);
-    const geonameid = this.legacyCities.get(name);
+    const row = this.legacyCityStmt.get(name) as
+      {geonameid: number} | undefined;
+    const geonameid = row?.geonameid;
     if (geonameid) {
       return this.lookupGeoname(geonameid);
-    } else {
-      const location = Location.lookup(cityName);
-      if (location) {
-        return location;
-      }
-      if (this.logger) this.logger.warn(`GeoDb: unknown city=${cityName}`);
-      return null;
     }
+    const location = Location.lookup(cityName);
+    if (location) {
+      return location;
+    }
+    if (this.logger) this.logger.warn(`GeoDb: unknown city=${cityName}`);
+    return null;
   }
 
   /** @private */
@@ -708,9 +745,11 @@ export class GeoDb {
     }
     const map = new Map<string, AutoComplete>();
     for (const obj of zipMatches) {
-      const key = [obj.asciiname, stateNames[obj.admin1 ?? ''], obj.cc].join(
-        '|',
-      );
+      const key = [
+        obj.asciiname,
+        this.stateNames.get(obj.admin1 ?? ''),
+        obj.cc,
+      ].join('|');
       if (!map.has(key)) {
         map.set(key, obj);
       }

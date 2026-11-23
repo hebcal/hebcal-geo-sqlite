@@ -13,12 +13,14 @@ import legacyCities from './legacy.json' with {type: 'json'};
 import {makeDummyZipsDb} from './makeDummyZipsDb.js';
 import {makeDummyInfoTxt} from './makeDummyInfoTxt.js';
 import {munge} from '../dist/munge.js';
+import city2geonameid from '../dist/city2geonameid.json.js';
 
 const logger = pino({level: 'error'});
 
 let db;
 let testZipsPath;
 let testDbPath;
+let buildOpts;
 
 before(async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hebcal-test-'));
@@ -36,6 +38,7 @@ before(async () => {
     ILalternate: altNamePath,
     logger: logger,
   };
+  buildOpts = filenames;
   await buildGeonamesSqlite(filenames);
   db = new GeoDb(logger, testZipsPath, testDbPath);
   logger.info('setup: complete');
@@ -68,7 +71,9 @@ test('legacy', () => {
 test('legacy2', () => {
   for (const key of legacyCities) {
     const name = munge(key);
-    const geonameid = db.legacyCities.get(name);
+    const geonameid = db.geonamesDb
+      .prepare('SELECT geonameid FROM legacy_city WHERE key = ?')
+      .get(name)?.geonameid;
     assert.strictEqual(typeof geonameid, 'number', key);
   }
 });
@@ -401,22 +406,67 @@ test('countryNames', () => {
 });
 
 test('legacy3', () => {
-  // fetch from @hebacal/cities because no trailing "h"
+  // was a Location.lookup() alias registered by @hebcal/cities
   const loc = db.lookupLegacyCity('IL-Petah Tikva');
   assert.notStrictEqual(loc, null);
-  assert.strictEqual(typeof loc, 'object');
   assert.strictEqual(loc instanceof Location, true);
-  const expected = {
-    locationName: 'Petah Tiqwa',
-    latitude: 32.08707,
-    longitude: 34.88747,
-    elevation: 0,
-    timeZoneId: 'Asia/Jerusalem',
-    il: true,
-    cc: 'IL',
-  };
-  const plainObj = JSON.parse(JSON.stringify(loc));
-  assert.deepStrictEqual(plainObj, expected);
+  assert.strictEqual(loc.getGeoId(), 293918);
+  assert.strictEqual(loc.getCountryCode(), 'IL');
+  assert.strictEqual(loc.getIsrael(), true);
+  assert.strictEqual(loc.getTzid(), 'Asia/Jerusalem');
+  assert.strictEqual(db.lookupLegacyCity('Petach Tikvah').getGeoId(), 293918);
+});
+
+test('legacyFallback', () => {
+  // a name missing from city2geonameid.json falls back to Location.lookup()
+  const name = 'Hebcal Test Fallback City';
+  assert.strictEqual(db.lookupLegacyCity(name), null);
+  const added = new Location(40.1, -75.2, false, 'America/New_York', name, 'US');
+  Location.addLocation(name, added);
+  assert.strictEqual(db.lookupLegacyCity(name), added);
+});
+
+test('a geonames database without legacy_city is refused', () => {
+  const geoPath = path.join(path.dirname(testDbPath), 'old-geonames.sqlite3');
+  fs.copyFileSync(testDbPath, geoPath);
+  const rw = new DatabaseSync(geoPath);
+  rw.exec('DROP TABLE legacy_city');
+  rw.close();
+  assert.throws(
+    () => new GeoDb(logger, testZipsPath, geoPath, {geonamesPollInterval: 0}),
+    /no legacy_city table/);
+});
+
+test('stateNames', () => {
+  assert.strictEqual(db.stateNames.get('RI'), 'Rhode Island');
+  assert.strictEqual(db.stateNames.get('DC'), 'Washington, D.C.');
+  assert.strictEqual(db.stateNames.get('ZZ'), undefined);
+});
+
+test('legacy_city table', () => {
+  const stmt = db.geonamesDb.prepare(
+    'SELECT geonameid FROM legacy_city WHERE key = ?');
+  assert.strictEqual(stmt.get(munge("Be'er Sheva")).geonameid, 295530);
+  assert.strictEqual(stmt.get(munge('IL-Petah Tikva')).geonameid, 293918);
+  assert.strictEqual(stmt.get(munge('US-Boston')).geonameid, 4930956);
+  assert.strictEqual(stmt.get(munge('*nonexistent*')), undefined);
+  // one row per normalized key, every entry in the JSON included
+  const count = db.geonamesDb.prepare(
+    'SELECT count(*) AS n FROM legacy_city').get().n;
+  const expected = new Map(
+    Object.entries(city2geonameid).map(([name, id]) => [munge(name), id]));
+  assert.strictEqual(count, expected.size);
+  for (const [key, id] of expected) {
+    assert.strictEqual(stmt.get(key).geonameid, id, key);
+  }
+});
+
+test('strictLegacyCities fails on a geonameid missing from geoname', async () => {
+  // the test fixture has a few dozen cities, so most legacy ids are missing
+  const dbFilename = path.join(path.dirname(testDbPath), 'strict-geonames.sqlite3');
+  await assert.rejects(
+    buildGeonamesSqlite({...buildOpts, dbFilename, strictLegacyCities: true}),
+    /legacy_city: \d+ of \d+ geonameids not in geoname/);
 });
 
 test('alternatenames are loaded into geoname_fulltext', () => {
@@ -449,6 +499,7 @@ test('scratch tables are dropped and only used columns are kept', () => {
     'country',
     'geoname',
     'geoname_fulltext',
+    'legacy_city',
   ]);
   const columns = table =>
     db.geonamesDb
@@ -468,6 +519,7 @@ test('scratch tables are dropped and only used columns are kept', () => {
     'timezone',
   ]);
   assert.deepStrictEqual(columns('country'), ['ISO', 'Country', 'Continent']);
+  assert.deepStrictEqual(columns('legacy_city'), ['key', 'geonameid']);
   assert.deepStrictEqual(columns('admin1'), ['key', 'name', 'asciiname']);
 });
 
