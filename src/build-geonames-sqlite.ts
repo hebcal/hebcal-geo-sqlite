@@ -271,6 +271,8 @@ export async function buildGeonamesSqlite(
     "delete from geoname where country = 'PS' and admin1 = 'GZ';",
     'delete from geoname where geonameid = 7303419;',
     "update geoname set country = 'IL' where country = 'PS' and admin1 = 'WE';",
+    // Palestinian DST transitions differ from Israel's; use Israeli clock time
+    "update geoname set timezone = 'Asia/Jerusalem' where country = 'IL' and timezone in ('Asia/Hebron', 'Asia/Gaza');",
   );
 
   doSql(
